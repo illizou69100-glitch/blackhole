@@ -53,6 +53,11 @@
       color: rgba(255,255,255,0.9); padding: 3px 22px 3px 8px;
       letter-spacing: 0.5px; transform: rotate(35deg);
     }
+    .card-amrap-badge {
+      position: absolute; bottom: 10px; right: 12px;
+      font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.6);
+      background: rgba(0,0,0,0.2); border-radius: 8px; padding: 2px 7px;
+    }
     .empty { grid-column: span 2; text-align: center; color: var(--text-dim); padding: 80px 30px 40px; font-size: 15px; line-height: 1.6; }
     .fab {
       position: fixed; bottom: max(env(safe-area-inset-bottom), 20px); right: 20px;
@@ -82,6 +87,46 @@
       font-size: 17px; font-weight: 700;
       color: rgba(255,255,255,0.92); text-align: center;
       flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .amrap-zone {
+      display: none; flex-direction: column; align-items: center;
+      padding: 6px 0 0; gap: 5px;
+    }
+    .amrap-zone.on { display: flex; }
+    .amrap-round {
+      font-size: 11px; font-weight: 700; letter-spacing: 1.8px;
+      text-transform: uppercase; color: rgba(255,255,255,0.5);
+    }
+    .amrap-ring-wrap {
+      position: relative; width: 110px; height: 110px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+    .amrap-ring-wrap svg {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      transform: rotate(-90deg);
+    }
+    .amrap-ring-bg { stroke: rgba(255,255,255,0.14); }
+    .amrap-ring-fill {
+      stroke: rgba(255,255,255,0.85); stroke-linecap: round;
+      transition: stroke-dashoffset 0.92s linear, stroke 0.3s;
+    }
+    .amrap-center {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      position: relative; z-index: 1;
+    }
+    .amrap-clock {
+      font-size: 32px; font-weight: 900; color: rgba(255,255,255,0.95);
+      letter-spacing: -1px; font-variant-numeric: tabular-nums;
+      transition: color 0.3s;
+    }
+    .amrap-clock.urgent { color: #fbbf24; }
+    .amrap-hint {
+      font-size: 10px; color: rgba(255,255,255,0.4); font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .amrap-meta {
+      font-size: 11px; color: rgba(255,255,255,0.4); font-weight: 500;
     }
     .num-zone {
       flex: 1; display: flex; flex-direction: column;
@@ -151,13 +196,27 @@
     .sheet-hdr { font-size: 18px; font-weight: 700; margin-bottom: 18px; }
     .field { margin-bottom: 13px; }
     .field label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); margin-bottom: 6px; }
-    .field input { width: 100%; background: #2c2c2e; border: none; border-radius: 11px; color: var(--text); font-size: 16px; padding: 12px 14px; font-family: inherit; outline: none; -webkit-appearance: none; }
+    .field input[type="text"], .field input[type="number"] {
+      width: 100%; background: #2c2c2e; border: none; border-radius: 11px;
+      color: var(--text); font-size: 16px; padding: 12px 14px;
+      font-family: inherit; outline: none; -webkit-appearance: none;
+    }
     .field input:focus { background: #3a3a3c; }
     .fields-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .colors-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; margin-bottom: 18px; }
     .cdot { aspect-ratio: 1; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: transform 0.15s, border-color 0.15s; -webkit-tap-highlight-color: transparent; }
     .cdot:active { transform: scale(0.85); }
     .cdot.sel { border-color: #fff; transform: scale(1.18); }
+    .section-sep { height: 1px; background: #3a3a3c; margin: 14px 0 16px; }
+    .section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); margin-bottom: 12px; }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 13px; }
+    .toggle-row span { font-size: 15px; color: var(--text); flex: 1; line-height: 1.3; }
+    .toggle { position: relative; width: 50px; height: 30px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .slider { position: absolute; inset: 0; background: #3a3a3c; border-radius: 30px; cursor: pointer; transition: background 0.22s; }
+    .slider::before { content: ''; position: absolute; width: 24px; height: 24px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: transform 0.22s; box-shadow: 0 1px 4px rgba(0,0,0,0.4); }
+    .toggle input:checked + .slider { background: #30d158; }
+    .toggle input:checked + .slider::before { transform: translateX(20px); }
     .actions { display: flex; flex-direction: column; gap: 9px; margin-top: 6px; }
     .btn { width: 100%; padding: 14px; border: none; border-radius: 13px; font-size: 16px; font-weight: 600; font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: opacity 0.15s; }
     .btn:active { opacity: 0.75; }
@@ -187,6 +246,23 @@
       </svg>
     </button>
   </div>
+
+  <div class="amrap-zone" id="amrapZone">
+    <div class="amrap-round" id="amrapRound">Round 1</div>
+    <div class="amrap-ring-wrap" id="amrapRingWrap">
+      <svg viewBox="0 0 110 110">
+        <circle class="amrap-ring-bg" cx="55" cy="55" r="48" fill="none" stroke-width="6"/>
+        <circle class="amrap-ring-fill" id="amrapRingFill" cx="55" cy="55" r="48" fill="none" stroke-width="6"
+          stroke-dasharray="301.6" stroke-dashoffset="0"/>
+      </svg>
+      <div class="amrap-center">
+        <span class="amrap-clock" id="amrapClock">1:00</span>
+        <span class="amrap-hint" id="amrapHint">Appuie pour lancer</span>
+      </div>
+    </div>
+    <div class="amrap-meta" id="amrapMeta"></div>
+  </div>
+
   <div class="num-zone" id="numZone">
     <span class="big-num" id="bigNum">0</span>
     <div class="goal-banner" id="goalBanner">&#127919; Objectif atteint !</div>
@@ -207,20 +283,38 @@
   <div class="sheet-hdr" id="sheetHdr">Nouveau compteur</div>
   <div class="field">
     <label>Titre</label>
-    <input type="text" id="fTitle" placeholder="ex : Pompes" maxlength="32">
+    <input type="text" id="fTitle" placeholder="ex : Tractions" maxlength="32">
   </div>
   <div class="fields-row">
     <div class="field"><label>Valeur de depart</label><input type="number" id="fStart" value="0"></div>
     <div class="field"><label>Pas (+/-)</label><input type="number" id="fStep" value="1" min="1"></div>
   </div>
   <div class="field">
-    <label>Objectif (optionnel)</label>
+    <label>Objectif total (optionnel)</label>
     <input type="number" id="fGoal" placeholder="ex : 100">
   </div>
   <div class="field">
     <label>Couleur</label>
     <div class="colors-grid" id="colorGrid"></div>
   </div>
+
+  <div class="section-sep"></div>
+  <div class="section-label">Mode AMRAP / Chrono</div>
+  <div class="toggle-row">
+    <span>Activer le chrono automatique</span>
+    <label class="toggle"><input type="checkbox" id="fAmrap"><span class="slider"></span></label>
+  </div>
+  <div id="amrapFields" style="display:none">
+    <div class="fields-row">
+      <div class="field"><label>Duree par round (sec)</label><input type="number" id="fAmrapDur" value="60" min="5" max="3600"></div>
+      <div class="field"><label>Reps cibles / round</label><input type="number" id="fAmrapReps" value="5" min="1"></div>
+    </div>
+    <div class="toggle-row">
+      <span>Reset compteur a chaque round</span>
+      <label class="toggle"><input type="checkbox" id="fAmrapReset"><span class="slider"></span></label>
+    </div>
+  </div>
+
   <div class="actions">
     <button class="btn btn-save" id="saveBtn">Enregistrer</button>
     <button class="btn btn-reset" id="resetBtn" style="display:none">Reinitialiser</button>
@@ -230,50 +324,291 @@
 
 <script>
 const COLORS=['#7C3AED','#2563EB','#059669','#DC2626','#EA580C','#DB2777','#0891B2','#6B7280'];
-let data=JSON.parse(localStorage.getItem('ctr2')||'null');
-if(!data){data=[mkCounter('Pompes','#7C3AED'),mkCounter('Escaliers','#2563EB')];persist();}
-let activeId=null,sheetMode='new',editId=null,pickedColor=COLORS[0];
-function mkCounter(t,c){return{id:uid(),title:t,value:0,start:0,step:1,goal:null,color:c};}
-function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
-function persist(){localStorage.setItem('ctr2',JSON.stringify(data));}
-function byId(id){return data.find(c=>c.id===id);}
-function vib(p){if(navigator.vibrate)navigator.vibrate(p);}
-function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
-const lv=document.getElementById('listView'),cv=document.getElementById('counterView'),
-  grid=document.getElementById('grid'),addBtn=document.getElementById('addBtn'),
-  backBtn=document.getElementById('backBtn'),editBtn=document.getElementById('editBtn'),
-  cvTitle=document.getElementById('cvTitle'),bigNum=document.getElementById('bigNum'),
-  decBtn=document.getElementById('decBtn'),incBtn=document.getElementById('incBtn'),
-  goalBnr=document.getElementById('goalBanner'),cvProg=document.getElementById('cvProgress'),
-  progFill=document.getElementById('progFill'),progLabel=document.getElementById('progLabel'),
-  backdrop=document.getElementById('backdrop'),sheet=document.getElementById('sheet'),
-  sheetHdr=document.getElementById('sheetHdr'),fTitle=document.getElementById('fTitle'),
-  fStart=document.getElementById('fStart'),fStep=document.getElementById('fStep'),
-  fGoal=document.getElementById('fGoal'),saveBtn=document.getElementById('saveBtn'),
-  resetBtn=document.getElementById('resetBtn'),deleteBtn=document.getElementById('deleteBtn'),
-  colorGrid=document.getElementById('colorGrid');
-COLORS.forEach(c=>{const d=document.createElement('div');d.className='cdot';d.style.background=c;d.addEventListener('click',()=>pickColor(c));colorGrid.appendChild(d);});
-function pickColor(c){pickedColor=c;colorGrid.querySelectorAll('.cdot').forEach((d,i)=>d.classList.toggle('sel',COLORS[i]===c));}
+const CIRC = 2 * Math.PI * 48;
+
+let data = JSON.parse(localStorage.getItem('ctr2') || 'null');
+if (!data) { data = [mkCounter('Tractions','#7C3AED'), mkCounter('Escaliers','#2563EB')]; persist(); }
+data.forEach(c => { if (!c.amrap) c.amrap = {enabled:false,duration:60,targetReps:5,autoReset:false}; });
+
+let activeId = null, sheetMode = 'new', editId = null, pickedColor = COLORS[0];
+let timerInterval = null, timerRemaining = 0, timerDuration = 60, timerRound = 1, timerRunning = false;
+
+function mkCounter(t, c) {
+  return { id: uid(), title: t, value: 0, start: 0, step: 1, goal: null, color: c,
+    amrap: { enabled: false, duration: 60, targetReps: 5, autoReset: false } };
+}
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function persist() { localStorage.setItem('ctr2', JSON.stringify(data)); }
+function byId(id) { return data.find(c => c.id === id); }
+function vib(p) { if (navigator.vibrate) navigator.vibrate(p); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+const lv = document.getElementById('listView'),
+  cv = document.getElementById('counterView'),
+  grid = document.getElementById('grid'),
+  addBtn = document.getElementById('addBtn'),
+  backBtn = document.getElementById('backBtn'),
+  editBtn = document.getElementById('editBtn'),
+  cvTitle = document.getElementById('cvTitle'),
+  bigNum = document.getElementById('bigNum'),
+  decBtn = document.getElementById('decBtn'),
+  incBtn = document.getElementById('incBtn'),
+  goalBnr = document.getElementById('goalBanner'),
+  cvProg = document.getElementById('cvProgress'),
+  progFill = document.getElementById('progFill'),
+  progLabel = document.getElementById('progLabel'),
+  backdrop = document.getElementById('backdrop'),
+  sheet = document.getElementById('sheet'),
+  sheetHdr = document.getElementById('sheetHdr'),
+  fTitle = document.getElementById('fTitle'),
+  fStart = document.getElementById('fStart'),
+  fStep = document.getElementById('fStep'),
+  fGoal = document.getElementById('fGoal'),
+  saveBtn = document.getElementById('saveBtn'),
+  resetBtn = document.getElementById('resetBtn'),
+  deleteBtn = document.getElementById('deleteBtn'),
+  colorGrid = document.getElementById('colorGrid'),
+  amrapZone = document.getElementById('amrapZone'),
+  amrapRound = document.getElementById('amrapRound'),
+  amrapRingWrap = document.getElementById('amrapRingWrap'),
+  amrapRingFill = document.getElementById('amrapRingFill'),
+  amrapClock = document.getElementById('amrapClock'),
+  amrapHint = document.getElementById('amrapHint'),
+  amrapMetaEl = document.getElementById('amrapMeta'),
+  fAmrap = document.getElementById('fAmrap'),
+  fAmrapDur = document.getElementById('fAmrapDur'),
+  fAmrapReps = document.getElementById('fAmrapReps'),
+  fAmrapReset = document.getElementById('fAmrapReset'),
+  amrapFields = document.getElementById('amrapFields');
+
+COLORS.forEach(c => {
+  const d = document.createElement('div');
+  d.className = 'cdot'; d.style.background = c;
+  d.addEventListener('click', () => pickColor(c));
+  colorGrid.appendChild(d);
+});
+function pickColor(c) {
+  pickedColor = c;
+  colorGrid.querySelectorAll('.cdot').forEach((d, i) => d.classList.toggle('sel', COLORS[i] === c));
+}
 pickColor(COLORS[0]);
-function renderList(){grid.innerHTML='';if(!data.length){grid.innerHTML='<div class="empty">Appuie sur <strong>+</strong> pour creer ton premier compteur</div>';return;}data.forEach(c=>{const el=document.createElement('div');el.className='counter-card';el.style.background=c.color;const pct=c.goal!=null&&c.goal!==c.start?Math.min(100,Math.max(0,Math.round((c.value-c.start)/(c.goal-c.start)*100))):null;el.innerHTML='<span class="card-name">'+esc(c.title)+'</span><span class="card-val">'+c.value+'</span>'+(pct!==null?'<span class="card-meta">'+pct+'% / '+c.goal+'</span>':'')+(pct===100?'<div class="card-ribbon">ATTEINT</div>':'');el.addEventListener('click',()=>openCounter(c.id));grid.appendChild(el);});}
-function openCounter(id){activeId=id;const c=byId(id);cv.style.background=c.color;cvTitle.textContent=c.title;refreshNum(c);refreshProg(c);lv.classList.add('gone');cv.classList.remove('gone');}
-backBtn.addEventListener('click',()=>{cv.classList.add('gone');lv.classList.remove('gone');activeId=null;renderList();});
-function refreshNum(c){bigNum.textContent=c.value;}
-function bumpNum(dir){const cls=dir>0?'up':'down';bigNum.classList.remove('up','down');void bigNum.offsetWidth;bigNum.classList.add(cls);setTimeout(()=>bigNum.classList.remove(cls),200);}
-function refreshProg(c){if(c.goal==null){cvProg.style.display='none';return;}cvProg.style.display='block';const range=c.goal-c.start;const pct=range>0?Math.min(100,Math.max(0,(c.value-c.start)/range*100)):0;progFill.style.width=pct.toFixed(1)+'%';progLabel.textContent=c.value+' / '+c.goal;}
-function doInc(){const c=byId(activeId);if(!c)return;c.value+=c.step;persist();refreshNum(c);bumpNum(1);refreshProg(c);vib(10);if(c.goal!=null&&c.value>=c.goal)flashGoal();}
-function doDec(){const c=byId(activeId);if(!c)return;c.value-=c.step;persist();refreshNum(c);bumpNum(-1);refreshProg(c);vib([8,20,8]);}
-function flashGoal(){goalBnr.classList.add('show');vib([40,25,40,25,80]);setTimeout(()=>goalBnr.classList.remove('show'),2800);}
-incBtn.addEventListener('click',doInc);
-decBtn.addEventListener('click',doDec);
-function openSheet(mode,id){sheetMode=mode;editId=id||null;if(mode==='new'){sheetHdr.textContent='Nouveau compteur';fTitle.value='';fStart.value='0';fStep.value='1';fGoal.value='';pickColor(COLORS[0]);resetBtn.style.display='none';deleteBtn.style.display='none';}else{const c=byId(id);sheetHdr.textContent='Modifier';fTitle.value=c.title;fStart.value=c.start;fStep.value=c.step;fGoal.value=c.goal!=null?c.goal:'';pickColor(c.color);resetBtn.style.display='block';deleteBtn.style.display='block';}backdrop.classList.add('on');sheet.classList.add('on');setTimeout(()=>fTitle.focus(),380);}
-function closeSheet(){backdrop.classList.remove('on');sheet.classList.remove('on');}
-backdrop.addEventListener('click',closeSheet);
-addBtn.addEventListener('click',()=>openSheet('new'));
-editBtn.addEventListener('click',()=>activeId&&openSheet('edit',activeId));
-saveBtn.addEventListener('click',()=>{const title=fTitle.value.trim()||'Compteur';const start=parseFloat(fStart.value)||0;const step=Math.max(1,parseFloat(fStep.value)||1);const goal=fGoal.value.trim()!==''?parseFloat(fGoal.value):null;if(sheetMode==='new'){const c={id:uid(),title,value:start,start,step,goal,color:pickedColor};data.push(c);persist();closeSheet();renderList();openCounter(c.id);}else{const c=byId(editId);c.title=title;c.start=start;c.step=step;c.goal=goal;c.color=pickedColor;persist();closeSheet();renderList();if(activeId===editId){cvTitle.textContent=c.title;cv.style.background=c.color;refreshProg(c);}}});
-resetBtn.addEventListener('click',()=>{const c=byId(editId);if(c){c.value=c.start;persist();}closeSheet();renderList();if(activeId===editId){refreshNum(byId(editId));refreshProg(byId(editId));}});
-deleteBtn.addEventListener('click',()=>{data=data.filter(c=>c.id!==editId);persist();closeSheet();renderList();if(activeId===editId){cv.classList.add('gone');lv.classList.remove('gone');activeId=null;}});
+
+fAmrap.addEventListener('change', () => {
+  amrapFields.style.display = fAmrap.checked ? 'block' : 'none';
+});
+
+function renderList() {
+  grid.innerHTML = '';
+  if (!data.length) {
+    grid.innerHTML = '<div class="empty">Appuie sur <strong>+</strong> pour creer ton premier compteur</div>';
+    return;
+  }
+  data.forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'counter-card';
+    el.style.background = c.color;
+    const pct = c.goal != null && c.goal !== c.start
+      ? Math.min(100, Math.max(0, Math.round((c.value - c.start) / (c.goal - c.start) * 100))) : null;
+    el.innerHTML =
+      '<span class="card-name">' + esc(c.title) + '</span>' +
+      '<span class="card-val">' + c.value + '</span>' +
+      (pct !== null ? '<span class="card-meta">' + pct + '% / ' + c.goal + '</span>' : '') +
+      (pct === 100 ? '<div class="card-ribbon">ATTEINT</div>' : '') +
+      (c.amrap && c.amrap.enabled ? '<div class="card-amrap-badge">&#9201; ' + fmtSec(c.amrap.duration) + '</div>' : '');
+    el.addEventListener('click', () => openCounter(c.id));
+    grid.appendChild(el);
+  });
+}
+
+function fmtSec(s) {
+  if (s < 60) return s + 's';
+  return Math.floor(s / 60) + 'min' + (s % 60 ? (s % 60) + 's' : '');
+}
+
+function openCounter(id) {
+  activeId = id;
+  const c = byId(id);
+  cv.style.background = c.color;
+  cvTitle.textContent = c.title;
+  refreshNum(c); refreshProg(c);
+  stopTimer();
+  if (c.amrap && c.amrap.enabled) {
+    amrapZone.classList.add('on');
+    timerDuration = c.amrap.duration || 60;
+    timerRemaining = timerDuration;
+    timerRound = 1;
+    amrapRingFill.style.strokeDashoffset = '0';
+    amrapHint.textContent = 'Appuie pour lancer';
+    updateAmrapUI(c);
+  } else {
+    amrapZone.classList.remove('on');
+  }
+  lv.classList.add('gone');
+  cv.classList.remove('gone');
+}
+
+backBtn.addEventListener('click', () => {
+  stopTimer();
+  cv.classList.add('gone'); lv.classList.remove('gone'); activeId = null; renderList();
+});
+
+function refreshNum(c) { bigNum.textContent = c.value; }
+function bumpNum(dir) {
+  const cls = dir > 0 ? 'up' : 'down';
+  bigNum.classList.remove('up', 'down'); void bigNum.offsetWidth;
+  bigNum.classList.add(cls); setTimeout(() => bigNum.classList.remove(cls), 200);
+}
+function refreshProg(c) {
+  if (c.goal == null) { cvProg.style.display = 'none'; return; }
+  cvProg.style.display = 'block';
+  const range = c.goal - c.start;
+  const pct = range > 0 ? Math.min(100, Math.max(0, (c.value - c.start) / range * 100)) : 0;
+  progFill.style.width = pct.toFixed(1) + '%';
+  progLabel.textContent = c.value + ' / ' + c.goal;
+}
+
+function doInc() {
+  const c = byId(activeId); if (!c) return;
+  c.value += c.step; persist(); refreshNum(c); bumpNum(1); refreshProg(c); vib(10);
+  if (c.goal != null && c.value >= c.goal) flashBanner('&#127919; Objectif atteint !', [40,25,40,25,80]);
+}
+function doDec() {
+  const c = byId(activeId); if (!c) return;
+  c.value -= c.step; persist(); refreshNum(c); bumpNum(-1); refreshProg(c); vib([8,20,8]);
+}
+function flashBanner(msg, vibPat) {
+  goalBnr.innerHTML = msg; goalBnr.classList.add('show');
+  if (vibPat) vib(vibPat);
+  setTimeout(() => goalBnr.classList.remove('show'), 2400);
+}
+
+incBtn.addEventListener('click', doInc);
+decBtn.addEventListener('click', doDec);
+
+amrapRingWrap.addEventListener('click', () => {
+  if (timerRunning) pauseTimer(); else startTimer();
+});
+
+function startTimer() {
+  if (timerRunning) return;
+  timerRunning = true;
+  amrapHint.textContent = 'Appuie pour pause';
+  timerInterval = setInterval(tickTimer, 1000);
+}
+function pauseTimer() {
+  timerRunning = false;
+  amrapHint.textContent = 'Appuie pour reprendre';
+  clearInterval(timerInterval); timerInterval = null;
+}
+function stopTimer() {
+  timerRunning = false;
+  clearInterval(timerInterval); timerInterval = null;
+  timerRound = 1; timerRemaining = timerDuration;
+}
+
+function tickTimer() {
+  timerRemaining--;
+  if (timerRemaining <= 0) { onRoundEnd(); }
+  else { const c = byId(activeId); if (c) updateAmrapUI(c); }
+}
+
+function onRoundEnd() {
+  clearInterval(timerInterval); timerInterval = null; timerRunning = false;
+  vib([80, 40, 80, 40, 160]);
+  flashBanner('&#128260; Round suivant !', null);
+  timerRound++;
+  const c = byId(activeId);
+  if (c && c.amrap && c.amrap.autoReset) { c.value = c.start; persist(); refreshNum(c); refreshProg(c); }
+  timerRemaining = timerDuration;
+  if (c) updateAmrapUI(c);
+  setTimeout(() => startTimer(), 600);
+}
+
+function updateAmrapUI(c) {
+  const m = Math.floor(timerRemaining / 60);
+  const s = timerRemaining % 60;
+  amrapClock.textContent = m + ':' + String(s).padStart(2, '0');
+  amrapRound.textContent = 'Round ' + timerRound;
+  const pct = timerRemaining / timerDuration;
+  amrapRingFill.style.strokeDashoffset = String(CIRC * (1 - pct));
+  amrapClock.classList.toggle('urgent', timerRemaining <= 5);
+  if (c && c.amrap && c.amrap.targetReps > 0) {
+    amrapMetaEl.textContent = 'Objectif : ' + c.amrap.targetReps + ' reps / round';
+  } else { amrapMetaEl.textContent = ''; }
+}
+
+function openSheet(mode, id) {
+  sheetMode = mode; editId = id || null;
+  if (mode === 'new') {
+    sheetHdr.textContent = 'Nouveau compteur';
+    fTitle.value = ''; fStart.value = '0'; fStep.value = '1'; fGoal.value = '';
+    fAmrap.checked = false; fAmrapDur.value = '60'; fAmrapReps.value = '5'; fAmrapReset.checked = false;
+    amrapFields.style.display = 'none';
+    pickColor(COLORS[0]); resetBtn.style.display = 'none'; deleteBtn.style.display = 'none';
+  } else {
+    const c = byId(id);
+    sheetHdr.textContent = 'Modifier';
+    fTitle.value = c.title; fStart.value = c.start; fStep.value = c.step;
+    fGoal.value = c.goal != null ? c.goal : '';
+    const a = c.amrap || {};
+    fAmrap.checked = !!a.enabled; fAmrapDur.value = a.duration || 60;
+    fAmrapReps.value = a.targetReps || 5; fAmrapReset.checked = !!a.autoReset;
+    amrapFields.style.display = a.enabled ? 'block' : 'none';
+    pickColor(c.color); resetBtn.style.display = 'block'; deleteBtn.style.display = 'block';
+  }
+  backdrop.classList.add('on'); sheet.classList.add('on');
+  setTimeout(() => fTitle.focus(), 380);
+}
+function closeSheet() { backdrop.classList.remove('on'); sheet.classList.remove('on'); }
+
+backdrop.addEventListener('click', closeSheet);
+addBtn.addEventListener('click', () => openSheet('new'));
+editBtn.addEventListener('click', () => activeId && openSheet('edit', activeId));
+
+saveBtn.addEventListener('click', () => {
+  const title = fTitle.value.trim() || 'Compteur';
+  const start = parseFloat(fStart.value) || 0;
+  const step = Math.max(1, parseFloat(fStep.value) || 1);
+  const goal = fGoal.value.trim() !== '' ? parseFloat(fGoal.value) : null;
+  const amrap = {
+    enabled: fAmrap.checked,
+    duration: Math.max(5, parseInt(fAmrapDur.value) || 60),
+    targetReps: Math.max(1, parseInt(fAmrapReps.value) || 5),
+    autoReset: fAmrapReset.checked
+  };
+  if (sheetMode === 'new') {
+    const c = { id: uid(), title, value: start, start, step, goal, color: pickedColor, amrap };
+    data.push(c); persist(); closeSheet(); renderList(); openCounter(c.id);
+  } else {
+    const c = byId(editId);
+    c.title = title; c.start = start; c.step = step; c.goal = goal; c.color = pickedColor; c.amrap = amrap;
+    persist(); closeSheet(); renderList();
+    if (activeId === editId) {
+      cvTitle.textContent = c.title; cv.style.background = c.color; refreshProg(c);
+      stopTimer();
+      if (c.amrap.enabled) {
+        amrapZone.classList.add('on'); timerDuration = c.amrap.duration;
+        timerRemaining = timerDuration; timerRound = 1;
+        amrapRingFill.style.strokeDashoffset = '0';
+        amrapHint.textContent = 'Appuie pour lancer';
+        updateAmrapUI(c);
+      } else { amrapZone.classList.remove('on'); }
+    }
+  }
+});
+
+resetBtn.addEventListener('click', () => {
+  const c = byId(editId); if (c) { c.value = c.start; persist(); }
+  closeSheet(); renderList();
+  if (activeId === editId) { refreshNum(byId(editId)); refreshProg(byId(editId)); }
+});
+
+deleteBtn.addEventListener('click', () => {
+  data = data.filter(c => c.id !== editId); persist();
+  closeSheet(); renderList();
+  if (activeId === editId) { stopTimer(); cv.classList.add('gone'); lv.classList.remove('gone'); activeId = null; }
+});
+
 renderList();
 </script>
 </body>
