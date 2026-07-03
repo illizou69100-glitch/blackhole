@@ -45,7 +45,6 @@
       display: flex; flex-direction: column; justify-content: space-between;
       cursor: pointer; -webkit-tap-highlight-color: transparent;
       transition: transform 0.22s cubic-bezier(0.4,0,0.2,1); position: relative; overflow: hidden;
-      z-index: 2;
     }
     .counter-card:active { transform: scale(0.96); }
     .card-del-btn {
@@ -53,7 +52,6 @@
       background: #ef4444; border: none; cursor: pointer; color: #fff;
       display: flex; align-items: center; justify-content: center;
       font-size: 22px; -webkit-tap-highlight-color: transparent;
-      z-index: 1;
     }
     .card-name { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.8); letter-spacing: 0.2px; }
     .card-val { font-size: 52px; font-weight: 900; color: #fff; line-height: 1; letter-spacing: -1px; }
@@ -420,6 +418,11 @@ function renderList() {
     const wrap = document.createElement('div');
     wrap.className = 'card-wrap';
 
+    const delBtn = document.createElement('button');
+    delBtn.className = 'card-del-btn';
+    delBtn.setAttribute('aria-label', 'Supprimer');
+    delBtn.textContent = '🗑';
+
     const el = document.createElement('div');
     el.className = 'counter-card';
     el.style.background = c.color;
@@ -431,11 +434,6 @@ function renderList() {
       (pct !== null ? '<span class="card-meta">' + pct + '% / ' + c.goal + '</span>' : '') +
       (pct === 100 ? '<div class="card-ribbon">ATTEINT</div>' : '') +
       (c.amrap && c.amrap.enabled ? '<div class="card-amrap-badge">&#9201; ' + fmtSec(c.amrap.duration) + '</div>' : '');
-
-    const delBtn = document.createElement('button');
-    delBtn.className = 'card-del-btn';
-    delBtn.setAttribute('aria-label', 'Supprimer');
-    delBtn.textContent = '🗑';
 
     // Swipe-to-delete touch logic
     let startX, startY, dirLocked = null, swipeOffset = 0, didSwipe = false;
@@ -495,8 +493,8 @@ function renderList() {
       setTimeout(() => renderList(), 220);
     });
 
-    wrap.appendChild(el);
     wrap.appendChild(delBtn);
+    wrap.appendChild(el);
     grid.appendChild(wrap);
   });
 }
