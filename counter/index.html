@@ -37,13 +37,22 @@
       flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
       padding: 0 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-content: start;
     }
+    .card-wrap {
+      position: relative; overflow: hidden; border-radius: 22px; min-height: 148px;
+    }
     .counter-card {
-      border-radius: 22px; padding: 18px 16px 14px; min-height: 148px;
+      padding: 18px 16px 14px; min-height: 148px; width: 100%;
       display: flex; flex-direction: column; justify-content: space-between;
       cursor: pointer; -webkit-tap-highlight-color: transparent;
-      transition: transform 0.15s; position: relative; overflow: hidden;
+      transition: transform 0.22s cubic-bezier(0.4,0,0.2,1); position: relative; overflow: hidden;
     }
-    .counter-card:active { transform: scale(0.94); }
+    .counter-card:active { transform: scale(0.96); }
+    .card-del-btn {
+      position: absolute; right: 0; top: 0; bottom: 0; width: 70px;
+      background: #ef4444; border: none; cursor: pointer; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; -webkit-tap-highlight-color: transparent;
+    }
     .card-name { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.8); letter-spacing: 0.2px; }
     .card-val { font-size: 52px; font-weight: 900; color: #fff; line-height: 1; letter-spacing: -1px; }
     .card-meta { font-size: 11px; color: rgba(255,255,255,0.45); }
@@ -332,6 +341,7 @@ data.forEach(c => { if (!c.amrap) c.amrap = {enabled:false,duration:60,targetRep
 
 let activeId = null, sheetMode = 'new', editId = null, pickedColor = COLORS[0];
 let timerInterval = null, timerRemaining = 0, timerDuration = 60, timerRound = 1, timerRunning = false;
+let openCard = null;
 
 function mkCounter(t, c) {
   return { id: uid(), title: t, value: 0, start: 0, step: 1, goal: null, color: c,
@@ -398,12 +408,16 @@ fAmrap.addEventListener('change', () => {
 });
 
 function renderList() {
+  openCard = null;
   grid.innerHTML = '';
   if (!data.length) {
     grid.innerHTML = '<div class="empty">Appuie sur <strong>+</strong> pour creer ton premier compteur</div>';
     return;
   }
   data.forEach(c => {
+    const wrap = document.createElement('div');
+    wrap.className = 'card-wrap';
+
     const el = document.createElement('div');
     el.className = 'counter-card';
     el.style.background = c.color;
@@ -415,8 +429,73 @@ function renderList() {
       (pct !== null ? '<span class="card-meta">' + pct + '% / ' + c.goal + '</span>' : '') +
       (pct === 100 ? '<div class="card-ribbon">ATTEINT</div>' : '') +
       (c.amrap && c.amrap.enabled ? '<div class="card-amrap-badge">&#9201; ' + fmtSec(c.amrap.duration) + '</div>' : '');
-    el.addEventListener('click', () => openCounter(c.id));
-    grid.appendChild(el);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'card-del-btn';
+    delBtn.setAttribute('aria-label', 'Supprimer');
+    delBtn.textContent = '🗑';
+
+    // Swipe-to-delete touch logic
+    let startX, startY, dirLocked = null, swipeOffset = 0, didSwipe = false;
+    wrap.addEventListener('touchstart', e => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      dirLocked = null; didSwipe = false; swipeOffset = 0;
+      if (openCard && openCard !== el) {
+        openCard.style.transition = 'transform 0.22s cubic-bezier(0.4,0,0.2,1)';
+        openCard.style.transform = '';
+        openCard = null;
+      }
+    }, { passive: true });
+    wrap.addEventListener('touchmove', e => {
+      const dx = e.touches[0].clientX - startX;
+      const dy = e.touches[0].clientY - startY;
+      if (!dirLocked) {
+        if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
+        dirLocked = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
+      }
+      if (dirLocked === 'v') return;
+      e.preventDefault();
+      didSwipe = true;
+      swipeOffset = Math.max(-70, Math.min(0, dx));
+      el.style.transition = 'none';
+      el.style.transform = 'translateX(' + swipeOffset + 'px)';
+    }, { passive: false });
+    wrap.addEventListener('touchend', () => {
+      el.style.transition = 'transform 0.22s cubic-bezier(0.4,0,0.2,1)';
+      if (swipeOffset < -35) {
+        el.style.transform = 'translateX(-70px)';
+        openCard = el;
+      } else {
+        el.style.transform = '';
+        openCard = null;
+      }
+    });
+
+    el.addEventListener('click', () => {
+      if (didSwipe) { didSwipe = false; return; }
+      if (openCard === el) {
+        el.style.transform = '';
+        openCard = null;
+        return;
+      }
+      openCounter(c.id);
+    });
+
+    delBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      data = data.filter(x => x.id !== c.id);
+      persist();
+      wrap.style.transition = 'opacity 0.2s, transform 0.2s';
+      wrap.style.opacity = '0';
+      wrap.style.transform = 'translateX(-20px)';
+      openCard = null;
+      setTimeout(() => renderList(), 220);
+    });
+
+    wrap.appendChild(el);
+    wrap.appendChild(delBtn);
+    grid.appendChild(wrap);
   });
 }
 
@@ -608,6 +687,14 @@ deleteBtn.addEventListener('click', () => {
   closeSheet(); renderList();
   if (activeId === editId) { stopTimer(); cv.classList.add('gone'); lv.classList.remove('gone'); activeId = null; }
 });
+
+document.addEventListener('touchstart', e => {
+  if (openCard && !e.target.closest('.card-wrap')) {
+    openCard.style.transition = 'transform 0.22s cubic-bezier(0.4,0,0.2,1)';
+    openCard.style.transform = '';
+    openCard = null;
+  }
+}, { passive: true });
 
 renderList();
 </script>
