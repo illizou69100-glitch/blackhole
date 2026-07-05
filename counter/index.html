@@ -110,6 +110,7 @@
       position: relative; width: 160px; height: 160px;
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
     .amrap-ring-wrap svg {
       position: absolute; inset: 0; width: 100%; height: 100%;
@@ -118,8 +119,11 @@
     .amrap-ring-bg { stroke: rgba(255,255,255,0.22); }
     .amrap-ring-fill {
       stroke: rgba(255,255,255,0.85); stroke-linecap: round;
-      transition: stroke-dashoffset 0.92s linear, stroke 0.3s;
+      transition: stroke-dashoffset 0.25s ease-out, stroke 0.3s;
+      filter: drop-shadow(0 0 6px rgba(255,255,255,0.5));
     }
+    .amrap-ring-wrap.running .amrap-ring-fill { stroke: rgba(255,255,255,0.95); filter: drop-shadow(0 0 10px rgba(255,255,255,0.7)); }
+    .amrap-ring-wrap.running .amrap-ring-bg { stroke: rgba(255,255,255,0.28); }
     .amrap-center {
       display: flex; flex-direction: column; align-items: center; gap: 2px;
       position: relative; z-index: 1;
@@ -137,6 +141,14 @@
     .amrap-meta {
       font-size: 11px; color: rgba(255,255,255,0.4); font-weight: 500;
     }
+    .amrap-reset-btn {
+      background: rgba(0,0,0,0.22); border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.55); font-size: 12px; font-weight: 600;
+      border-radius: 20px; padding: 5px 14px; cursor: pointer;
+      font-family: inherit; -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation; transition: background 0.15s, color 0.15s;
+    }
+    .amrap-reset-btn:active { background: rgba(0,0,0,0.4); color: rgba(255,255,255,0.9); }
     .num-zone {
       flex: 1; display: flex; flex-direction: column;
       align-items: center; justify-content: center; position: relative;
@@ -270,6 +282,7 @@
     </div>
     <span class="amrap-hint" id="amrapHint">Appuie pour lancer</span>
     <div class="amrap-meta" id="amrapMeta"></div>
+    <button class="amrap-reset-btn" id="amrapResetBtn" aria-label="Reinitialiser chrono">&#8635; Reset</button>
   </div>
 
   <div class="num-zone" id="numZone">
@@ -322,6 +335,10 @@
       <span>Reset compteur a chaque round</span>
       <label class="toggle"><input type="checkbox" id="fAmrapReset"><span class="slider"></span></label>
     </div>
+    <div class="toggle-row">
+      <span>&#127937; Course contre la montre (1 round, puis stop)</span>
+      <label class="toggle"><input type="checkbox" id="fAmrapSingle"><span class="slider"></span></label>
+    </div>
   </div>
 
   <div class="actions">
@@ -337,15 +354,19 @@ const CIRC = 2 * Math.PI * 48;
 
 let data = JSON.parse(localStorage.getItem('ctr2') || 'null');
 if (!data) { data = [mkCounter('Tractions','#7C3AED'), mkCounter('Escaliers','#2563EB')]; persist(); }
-data.forEach(c => { if (!c.amrap) c.amrap = {enabled:false,duration:60,targetReps:5,autoReset:false}; });
+data.forEach(c => {
+  if (!c.amrap) c.amrap = {enabled:false,duration:60,targetReps:5,autoReset:false,singleRound:false};
+  else if (c.amrap.singleRound === undefined) c.amrap.singleRound = false;
+});
 
 let activeId = null, sheetMode = 'new', editId = null, pickedColor = COLORS[0];
 let timerInterval = null, timerRemaining = 0, timerDuration = 60, timerRound = 1, timerRunning = false;
+let timerEndAt = 0;
 let openCard = null;
 
 function mkCounter(t, c) {
   return { id: uid(), title: t, value: 0, start: 0, step: 1, goal: null, color: c,
-    amrap: { enabled: false, duration: 60, targetReps: 5, autoReset: false } };
+    amrap: { enabled: false, duration: 60, targetReps: 5, autoReset: false, singleRound: false } };
 }
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 function persist() { localStorage.setItem('ctr2', JSON.stringify(data)); }
@@ -389,7 +410,9 @@ const lv = document.getElementById('listView'),
   fAmrapDur = document.getElementById('fAmrapDur'),
   fAmrapReps = document.getElementById('fAmrapReps'),
   fAmrapReset = document.getElementById('fAmrapReset'),
-  amrapFields = document.getElementById('amrapFields');
+  fAmrapSingle = document.getElementById('fAmrapSingle'),
+  amrapFields = document.getElementById('amrapFields'),
+  amrapResetBtn = document.getElementById('amrapResetBtn');
 
 COLORS.forEach(c => {
   const d = document.createElement('div');
@@ -433,9 +456,8 @@ function renderList() {
       '<span class="card-val">' + c.value + '</span>' +
       (pct !== null ? '<span class="card-meta">' + pct + '% / ' + c.goal + '</span>' : '') +
       (pct === 100 ? '<div class="card-ribbon">ATTEINT</div>' : '') +
-      (c.amrap && c.amrap.enabled ? '<div class="card-amrap-badge">&#9201; ' + fmtSec(c.amrap.duration) + '</div>' : '');
+      (c.amrap && c.amrap.enabled ? '<div class="card-amrap-badge">' + (c.amrap.singleRound ? '&#127937;' : '&#9201;') + ' ' + fmtSec(c.amrap.duration) + '</div>' : '');
 
-    // Swipe-to-delete touch logic
     let startX, startY, dirLocked = null, swipeOffset = 0, didSwipe = false;
     wrap.addEventListener('touchstart', e => {
       startX = e.touches[0].clientX;
@@ -564,64 +586,108 @@ function flashBanner(msg, vibPat) {
 incBtn.addEventListener('click', doInc);
 decBtn.addEventListener('click', doDec);
 
-amrapRingWrap.addEventListener('click', () => {
-  if (timerRunning) pauseTimer(); else startTimer();
+let _ringTX = 0, _ringTY = 0;
+amrapRingWrap.addEventListener('touchstart', e => {
+  _ringTX = e.touches[0].clientX; _ringTY = e.touches[0].clientY;
+}, { passive: true });
+amrapRingWrap.addEventListener('touchend', e => {
+  const dx = Math.abs(e.changedTouches[0].clientX - _ringTX);
+  const dy = Math.abs(e.changedTouches[0].clientY - _ringTY);
+  if (dx < 12 && dy < 12) {
+    e.preventDefault();
+    if (timerRunning) pauseTimer(); else startTimer();
+  }
 });
 
 function startTimer() {
   if (timerRunning) return;
   timerRunning = true;
+  amrapRingWrap.classList.add('running');
   amrapHint.textContent = 'Appuie pour pause';
-  timerInterval = setInterval(tickTimer, 1000);
+  timerEndAt = Date.now() + timerRemaining * 1000;
+  timerInterval = setInterval(tickAccurate, 200);
+  tickAccurate();
 }
 function pauseTimer() {
   timerRunning = false;
+  amrapRingWrap.classList.remove('running');
+  timerRemaining = Math.max(0, Math.ceil((timerEndAt - Date.now()) / 1000));
   amrapHint.textContent = 'Appuie pour reprendre';
   clearInterval(timerInterval); timerInterval = null;
+  const c = byId(activeId); if (c) updateAmrapUI(c);
 }
 function stopTimer() {
   timerRunning = false;
+  amrapRingWrap.classList.remove('running');
   clearInterval(timerInterval); timerInterval = null;
-  timerRound = 1; timerRemaining = timerDuration;
+  timerRound = 1; timerRemaining = timerDuration; timerEndAt = 0;
 }
 
-function tickTimer() {
-  timerRemaining--;
-  if (timerRemaining <= 0) { onRoundEnd(); }
-  else { const c = byId(activeId); if (c) updateAmrapUI(c); }
+function tickAccurate() {
+  const remaining = Math.max(0, Math.ceil((timerEndAt - Date.now()) / 1000));
+  if (remaining !== timerRemaining) {
+    timerRemaining = remaining;
+    if (timerRemaining <= 0) { onRoundEnd(); return; }
+    const c = byId(activeId); if (c) updateAmrapUI(c);
+  }
 }
 
 function onRoundEnd() {
   clearInterval(timerInterval); timerInterval = null; timerRunning = false;
+  amrapRingWrap.classList.remove('running');
   vib([80, 40, 80, 40, 160]);
+  const c = byId(activeId);
+  const isSingle = c && c.amrap && c.amrap.singleRound;
+  if (isSingle) {
+    flashBanner('&#127937; Terminé ! ' + (c ? c.value : 0) + ' reps', null);
+    amrapHint.innerHTML = 'Appuie &#8635; pour recommencer';
+    amrapRound.textContent = 'TERMINÉ';
+    timerRemaining = 0;
+    amrapRingFill.style.strokeDashoffset = String(CIRC);
+    amrapClock.textContent = '0:00';
+    return;
+  }
   flashBanner('&#128260; Round suivant !', null);
   timerRound++;
-  const c = byId(activeId);
   if (c && c.amrap && c.amrap.autoReset) { c.value = c.start; persist(); refreshNum(c); refreshProg(c); }
   timerRemaining = timerDuration;
   if (c) updateAmrapUI(c);
   setTimeout(() => startTimer(), 600);
 }
 
+function resetTimer() {
+  stopTimer();
+  const c = byId(activeId); if (!c) return;
+  timerDuration = c.amrap.duration || 60;
+  timerRemaining = timerDuration;
+  timerRound = 1; timerEndAt = 0;
+  amrapRingFill.style.strokeDashoffset = '0';
+  amrapHint.textContent = 'Appuie pour lancer';
+  updateAmrapUI(c);
+}
+
 function updateAmrapUI(c) {
   const m = Math.floor(timerRemaining / 60);
   const s = timerRemaining % 60;
   amrapClock.textContent = m + ':' + String(s).padStart(2, '0');
-  amrapRound.textContent = 'Round ' + timerRound;
+  const isSingle = c && c.amrap && c.amrap.singleRound;
+  amrapRound.innerHTML = isSingle ? '&#127937; COURSE' : 'Round ' + timerRound;
   const pct = timerRemaining / timerDuration;
   amrapRingFill.style.strokeDashoffset = String(CIRC * (1 - pct));
-  amrapClock.classList.toggle('urgent', timerRemaining <= 5);
+  amrapClock.classList.toggle('urgent', timerRemaining <= 5 && timerRemaining > 0);
   if (c && c.amrap && c.amrap.targetReps > 0) {
-    amrapMetaEl.textContent = 'Objectif : ' + c.amrap.targetReps + ' reps / round';
+    amrapMetaEl.textContent = isSingle ? 'Objectif max : ' + c.amrap.targetReps + ' reps' : 'Objectif : ' + c.amrap.targetReps + ' reps / round';
   } else { amrapMetaEl.textContent = ''; }
 }
+
+amrapResetBtn.addEventListener('click', resetTimer);
 
 function openSheet(mode, id) {
   sheetMode = mode; editId = id || null;
   if (mode === 'new') {
     sheetHdr.textContent = 'Nouveau compteur';
     fTitle.value = ''; fStart.value = '0'; fStep.value = '1'; fGoal.value = '';
-    fAmrap.checked = false; fAmrapDur.value = '60'; fAmrapReps.value = '5'; fAmrapReset.checked = false;
+    fAmrap.checked = false; fAmrapDur.value = '60'; fAmrapReps.value = '5'; fAmrapReset.checked = false; fAmrapSingle.checked = false;
     amrapFields.style.display = 'none';
     pickColor(COLORS[0]); resetBtn.style.display = 'none'; deleteBtn.style.display = 'none';
   } else {
@@ -631,7 +697,7 @@ function openSheet(mode, id) {
     fGoal.value = c.goal != null ? c.goal : '';
     const a = c.amrap || {};
     fAmrap.checked = !!a.enabled; fAmrapDur.value = a.duration || 60;
-    fAmrapReps.value = a.targetReps || 5; fAmrapReset.checked = !!a.autoReset;
+    fAmrapReps.value = a.targetReps || 5; fAmrapReset.checked = !!a.autoReset; fAmrapSingle.checked = !!a.singleRound;
     amrapFields.style.display = a.enabled ? 'block' : 'none';
     pickColor(c.color); resetBtn.style.display = 'block'; deleteBtn.style.display = 'block';
   }
@@ -653,7 +719,8 @@ saveBtn.addEventListener('click', () => {
     enabled: fAmrap.checked,
     duration: Math.max(5, parseInt(fAmrapDur.value) || 60),
     targetReps: Math.max(1, parseInt(fAmrapReps.value) || 5),
-    autoReset: fAmrapReset.checked
+    autoReset: fAmrapReset.checked,
+    singleRound: fAmrapSingle.checked
   };
   if (sheetMode === 'new') {
     const c = { id: uid(), title, value: start, start, step, goal, color: pickedColor, amrap };
