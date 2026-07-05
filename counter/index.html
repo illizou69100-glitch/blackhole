@@ -217,6 +217,13 @@
       display: flex; flex-direction: column; align-items: center;
       padding: 0 20px 10px; gap: 10px;
     }
+    .sw-header-row {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; max-width: 320px; padding: 0 2px;
+    }
+    .sw-header-label { font-size: 11px; font-weight: 700; letter-spacing: 0.8px; color: rgba(255,255,255,0.38); text-transform: uppercase; }
+    .sw-session-time { font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 600; }
+    #stDisplay { font-size: 14px; font-weight: 900; color: rgba(255,255,255,0.78); font-variant-numeric: tabular-nums; letter-spacing: -0.5px; }
     .sw-pill {
       display: flex; align-items: center; gap: 10px;
       background: rgba(0,0,0,0.25); border: 1.5px solid rgba(255,255,255,0.15);
@@ -420,6 +427,10 @@
   </div>
 
   <div class="log-zone" id="logZone" style="display:none">
+    <div class="sw-header-row">
+      <span class="sw-header-label">Chrono s&#233;rie</span>
+      <span class="sw-session-time">S&#233;ance&#160;<span id="stDisplay">0:00</span></span>
+    </div>
     <div class="sw-pill" id="swPill">
       <span class="sw-icon" id="swIcon">&#9654;</span>
       <span class="sw-display" id="swDisplay">0:00</span>
@@ -522,6 +533,7 @@ let timerInterval = null, timerRemaining = 0, timerDuration = 60, timerRound = 1
 let timerEndAt = 0;
 let openCard = null;
 let swInterval = null, swRunning = false, swStartAt = 0, swElapsed = 0;
+let stInterval = null, stRunning = false, stStartAt = 0;
 let sessionSets = [], lastLogVal = 0;
 let histFrom = 'list', histFocusId = null;
 
@@ -603,6 +615,7 @@ const lv = document.getElementById('listView'),
   swDisplay = document.getElementById('swDisplay'),
   swStatus = document.getElementById('swStatus'),
   swClearBtn = document.getElementById('swClearBtn'),
+  stDisplay = document.getElementById('stDisplay'),
   logBtn = document.getElementById('logBtn'),
   sessionList = document.getElementById('sessionList'),
   fSeries = document.getElementById('fSeries');
@@ -726,6 +739,7 @@ function openCounter(id) {
   refreshNum(c); refreshProg(c);
   stopTimer();
   swReset();
+  stStop();
   sessionSets = [];
   lastLogVal = c.value;
   sessionList.style.display = 'none';
@@ -733,7 +747,7 @@ function openCounter(id) {
   const hasSeries = !!c.seriesMode;
   logZone.style.display = hasSeries ? 'flex' : 'none';
   cvHistBtn.style.display = hasSeries ? 'flex' : 'none';
-  if (hasSeries) refreshLogBtn();
+  if (hasSeries) { refreshLogBtn(); stStart(); }
 
   if (c.amrap && c.amrap.enabled) {
     amrapZone.classList.add('on');
@@ -753,6 +767,7 @@ function openCounter(id) {
 backBtn.addEventListener('click', () => {
   stopTimer();
   swReset();
+  stStop();
   cv.classList.add('gone'); lv.classList.remove('gone'); activeId = null; renderList();
 });
 
@@ -857,6 +872,23 @@ swPill.addEventListener('click', e => {
   swToggle();
 });
 swClearBtn.addEventListener('click', e => { e.stopPropagation(); swReset(); refreshLogBtn(); });
+
+/* — Session timer (auto-runs, never resets mid-session) — */
+function stStart() {
+  if (stRunning) return;
+  stRunning = true; stStartAt = Date.now();
+  stInterval = setInterval(tickSt, 1000);
+  tickSt();
+}
+function stStop() {
+  stRunning = false;
+  clearInterval(stInterval); stInterval = null;
+  stDisplay.textContent = '0:00';
+}
+function tickSt() {
+  const t = Math.floor((Date.now() - stStartAt) / 1000);
+  stDisplay.textContent = Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0');
+}
 
 /* — Log set — */
 function logSet() {
