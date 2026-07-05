@@ -217,17 +217,28 @@
       display: flex; flex-direction: column; align-items: center;
       padding: 0 20px 10px; gap: 10px;
     }
-    .dual-timer {
-      display: flex; align-items: center; justify-content: center;
-      width: 100%; max-width: 320px;
-      background: rgba(0,0,0,0.25); border: 1.5px solid rgba(255,255,255,0.15);
-      border-radius: 18px; padding: 14px 20px;
+    .it-zone {
+      display: none; flex-direction: column; align-items: center;
+      padding: 6px 0 0; gap: 10px;
     }
-    .dt-block { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 3px; }
-    .dt-label { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.38); }
-    .dt-time { font-size: 30px; font-weight: 900; color: rgba(255,255,255,0.95); font-variant-numeric: tabular-nums; letter-spacing: -1.5px; line-height: 1; }
-    .dt-interval .dt-time { color: #fbbf24; }
-    .dt-presets { display: flex; gap: 6px; margin-top: 2px; }
+    .it-zone.on { display: flex; }
+    .it-ring-wrap {
+      position: relative; width: 150px; height: 150px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .it-ring-wrap svg {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      transform: rotate(-90deg);
+    }
+    .it-ring-bg { stroke: rgba(255,255,255,0.18); }
+    .it-ring-fill {
+      stroke: #fbbf24; stroke-linecap: round;
+      transition: stroke-dashoffset 0.9s linear;
+      filter: drop-shadow(0 0 8px rgba(251,191,36,0.55));
+    }
+    .it-center { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .it-clock { font-size: 42px; font-weight: 900; color: #fbbf24; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+    .it-presets { display: flex; gap: 8px; }
     .dt-preset {
       background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
       color: rgba(255,255,255,0.65); font-size: 11px; font-weight: 700;
@@ -237,7 +248,14 @@
     }
     .dt-preset:active { background: rgba(255,255,255,0.22); color: #fff; }
     .dt-preset.active { background: #fbbf24; border-color: #fbbf24; color: #000; }
-    .dt-sep { width: 1px; background: rgba(255,255,255,0.15); align-self: stretch; margin: 0 16px; }
+    .session-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; max-width: 320px;
+      background: rgba(0,0,0,0.22); border: 1.5px solid rgba(255,255,255,0.13);
+      border-radius: 14px; padding: 10px 20px;
+    }
+    .sb-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.38); }
+    .sb-time { font-size: 28px; font-weight: 900; color: rgba(255,255,255,0.92); font-variant-numeric: tabular-nums; letter-spacing: -1px; }
     .log-btn {
       width: 100%; max-width: 320px; padding: 13px;
       background: rgba(255,255,255,0.13); border: 1.5px solid rgba(255,255,255,0.22);
@@ -407,6 +425,23 @@
     <button class="amrap-reset-btn" id="amrapResetBtn" aria-label="Reinitialiser chrono">&#8635; Reset</button>
   </div>
 
+  <div class="it-zone" id="itZone">
+    <div class="it-ring-wrap" id="itRingWrap">
+      <svg viewBox="0 0 110 110">
+        <circle class="it-ring-bg" cx="55" cy="55" r="48" fill="none" stroke-width="8"/>
+        <circle class="it-ring-fill" id="itRingFill" cx="55" cy="55" r="48" fill="none" stroke-width="8"
+          stroke-dasharray="301.6" stroke-dashoffset="0"/>
+      </svg>
+      <div class="it-center">
+        <span class="it-clock" id="itDisplay">0:30</span>
+      </div>
+    </div>
+    <div class="it-presets">
+      <button class="dt-preset active" id="itPreset30" data-dur="30">30s</button>
+      <button class="dt-preset" id="itPreset60" data-dur="60">60s</button>
+    </div>
+  </div>
+
   <div class="num-zone" id="numZone">
     <span class="big-num" id="bigNum">0</span>
     <div class="goal-banner" id="goalBanner">&#127919; Objectif atteint !</div>
@@ -417,20 +452,9 @@
   </div>
 
   <div class="log-zone" id="logZone" style="display:none">
-    <div class="dual-timer" id="dualTimer">
-      <div class="dt-block dt-interval">
-        <div class="dt-label">Intervalle</div>
-        <div class="dt-time" id="itDisplay">0:30</div>
-        <div class="dt-presets">
-          <button class="dt-preset active" id="itPreset30" data-dur="30">30s</button>
-          <button class="dt-preset" id="itPreset60" data-dur="60">60s</button>
-        </div>
-      </div>
-      <div class="dt-sep"></div>
-      <div class="dt-block dt-session">
-        <div class="dt-label">S&#233;ance</div>
-        <div class="dt-time" id="stDisplay">0:00</div>
-      </div>
+    <div class="session-bar">
+      <span class="sb-label">S&#233;ance</span>
+      <span class="sb-time" id="stDisplay">0:00</span>
     </div>
     <button class="log-btn" id="logBtn" touch-action="manipulation">Enregistrer la s&#233;rie</button>
   </div>
@@ -604,6 +628,8 @@ const lv = document.getElementById('listView'),
   fAmrapSingle = document.getElementById('fAmrapSingle'),
   amrapFields = document.getElementById('amrapFields'),
   amrapResetBtn = document.getElementById('amrapResetBtn'),
+  itZone = document.getElementById('itZone'),
+  itRingFill = document.getElementById('itRingFill'),
   logZone = document.getElementById('logZone'),
   itDisplay = document.getElementById('itDisplay'),
   itPreset30 = document.getElementById('itPreset30'),
@@ -643,7 +669,7 @@ function renderList() {
     const delBtn = document.createElement('button');
     delBtn.className = 'card-del-btn';
     delBtn.setAttribute('aria-label', 'Supprimer');
-    delBtn.textContent = '🗑';
+    delBtn.textContent = '\u{1F5D1}';
 
     const el = document.createElement('div');
     el.className = 'counter-card';
@@ -740,6 +766,7 @@ function openCounter(id) {
   const hasSeries = !!c.seriesMode;
   logZone.style.display = hasSeries ? 'flex' : 'none';
   cvHistBtn.style.display = hasSeries ? 'flex' : 'none';
+  itZone.classList.toggle('on', hasSeries && !(c.amrap && c.amrap.enabled));
   if (hasSeries) { refreshLogBtn(); itStart(); stStart(); }
 
   if (c.amrap && c.amrap.enabled) {
@@ -761,6 +788,7 @@ backBtn.addEventListener('click', () => {
   stopTimer();
   itStop();
   stStop();
+  itZone.classList.remove('on');
   cv.classList.add('gone'); lv.classList.remove('gone'); activeId = null; renderList();
 });
 
@@ -841,6 +869,7 @@ function updateItDisplay() {
   const m = Math.floor(itRemaining / 60);
   const s = itRemaining % 60;
   itDisplay.textContent = m + ':' + String(s).padStart(2, '0');
+  itRingFill.style.strokeDashoffset = String(CIRC * (1 - itRemaining / itDuration));
 }
 function itSetDuration(sec) {
   itDuration = sec; itRemaining = sec;
@@ -1159,7 +1188,7 @@ saveBtn.addEventListener('click', () => {
       cvTitle.textContent = c.title; cv.style.background = c.color; refreshProg(c);
       logZone.style.display = c.seriesMode ? 'flex' : 'none';
       cvHistBtn.style.display = c.seriesMode ? 'flex' : 'none';
-      if (!c.seriesMode) { sessionList.style.display = 'none'; itStop(); stStop(); }
+      if (!c.seriesMode) { sessionList.style.display = 'none'; itStop(); stStop(); itZone.classList.remove('on'); }
       if (c.seriesMode) refreshLogBtn();
       stopTimer();
       if (c.amrap.enabled) {
@@ -1184,7 +1213,7 @@ deleteBtn.addEventListener('click', () => {
   data = data.filter(c => c.id !== id); persist();
   if (histData[id]) { delete histData[id]; persistHist(); }
   closeSheet(); renderList();
-  if (activeId === id) { stopTimer(); itStop(); stStop(); cv.classList.add('gone'); lv.classList.remove('gone'); activeId = null; }
+  if (activeId === id) { stopTimer(); itStop(); stStop(); itZone.classList.remove('on'); cv.classList.add('gone'); lv.classList.remove('gone'); activeId = null; }
 });
 
 document.addEventListener('touchstart', e => {
