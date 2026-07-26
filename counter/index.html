@@ -2163,6 +2163,10 @@ document.addEventListener('touchstart', e => {
 }, { passive: true });
 
 renderList();
+
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
 </script>
 </body>
 </html>
