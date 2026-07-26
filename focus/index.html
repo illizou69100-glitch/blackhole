@@ -1215,6 +1215,9 @@ setMode('focus');
 renderTasks();
 renderTimer();
 document.addEventListener('touchstart', () => { if (!AC) ac(); }, { passive: true, once: true });
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
 window.addEventListener('beforeunload', () => { if (running && mode === 'focus') { /* la session en cours n'est pas comptée */ } });
 </script>
 </body>
