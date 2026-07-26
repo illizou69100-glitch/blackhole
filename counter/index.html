@@ -1,0 +1,1761 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+  <title>Counter</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Counter">
+  <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAInElEQVR4nO2dTZLbNhBGP6W8StV45dwhR8k2J802R/EdMiurKttkMVIi0wQJgPjpbrxX5Y1nJIHg9xpNiuTcZIy3ty//zB4D9ON+f7/NHsMrUwdD2GG2EMM/nNBDihkyDPtAgg8ljJKh+4cQfLhCbxG6vTnBh5b0EqH5mxJ86ElrEX5q+WaEH3rTOmNNbCL4MIMWq8HlFYDwwyxaZO+SAIQfZnM1g9UCEH6wwpUsVglA+MEatZksFoDwg1VqslkkAOEH65RmNFsAwg9eKMlqlgCEH7yRm9lTAQg/eCUnu00vhQDwxqEAVH/wzlmGkwIQfojCUZZpgWBpdgWg+kM0Upn+NHogq3H/+uel17/9+lujkcAeP1xPTfUv52rIa0GOcrb3ECBABbMCfwZCnHMoAOFPYzX0KZAhzasECHBAi9BfDaKFMURjVwDC/0Ft4EaHzMs4rfKUAAEelAbKWpC8j380CPAgNzi1gbl//fP3qhf+/7l/VH5u7vvXvL17vhNgxfDnBKQkHFeDXkqJGK23NQr3+/ttOQFahSE38LUVvMfnIML3LCVAi51/FMarQS/lylgQ4YNlBDjb4Uc7OxW00YE/o2acV+YlAuEFaB18a6FPUTr2VUW4399vtxXDXxJ8L6FPUbI9tXPmmZACpHbkSsHf0kKEiBKEEqCmgkUP/pbc7V1lNQgjQGnVWi34W66KEEWCEAKU7KTVg78lZz4iS+BegNrwrx78LWdzE1UC1wLs7ZSclofw75MzRyVz7gGXAlD1+7LSauDusSiEvz+vc5X4Um33dd7umpOcCUD4x7GKBK5aoNz+87nDCH4bjubT+zGBGwFyJpqq34+jufUsgYsWiPDP56glSqzCA0Z1HfMCEH47RJTAtACE3x7RJDArAOG3SyQJzAqw5eigF2ySI4ElzAhQUhmo/vZo/aS6UZgQgNYnBh5bIRMCbCH8fimRwALTBTirBPT9fjnbdxZWgekCbElVCqq/H1L7yuIqMFWA3OpP+P2R+yXZ7FXA1ApgsUJAW6zt42kCUP3j42EVMLMCWKsM0A9L+3qKAFT/dbC+CphYASxVBBiDlX0+XACq/3pYXgU+Df/EDVYqwWi+ffvr7+3/ff78y88zxjKLt19/4zToK6tU/73wH/1/BEpunhnJUAG2tq9Y/c9CHlmCPXau+xr6+WZWgBWqf264o0pgcRUwI0B0SkMdVQJrDBOA9gdSzGyDTKwAK7Q/8IG1NsiEAACzGCLA7HO94I9RmZmyArz2fLQ/67HXBs06JqQFgqVBAFia7gLQ/0MtI7IzfAWg/wfJznEALRAsDQLA0iAALA0CwNIgwA5RvzyKul1XQIAE0cISbXtagQAHRAlNlO3oAQKc4D083sffGy6Gy6BFiGq+hCK8/em6Ahxd223tIakwnr17QkY/RZwWCJYGAWBpEACWBgFgaRAAlmbqX4rnTNC65JwBGkF3AfhjeFDLiOzQAsHSIAAszRQBOA5YGyv9vzRIAI4DoJRRmaEFgqUxIQBt0DpYeyjyMAFGP/UX/DD6CtBXTKwAALMwI0D0Nqj05paIN8NYa3+kwQKs3gblhjpi+FPMbH8kQyuAFH8VkM7DHTX8Fqu/ZECA1VYBKR3yqOFPYWHfT/1L8Ymfh18FpI+wb//NHlMvcqv/sn8p3kIlgLFY2edTBGAVWAfL1V8ysgJIdioC9MfSvp4mAKtAfKxXf8nQCiDZqgzQB2v7eKoArAJx8VD9JWMrgJSuEEjgh9S+slb9JQMC5K4C4A/r1V8yIMAeO9eH0Ao5IdX6WKz+khEB9ioBEvijJPwWqr9kRACpbEKQwB4l+8RK+CVDAuyRWgXALl5anyemBKAV8onH1ueJKQEkJPCG5/BLBgWQ8iYKCeZTcpOLxfBLRgXY46iXRILxHM259b7/FbMClLRCj58hwSBe59pr6/PErAASElgkUvgl4wJISGCJaOGXHAggIYEFIoZfkm5vb1/+mT2IXHIn2uojOLxyNJ+ewy8FEEA6luDxc0So4GwOS/aHVVy0QE9SE5uoQrREF1gh/JIzASQkGMEq4ZectUBbSvpPWqJzcubIe8+/xbUAEscFrVip6r/iXgCpXoLH7ywtQs58RA2/FEQAqXwnrS5C7vZHDr8USADp+CIsRPjgavAfr2k8qnmEEuBJTdWKLkLJ9kWv+q+EFECqr2DRRGgR/MfrGo7KBvf7++0mSStKIJWJ8Ph9FzKUjv3KPHkmvABPWovweI0pGWrGuWrwnywjgJR3l9LZDj/6Nrm0EFfG0mIuIrCUAE9a7fzcSyuuitHycwj+9/wngLSWBFL7MIy+1qhELIL/I/f7+02SlhXgSe4N3LUBuSpG7QrSe7u8gwAbSp9kYC043sc/mh8EkJBAqn+kx+hAeRmnRZ7hlxDgkBbPt7kaOAtjiAYCVODpYU8SoT8iKYCEBDlYlYHQn/MafgkBmjBLCAJfzqkAEhK05KechFwd2/BLCAALsSfA7lMh9n4RwDOpTLt7LApAS5ICsApAFI6yfLgCIAF45yzDtEAQlpwCfioAqwBEJmsFQALwRm5ms1sgJAAvlGS16BgACcA6pRktPghGArBKTTarzgIhAVijNpPVp0GRAKxwJYuXvgdAApjN1Qw2CTBXj8JoWhXfphUcEWAELTuPppdC0BJBb1pnrFtgWQ2gJb2Ka/eKjQhwhd5dxbCWBRGghFHt9PCeHREgxYxjyKkHrcgAs0+cmDtrgxRxmR32Pf4FNFzQxUKwCZcAAAAASUVORK5CYII=">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --bg: #0d0d0d; --text: #f0f0f0; --text-dim: #777; }
+    html, body {
+      height: 100%; height: -webkit-fill-available;
+      background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden; -webkit-user-select: none; user-select: none;
+    }
+    .view {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      will-change: transform, opacity;
+      transition: transform 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.32s;
+    }
+    .view.gone { opacity: 0; transform: translateX(30px); pointer-events: none; }
+    #listView {
+      background: var(--bg);
+      padding-top: max(env(safe-area-inset-top), 52px);
+      padding-bottom: max(env(safe-area-inset-bottom), 20px);
+    }
+    .list-hdr { display: flex; align-items: center; justify-content: space-between; padding: 4px 20px 18px; }
+    .list-hdr h1 { font-size: 28px; font-weight: 800; }
+    .list-icon-btn {
+      background: #1e1e1e; border: none; color: var(--text-dim);
+      width: 38px; height: 38px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s; flex-shrink: 0;
+    }
+    .list-icon-btn:active { background: #2c2c2e; }
+    .list-icon-btn svg { width: 20px; height: 20px; }
+    .grid {
+      flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      padding: 0 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-content: start;
+    }
+    .card-wrap {
+      position: relative; overflow: hidden; border-radius: 22px; min-height: 148px;
+    }
+    .counter-card {
+      padding: 18px 16px 14px; min-height: 148px; width: 100%;
+      display: flex; flex-direction: column; justify-content: space-between;
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+      transition: transform 0.22s cubic-bezier(0.4,0,0.2,1); position: relative; overflow: hidden;
+    }
+    .counter-card:active { transform: scale(0.96); }
+    .card-del-btn {
+      position: absolute; right: 0; top: 0; bottom: 0; width: 70px;
+      background: #ef4444; border: none; cursor: pointer; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; -webkit-tap-highlight-color: transparent;
+    }
+    .card-name { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.8); letter-spacing: 0.2px; }
+    .card-val { font-size: 52px; font-weight: 900; color: #fff; line-height: 1; letter-spacing: -1px; }
+    .card-meta { font-size: 11px; color: rgba(255,255,255,0.45); }
+    .card-ribbon {
+      position: absolute; top: 12px; right: -18px;
+      background: rgba(255,255,255,0.2); font-size: 9px; font-weight: 700;
+      color: rgba(255,255,255,0.9); padding: 3px 22px 3px 8px;
+      letter-spacing: 0.5px; transform: rotate(35deg);
+    }
+    .card-amrap-badge {
+      position: absolute; bottom: 10px; right: 12px;
+      font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.6);
+      background: rgba(0,0,0,0.2); border-radius: 8px; padding: 2px 7px;
+    }
+    .card-series-badge {
+      position: absolute; bottom: 10px; left: 12px;
+      font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.6);
+      background: rgba(0,0,0,0.2); border-radius: 8px; padding: 2px 7px;
+    }
+    .empty { grid-column: span 2; text-align: center; color: var(--text-dim); padding: 80px 30px 40px; font-size: 15px; line-height: 1.6; }
+    .fab {
+      position: fixed; bottom: max(env(safe-area-inset-bottom), 20px); right: 20px;
+      width: 58px; height: 58px; border-radius: 50%;
+      background: var(--text); color: var(--bg);
+      border: none; font-size: 30px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+      -webkit-tap-highlight-color: transparent; transition: transform 0.15s; z-index: 5;
+    }
+    .fab:active { transform: scale(0.88); }
+    #counterView { background: #7C3AED; }
+    .cv-hdr {
+      padding: max(env(safe-area-inset-top), 52px) 16px 12px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .hdr-btn {
+      background: rgba(0,0,0,0.18); border: none; color: #fff;
+      width: 40px; height: 40px; border-radius: 12px;
+      cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      -webkit-tap-highlight-color: transparent; transition: background 0.15s;
+    }
+    .hdr-btn:active { background: rgba(0,0,0,0.3); }
+    .hdr-btn svg { width: 20px; height: 20px; }
+    .cv-title {
+      font-size: 17px; font-weight: 700;
+      color: rgba(255,255,255,0.92); text-align: center;
+      flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .amrap-zone {
+      display: none; flex-direction: column; align-items: center;
+      padding: 6px 0 0; gap: 10px;
+    }
+    .amrap-zone.on { display: flex; }
+    .amrap-round {
+      font-size: 11px; font-weight: 700; letter-spacing: 1.8px;
+      text-transform: uppercase; color: rgba(255,255,255,0.5);
+    }
+    .amrap-ring-wrap {
+      position: relative; width: 160px; height: 160px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    .amrap-ring-wrap svg {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      transform: rotate(-90deg);
+    }
+    .amrap-ring-bg { stroke: rgba(255,255,255,0.22); }
+    .amrap-ring-fill {
+      stroke: rgba(255,255,255,0.85); stroke-linecap: round;
+      transition: stroke-dashoffset 0.25s ease-out, stroke 0.3s;
+      filter: drop-shadow(0 0 6px rgba(255,255,255,0.5));
+    }
+    .amrap-ring-wrap.running .amrap-ring-fill { stroke: rgba(255,255,255,0.95); filter: drop-shadow(0 0 10px rgba(255,255,255,0.7)); }
+    .amrap-ring-wrap.running .amrap-ring-bg { stroke: rgba(255,255,255,0.28); }
+    .amrap-center {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      position: relative; z-index: 1;
+    }
+    .amrap-clock {
+      font-size: 44px; font-weight: 900; color: rgba(255,255,255,0.95);
+      letter-spacing: -1px; font-variant-numeric: tabular-nums;
+      transition: color 0.3s;
+    }
+    .amrap-clock.urgent { color: #fbbf24; }
+    .amrap-hint {
+      font-size: 10px; color: rgba(255,255,255,0.4); font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .amrap-meta {
+      font-size: 11px; color: rgba(255,255,255,0.4); font-weight: 500;
+    }
+    .amrap-reset-btn {
+      background: rgba(0,0,0,0.22); border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.55); font-size: 12px; font-weight: 600;
+      border-radius: 20px; padding: 5px 14px; cursor: pointer;
+      font-family: inherit; -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation; transition: background 0.15s, color 0.15s;
+    }
+    .amrap-reset-btn:active { background: rgba(0,0,0,0.4); color: rgba(255,255,255,0.9); }
+    .num-zone {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; position: relative;
+    }
+    .big-num {
+      font-size: clamp(88px, 26vw, 150px); font-weight: 900;
+      color: rgba(255,255,255,0.95); line-height: 1; letter-spacing: -4px;
+      will-change: transform; transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .big-num.up   { transform: scale(1.13); }
+    .big-num.down { transform: scale(0.87); }
+    .goal-banner {
+      position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.28); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      border-radius: 16px; padding: 10px 22px;
+      font-size: 15px; font-weight: 700; color: #fff;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s, bottom 0.3s; white-space: nowrap;
+    }
+    .goal-banner.show { opacity: 1; bottom: 12px; }
+    .btn-row { display: flex; align-items: center; justify-content: center; gap: 40px; padding: 10px 0 22px; }
+    .cv-btn {
+      width: 88px; height: 88px; border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,0.22);
+      background: rgba(0,0,0,0.25); color: rgba(255,255,255,0.9);
+      font-size: 38px; font-weight: 300; line-height: 1; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 0 24px rgba(255,255,255,0.08), inset 0 0 20px rgba(0,0,0,0.3);
+      transition: transform 0.12s, box-shadow 0.12s, background 0.12s;
+      position: relative; overflow: hidden;
+    }
+    .cv-btn::before {
+      content: ''; position: absolute; inset: 0; border-radius: 50%;
+      background: linear-gradient(135deg, rgba(255,255,255,0.10) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .cv-btn::after {
+      content: ''; position: absolute; inset: -6px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.08); pointer-events: none;
+    }
+    .cv-btn:active {
+      transform: scale(0.87); background: rgba(0,0,0,0.4);
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.35), 0 0 40px rgba(255,255,255,0.22), 0 0 80px rgba(255,255,255,0.08), inset 0 0 20px rgba(0,0,0,0.4);
+    }
+    @keyframes idle-pulse {
+      0%, 100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 0 24px rgba(255,255,255,0.08), inset 0 0 20px rgba(0,0,0,0.3); }
+      50%       { box-shadow: 0 0 0 1px rgba(255,255,255,0.12), 0 0 36px rgba(255,255,255,0.14), inset 0 0 20px rgba(0,0,0,0.3); }
+    }
+    .cv-btn { animation: idle-pulse 3s ease-in-out infinite; }
+    .cv-btn:active { animation: none; }
+    .log-zone {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 0 20px 10px; gap: 10px;
+    }
+    .it-zone {
+      display: none; flex-direction: column; align-items: center;
+      padding: 6px 0 0; gap: 10px;
+    }
+    .it-zone.on { display: flex; }
+    .it-ring-wrap {
+      position: relative; width: 150px; height: 150px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .it-ring-wrap svg {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      transform: rotate(-90deg);
+    }
+    .it-ring-bg { stroke: rgba(255,255,255,0.18); }
+    .it-ring-fill {
+      stroke: #fbbf24; stroke-linecap: round;
+      transition: stroke-dashoffset 0.9s linear;
+      filter: drop-shadow(0 0 8px rgba(251,191,36,0.55));
+    }
+    .it-center { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .it-clock { font-size: 42px; font-weight: 900; color: #fbbf24; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+    .it-presets { display: flex; gap: 8px; }
+    .dt-preset {
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.65); font-size: 11px; font-weight: 700;
+      border-radius: 20px; padding: 3px 10px; cursor: pointer;
+      font-family: inherit; -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation; transition: background 0.15s, color 0.15s;
+    }
+    .dt-preset:active { background: rgba(255,255,255,0.22); color: #fff; }
+    .dt-preset.active { background: #fbbf24; border-color: #fbbf24; color: #000; }
+    .session-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; max-width: 320px;
+      background: rgba(0,0,0,0.22); border: 1.5px solid rgba(255,255,255,0.13);
+      border-radius: 14px; padding: 10px 20px;
+    }
+    .sb-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.38); }
+    .sb-time { font-size: 28px; font-weight: 900; color: rgba(255,255,255,0.92); font-variant-numeric: tabular-nums; letter-spacing: -1px; }
+    .pacing-zone {
+      display: none; flex-direction: column; align-items: center;
+      padding: 4px 20px 0; gap: 6px; width: 100%;
+    }
+    .pacing-zone.on { display: flex; }
+    .pacing-row {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; max-width: 320px;
+    }
+    .pacing-set-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; color: rgba(255,255,255,0.5);
+    }
+    .pacing-target { font-size: 14px; font-weight: 800; color: #fbbf24; }
+    .pacing-chips {
+      display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
+      max-width: 320px;
+    }
+    .pacing-chip {
+      font-size: 13px; font-weight: 700; padding: 3px 9px;
+      border-radius: 8px; background: rgba(0,0,0,0.2);
+      color: rgba(255,255,255,0.45); border: 1px solid transparent;
+    }
+    .pacing-chip.active { color: #fbbf24; border-color: rgba(251,191,36,0.5); background: rgba(251,191,36,0.1); }
+    .pacing-chip.ok { color: #4ade80; background: rgba(74,222,128,0.15); }
+    .pacing-chip.miss { color: #f87171; background: rgba(248,113,113,0.15); }
+    .pacing-total { font-size: 11px; color: rgba(255,255,255,0.35); font-weight: 600; }
+    .log-btn {
+      width: 100%; max-width: 320px; padding: 13px;
+      background: rgba(255,255,255,0.13); border: 1.5px solid rgba(255,255,255,0.22);
+      border-radius: 16px; color: rgba(255,255,255,0.88);
+      font-size: 15px; font-weight: 700; cursor: pointer;
+      -webkit-tap-highlight-color: transparent; font-family: inherit;
+      touch-action: manipulation; transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+    }
+    .log-btn:active { background: rgba(255,255,255,0.22); }
+    .session-list {
+      display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch;
+      gap: 8px; padding: 0 20px 14px; width: 100%; scrollbar-width: none;
+    }
+    .session-list::-webkit-scrollbar { display: none; }
+    .set-chip {
+      flex-shrink: 0;
+      background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px; padding: 8px 12px; min-width: 56px;
+      display: flex; flex-direction: column; align-items: center; gap: 1px;
+    }
+    .chip-reps { font-size: 20px; font-weight: 900; color: rgba(255,255,255,0.92); line-height: 1; }
+    .chip-detail { font-size: 10px; color: rgba(255,255,255,0.42); white-space: nowrap; }
+    @keyframes chipIn {
+      from { transform: scale(0.65) translateY(6px); opacity: 0; }
+      to   { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    .chip-new { animation: chipIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both; }
+    .cv-progress { padding: 0 22px max(calc(env(safe-area-inset-bottom) + 16px), 32px); }
+    .prog-track { height: 5px; background: rgba(0,0,0,0.2); border-radius: 3px; overflow: hidden; }
+    .prog-fill { height: 100%; background: rgba(255,255,255,0.75); border-radius: 3px; transition: width 0.3s ease; }
+    .prog-label { margin-top: 7px; font-size: 11px; color: rgba(255,255,255,0.45); text-align: right; }
+    #histView {
+      background: var(--bg);
+      padding-top: max(env(safe-area-inset-top), 52px);
+    }
+    .hist-top {
+      display: flex; align-items: center; gap: 12px;
+      padding: 4px 16px 14px; flex-shrink: 0;
+    }
+    .hist-title { font-size: 20px; font-weight: 800; flex: 1; }
+    .hist-scroll {
+      flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      padding: 0 16px max(env(safe-area-inset-bottom), 24px);
+    }
+    .hist-empty {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      padding: 80px 30px 40px; color: var(--text-dim); text-align: center;
+    }
+    .hist-empty-icon { font-size: 44px; }
+    .hist-empty-sub { font-size: 13px; line-height: 1.5; margin-top: 4px; max-width: 240px; }
+    .hist-counter { margin-bottom: 32px; }
+    .hist-counter-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 15px; font-weight: 700; margin-bottom: 12px;
+    }
+    .h-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .hist-day { margin-bottom: 16px; }
+    .hist-day-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 1px;
+      text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; padding: 0 2px;
+    }
+    .hist-entry {
+      display: flex; align-items: center; gap: 8px;
+      background: #181818; border-radius: 12px; padding: 10px 14px; margin-bottom: 6px;
+    }
+    .he-reps { font-size: 22px; font-weight: 900; color: var(--text); line-height: 1; min-width: 36px; }
+    .he-unit { font-size: 12px; color: var(--text-dim); font-weight: 500; flex: 1; }
+    .he-elapsed {
+      font-size: 11px; font-weight: 700; color: #f59e0b;
+      background: rgba(245,158,11,0.12); border-radius: 8px; padding: 3px 8px;
+    }
+    .he-time { font-size: 11px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+    .hist-day-total {
+      font-size: 11px; color: var(--text-dim); padding: 0 2px; font-weight: 500; margin-top: 2px;
+    }
+    #backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 50; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+    #backdrop.on { opacity: 1; pointer-events: all; }
+    #sheet {
+      position: fixed; bottom: 0; left: 0; right: 0; background: #1c1c1e;
+      border-radius: 22px 22px 0 0; padding: 10px 18px max(env(safe-area-inset-bottom), 24px);
+      z-index: 51; transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+      max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    }
+    #sheet.on { transform: translateY(0); }
+    .handle { width: 36px; height: 4px; background: #3a3a3c; border-radius: 2px; margin: 0 auto 18px; }
+    .sheet-hdr { font-size: 18px; font-weight: 700; margin-bottom: 18px; }
+    .field { margin-bottom: 13px; }
+    .field label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); margin-bottom: 6px; }
+    .field input[type="text"], .field input[type="number"] {
+      width: 100%; background: #2c2c2e; border: none; border-radius: 11px;
+      color: var(--text); font-size: 16px; padding: 12px 14px;
+      font-family: inherit; outline: none; -webkit-appearance: none;
+    }
+    .field input:focus { background: #3a3a3c; }
+    .fields-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .colors-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; margin-bottom: 18px; }
+    .cdot { aspect-ratio: 1; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: transform 0.15s, border-color 0.15s; -webkit-tap-highlight-color: transparent; }
+    .cdot:active { transform: scale(0.85); }
+    .cdot.sel { border-color: #fff; transform: scale(1.18); }
+    .section-sep { height: 1px; background: #3a3a3c; margin: 14px 0 16px; }
+    .section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); margin-bottom: 12px; }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 13px; }
+    .toggle-row span { font-size: 15px; color: var(--text); flex: 1; line-height: 1.3; }
+    .toggle { position: relative; width: 50px; height: 30px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .slider { position: absolute; inset: 0; background: #3a3a3c; border-radius: 30px; cursor: pointer; transition: background 0.22s; }
+    .slider::before { content: ''; position: absolute; width: 24px; height: 24px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: transform 0.22s; box-shadow: 0 1px 4px rgba(0,0,0,0.4); }
+    .toggle input:checked + .slider { background: #30d158; }
+    .toggle input:checked + .slider::before { transform: translateX(20px); }
+    .actions { display: flex; flex-direction: column; gap: 9px; margin-top: 6px; }
+    .btn { width: 100%; padding: 14px; border: none; border-radius: 13px; font-size: 16px; font-weight: 600; font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: opacity 0.15s; }
+    .btn:active { opacity: 0.75; }
+    .btn-save { background: var(--text); color: var(--bg); }
+    .btn-reset { background: #2c2c2e; color: var(--text); }
+    .btn-del   { background: #2c2c2e; color: #f87171; }
+    /* ── HIIT View ─────────────────────── */
+    #hiitView {
+      background: var(--bg); display: flex; flex-direction: column; align-items: center;
+      padding-top: max(env(safe-area-inset-top), 52px);
+      padding-bottom: max(env(safe-area-inset-bottom), 24px);
+    }
+    .hiit-hdr { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 4px 16px 14px; }
+    .hiit-phase-badge {
+      font-size: 12px; font-weight: 700; letter-spacing: 0.08em; padding: 5px 16px;
+      border-radius: 20px; background: rgba(255,255,255,0.06); color: var(--text-dim);
+      text-transform: uppercase; transition: background 0.4s, color 0.4s;
+    }
+    .hiit-phase-badge.work { background: rgba(52,199,89,0.18); color: #34c759; }
+    .hiit-phase-badge.rest { background: rgba(255,159,10,0.18); color: #ff9f0a; }
+    .hiit-ex-name {
+      font-size: clamp(20px, 5.5vw, 30px); font-weight: 800; text-align: center;
+      padding: 8px 20px 0; min-height: 50px; letter-spacing: -0.02em;
+    }
+    .hiit-ring-wrap { position: relative; width: 186px; height: 186px; margin: 8px auto 0; flex-shrink: 0; }
+    .hiit-ring-wrap svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .hiit-ring-bg { stroke: rgba(255,255,255,0.07); }
+    .hiit-ring-fill { stroke: #34c759; stroke-linecap: round; transform-origin: 50% 50%; transform: rotate(-90deg); transition: stroke 0.4s; }
+    .hiit-ring-fill.rest-color { stroke: #ff9f0a; }
+    .hiit-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .hiit-clock { font-size: 48px; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+    .hiit-clock.urgent { color: #ff453a; }
+    .hiit-round-lbl { font-size: 11px; color: var(--text-dim); margin-top: 2px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+    .hiit-next { font-size: 13px; color: var(--text-dim); margin-top: 8px; min-height: 20px; text-align: center; padding: 0 20px; }
+    .hiit-next strong { color: var(--text); font-weight: 700; }
+    .hiit-chips { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; padding: 10px 16px 0; width: 100%; }
+    .hiit-chip {
+      font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.1); color: var(--text-dim);
+      white-space: nowrap; max-width: 110px; overflow: hidden; text-overflow: ellipsis; transition: all 0.25s;
+    }
+    .hiit-chip.h-active { border-color: #34c759; color: #34c759; background: rgba(52,199,89,0.1); }
+    .hiit-chip.h-rest   { border-color: #ff9f0a; color: #ff9f0a; background: rgba(255,159,10,0.1); }
+    .hiit-chip.h-done   { opacity: 0.28; }
+    .hiit-start-btn {
+      margin-top: auto; width: calc(100% - 40px); flex-shrink: 0;
+      padding: 16px; border: none; border-radius: 16px;
+      background: #34c759; color: #000; font-size: 17px; font-weight: 700;
+      font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent;
+      transition: opacity 0.15s, background 0.3s;
+    }
+    .hiit-start-btn:active { opacity: 0.75; }
+    .hiit-start-btn.stop-mode { background: #ff453a; color: #fff; }
+    #hiitSheetSection { display: none; }
+    #hiitSheetSection.on { display: block; }
+    #ctrSheetSection.off { display: none; }
+  </style>
+</head>
+<body>
+
+<div class="view" id="listView">
+  <div class="list-hdr">
+    <h1>Compteurs</h1>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="list-icon-btn" id="hiitBtn" aria-label="Circuit HIIT">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+      </button>
+      <button class="list-icon-btn" id="histBtn" aria-label="Historique">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+  <div class="grid" id="grid"></div>
+  <button class="fab" id="addBtn" aria-label="Ajouter">+</button>
+</div>
+
+<div class="view gone" id="counterView">
+  <div class="cv-hdr">
+    <button class="hdr-btn" id="backBtn" aria-label="Retour">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    </button>
+    <span class="cv-title" id="cvTitle"></span>
+    <button class="hdr-btn" id="cvHistBtn" aria-label="Historique" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+      </svg>
+    </button>
+    <button class="hdr-btn" id="editBtn" aria-label="Parametres">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="amrap-zone" id="amrapZone">
+    <div class="amrap-round" id="amrapRound">Round 1</div>
+    <div class="amrap-ring-wrap" id="amrapRingWrap">
+      <svg viewBox="0 0 110 110">
+        <circle class="amrap-ring-bg" cx="55" cy="55" r="48" fill="none" stroke-width="8"/>
+        <circle class="amrap-ring-fill" id="amrapRingFill" cx="55" cy="55" r="48" fill="none" stroke-width="8"
+          stroke-dasharray="301.6" stroke-dashoffset="0"/>
+      </svg>
+      <div class="amrap-center">
+        <span class="amrap-clock" id="amrapClock">1:00</span>
+      </div>
+    </div>
+    <span class="amrap-hint" id="amrapHint">Appuie pour lancer</span>
+    <div class="amrap-meta" id="amrapMeta"></div>
+    <button class="amrap-reset-btn" id="amrapResetBtn" aria-label="Reinitialiser chrono">&#8635; Reset</button>
+  </div>
+
+  <div class="pacing-zone" id="pacingZone">
+    <div class="pacing-row">
+      <span class="pacing-set-label" id="pacingSetLabel">S&#201;RIE 1/6</span>
+      <span class="pacing-target" id="pacingTarget">Objectif &middot; 10</span>
+    </div>
+    <div class="pacing-chips" id="pacingChips"></div>
+    <div class="pacing-total" id="pacingTotal"></div>
+  </div>
+
+  <div class="it-zone" id="itZone">
+    <div class="it-ring-wrap" id="itRingWrap">
+      <svg viewBox="0 0 110 110">
+        <circle class="it-ring-bg" cx="55" cy="55" r="48" fill="none" stroke-width="8"/>
+        <circle class="it-ring-fill" id="itRingFill" cx="55" cy="55" r="48" fill="none" stroke-width="8"
+          stroke-dasharray="301.6" stroke-dashoffset="0"/>
+      </svg>
+      <div class="it-center">
+        <span class="it-clock" id="itDisplay">0:30</span>
+      </div>
+    </div>
+    <div class="it-presets">
+      <button class="dt-preset active" id="itPreset30" data-dur="30">30s</button>
+      <button class="dt-preset" id="itPreset60" data-dur="60">60s</button>
+    </div>
+  </div>
+
+  <div class="num-zone" id="numZone">
+    <span class="big-num" id="bigNum">0</span>
+    <div class="goal-banner" id="goalBanner">&#127919; Objectif atteint !</div>
+  </div>
+  <div class="btn-row">
+    <button class="cv-btn" id="decBtn" aria-label="Moins">&#8722;</button>
+    <button class="cv-btn" id="incBtn" aria-label="Plus">+</button>
+  </div>
+
+  <div class="log-zone" id="logZone" style="display:none">
+    <div class="session-bar">
+      <span class="sb-label">S&#233;ance</span>
+      <span class="sb-time" id="stDisplay">0:00</span>
+    </div>
+    <button class="log-btn" id="logBtn" touch-action="manipulation">Enregistrer la s&#233;rie</button>
+  </div>
+  <div class="session-list" id="sessionList" style="display:none"></div>
+
+  <div class="cv-progress" id="cvProgress" style="display:none">
+    <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    <div class="prog-label" id="progLabel"></div>
+  </div>
+</div>
+
+<div class="view gone" id="histView">
+  <div class="hist-top">
+    <button class="hdr-btn" id="histBackBtn" aria-label="Retour" style="background:#1e1e1e;color:var(--text)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    </button>
+    <span class="hist-title">Historique</span>
+  </div>
+  <div class="hist-scroll" id="histScroll"></div>
+</div>
+
+<div class="view gone" id="hiitView">
+  <div class="hiit-hdr">
+    <button class="hdr-btn" id="hiitBackBtn" aria-label="Retour">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    </button>
+    <span style="font-size:15px;font-weight:700">Circuit HIIT</span>
+    <button class="hdr-btn" id="hiitCfgBtn" aria-label="Configurer">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
+  <div class="hiit-phase-badge" id="hiitPhaseBadge">En attente</div>
+  <div class="hiit-ex-name" id="hiitExName">—</div>
+  <div class="hiit-ring-wrap">
+    <svg viewBox="0 0 110 110">
+      <circle class="hiit-ring-bg" cx="55" cy="55" r="48" fill="none" stroke-width="8"/>
+      <circle class="hiit-ring-fill" id="hiitRingFill" cx="55" cy="55" r="48" fill="none" stroke-width="8"
+        stroke-dasharray="301.6" stroke-dashoffset="0"/>
+    </svg>
+    <div class="hiit-center">
+      <span class="hiit-clock" id="hiitClock">0:40</span>
+      <span class="hiit-round-lbl" id="hiitRoundLbl">ROUND 1</span>
+    </div>
+  </div>
+  <div class="hiit-next" id="hiitNext"></div>
+  <div class="hiit-chips" id="hiitChips"></div>
+  <button class="hiit-start-btn" id="hiitStartBtn">Lancer &#x26A1;</button>
+</div>
+
+<div id="backdrop"></div>
+<div id="sheet">
+  <div class="handle"></div>
+  <div class="sheet-hdr" id="sheetHdr">Nouveau compteur</div>
+  <div id="ctrSheetSection">
+  <div class="field">
+    <label>Titre</label>
+    <input type="text" id="fTitle" placeholder="ex : Tractions" maxlength="32">
+  </div>
+  <div class="fields-row">
+    <div class="field"><label>Valeur de depart</label><input type="number" id="fStart" value="0"></div>
+    <div class="field"><label>Pas (+/-)</label><input type="number" id="fStep" value="1" min="1"></div>
+  </div>
+  <div class="field">
+    <label>Objectif total (optionnel)</label>
+    <input type="number" id="fGoal" placeholder="ex : 100">
+  </div>
+  <div class="field">
+    <label>Couleur</label>
+    <div class="colors-grid" id="colorGrid"></div>
+  </div>
+
+  <div class="section-sep"></div>
+  <div class="section-label">Mode AMRAP / Chrono</div>
+  <div class="toggle-row">
+    <span>Activer le chrono automatique</span>
+    <label class="toggle"><input type="checkbox" id="fAmrap"><span class="slider"></span></label>
+  </div>
+  <div id="amrapFields" style="display:none">
+    <div class="fields-row">
+      <div class="field"><label>Duree par round (sec)</label><input type="number" id="fAmrapDur" value="60" min="5" max="3600"></div>
+      <div class="field"><label>Reps cibles / round</label><input type="number" id="fAmrapReps" value="5" min="1"></div>
+    </div>
+    <div class="toggle-row">
+      <span>Reset compteur a chaque round</span>
+      <label class="toggle"><input type="checkbox" id="fAmrapReset"><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <span>&#127937; Course contre la montre (1 round, puis stop)</span>
+      <label class="toggle"><input type="checkbox" id="fAmrapSingle"><span class="slider"></span></label>
+    </div>
+  </div>
+
+  <div class="section-sep"></div>
+  <div class="section-label">S&#233;ries &amp; historique</div>
+  <div class="toggle-row">
+    <span>Mode s&#233;ries &#8212; chrono + log par s&#233;rie</span>
+    <label class="toggle"><input type="checkbox" id="fSeries"><span class="slider"></span></label>
+  </div>
+
+  <div class="section-sep"></div>
+  <div class="section-label">Pacing S&#233;ance</div>
+  <div class="toggle-row">
+    <span>S&#233;quence de s&#233;ries programm&#233;es</span>
+    <label class="toggle"><input type="checkbox" id="fPacing"><span class="slider"></span></label>
+  </div>
+  <div id="pacingFields" style="display:none">
+    <div class="field">
+      <label>S&#233;ries cibles (ex&nbsp;: 10,10,9,8,7,6)</label>
+      <input type="text" id="fPacingSets" placeholder="10,10,9,8,7,6" maxlength="60">
+    </div>
+    <div class="field">
+      <label>Repos entre s&#233;ries (sec)</label>
+      <input type="number" id="fPacingRest" value="12" min="3" max="300">
+    </div>
+  </div>
+  </div><!-- end ctrSheetSection -->
+
+  <div id="hiitSheetSection">
+    <div class="field">
+      <label>Exercices (s&#233;par&#233;s par des virgules)</label>
+      <input type="text" id="fHiitExercises" placeholder="Burpees, Squat, Pompes, Gainage" maxlength="200">
+    </div>
+    <div class="fields-row">
+      <div class="field"><label>Travail (sec)</label><input type="number" id="fHiitWork" value="40" min="5" max="300"></div>
+      <div class="field"><label>Repos (sec)</label><input type="number" id="fHiitRest" value="20" min="3" max="300"></div>
+    </div>
+    <div class="field">
+      <label>Rounds</label>
+      <input type="number" id="fHiitRounds" value="1" min="1" max="20">
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-save" id="saveBtn">Enregistrer</button>
+    <button class="btn btn-reset" id="resetBtn" style="display:none">Reinitialiser</button>
+    <button class="btn btn-del" id="deleteBtn" style="display:none">Supprimer</button>
+  </div>
+</div>
+
+<script>
+const COLORS=['#7C3AED','#2563EB','#059669','#DC2626','#EA580C','#DB2777','#0891B2','#6B7280'];
+const CIRC = 2 * Math.PI * 48;
+
+let data = JSON.parse(localStorage.getItem('ctr2') || 'null');
+if (!data) { data = [mkCounter('Tractions','#7C3AED'), mkCounter('Escaliers','#2563EB')]; persist(); }
+data.forEach(c => {
+  if (!c.amrap) c.amrap = {enabled:false,duration:60,targetReps:5,autoReset:false,singleRound:false};
+  else if (c.amrap.singleRound === undefined) c.amrap.singleRound = false;
+  if (c.seriesMode === undefined) c.seriesMode = false;
+  if (!c.pacing) c.pacing = {enabled:false, sets:[10,10,9,8,7,6], rest:12};
+});
+
+let histData = JSON.parse(localStorage.getItem('ctr2_hist') || '{}');
+function persistHist() { localStorage.setItem('ctr2_hist', JSON.stringify(histData)); }
+
+let activeId = null, sheetMode = 'new', editId = null, pickedColor = COLORS[0];
+let timerInterval = null, timerRemaining = 0, timerDuration = 60, timerRound = 1, timerRunning = false;
+let timerEndAt = 0;
+let openCard = null;
+let itInterval = null, itRemaining = 30, itDuration = 30;
+let stInterval = null, stRunning = false, stStartAt = 0;
+let sessionSets = [], lastLogVal = 0;
+let histFrom = 'list', histFocusId = null;
+let pacingIndex = 0, pacingResults = [], pacingResting = false;
+let hiitCfg = JSON.parse(localStorage.getItem('hiit_cfg') || 'null') || {exercises:['Burpees','Squat','Mountain climbers','Pompes','Gainage'], workSec:40, restSec:20, rounds:1};
+let hiitPhase = 'idle', hiitExIdx = 0, hiitRound = 1, hiitTime = 0, hiitInterval = null, hiitExList = [];
+let audioCtx = null;
+
+function mkCounter(t, c) {
+  return { id: uid(), title: t, value: 0, start: 0, step: 1, goal: null, color: c,
+    amrap: { enabled: false, duration: 60, targetReps: 5, autoReset: false, singleRound: false },
+    seriesMode: false };
+}
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function persist() { localStorage.setItem('ctr2', JSON.stringify(data)); }
+function byId(id) { return data.find(c => c.id === id); }
+function vib(p) { if (navigator.vibrate) navigator.vibrate(p); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+function initAudio() {
+  if (audioCtx) return;
+  try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+}
+function playTone(freq, dur, type, vol) {
+  if (!audioCtx) return;
+  try {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination);
+    o.type = type || 'sine'; o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    g.gain.setValueAtTime(vol || 0.38, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime + dur);
+  } catch(e) {}
+}
+function beepWork()  { playTone(880, 0.1); setTimeout(() => playTone(880, 0.12), 140); }
+function beepRest()  { playTone(440, 0.32); }
+function beepTick()  { playTone(1100, 0.07, 'square', 0.14); }
+function beepDone()  { playTone(523, 0.14); setTimeout(() => playTone(659, 0.14), 160); setTimeout(() => playTone(784, 0.28), 320); }
+function fmtSec(s) {
+  if (s < 60) return s + 's';
+  return Math.floor(s / 60) + 'min' + (s % 60 ? (s % 60) + 's' : '');
+}
+function fmtMs(ms) {
+  const s = Math.floor(ms / 1000);
+  if (s < 60) return s + 's';
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return m + 'min' + (r > 0 ? r + 's' : '');
+}
+function getTodaySets(id) {
+  const entries = histData[id];
+  if (!entries) return [];
+  const today = new Date(); today.setHours(0,0,0,0);
+  return entries.filter(e => new Date(e.ts) >= today);
+}
+
+const lv = document.getElementById('listView'),
+  cv = document.getElementById('counterView'),
+  hv = document.getElementById('histView'),
+  grid = document.getElementById('grid'),
+  addBtn = document.getElementById('addBtn'),
+  histBtn = document.getElementById('histBtn'),
+  backBtn = document.getElementById('backBtn'),
+  editBtn = document.getElementById('editBtn'),
+  cvHistBtn = document.getElementById('cvHistBtn'),
+  histBackBtn = document.getElementById('histBackBtn'),
+  histScroll = document.getElementById('histScroll'),
+  cvTitle = document.getElementById('cvTitle'),
+  bigNum = document.getElementById('bigNum'),
+  decBtn = document.getElementById('decBtn'),
+  incBtn = document.getElementById('incBtn'),
+  goalBnr = document.getElementById('goalBanner'),
+  cvProg = document.getElementById('cvProgress'),
+  progFill = document.getElementById('progFill'),
+  progLabel = document.getElementById('progLabel'),
+  backdrop = document.getElementById('backdrop'),
+  sheet = document.getElementById('sheet'),
+  sheetHdr = document.getElementById('sheetHdr'),
+  fTitle = document.getElementById('fTitle'),
+  fStart = document.getElementById('fStart'),
+  fStep = document.getElementById('fStep'),
+  fGoal = document.getElementById('fGoal'),
+  saveBtn = document.getElementById('saveBtn'),
+  resetBtn = document.getElementById('resetBtn'),
+  deleteBtn = document.getElementById('deleteBtn'),
+  colorGrid = document.getElementById('colorGrid'),
+  amrapZone = document.getElementById('amrapZone'),
+  amrapRound = document.getElementById('amrapRound'),
+  amrapRingWrap = document.getElementById('amrapRingWrap'),
+  amrapRingFill = document.getElementById('amrapRingFill'),
+  amrapClock = document.getElementById('amrapClock'),
+  amrapHint = document.getElementById('amrapHint'),
+  amrapMetaEl = document.getElementById('amrapMeta'),
+  fAmrap = document.getElementById('fAmrap'),
+  fAmrapDur = document.getElementById('fAmrapDur'),
+  fAmrapReps = document.getElementById('fAmrapReps'),
+  fAmrapReset = document.getElementById('fAmrapReset'),
+  fAmrapSingle = document.getElementById('fAmrapSingle'),
+  amrapFields = document.getElementById('amrapFields'),
+  amrapResetBtn = document.getElementById('amrapResetBtn'),
+  itZone = document.getElementById('itZone'),
+  itRingFill = document.getElementById('itRingFill'),
+  logZone = document.getElementById('logZone'),
+  itDisplay = document.getElementById('itDisplay'),
+  itPreset30 = document.getElementById('itPreset30'),
+  itPreset60 = document.getElementById('itPreset60'),
+  stDisplay = document.getElementById('stDisplay'),
+  logBtn = document.getElementById('logBtn'),
+  sessionList = document.getElementById('sessionList'),
+  fSeries = document.getElementById('fSeries'),
+  pacingZone = document.getElementById('pacingZone'),
+  pacingSetLabel = document.getElementById('pacingSetLabel'),
+  pacingTarget = document.getElementById('pacingTarget'),
+  pacingChips = document.getElementById('pacingChips'),
+  pacingTotal = document.getElementById('pacingTotal'),
+  fPacing = document.getElementById('fPacing'),
+  fPacingSets = document.getElementById('fPacingSets'),
+  fPacingRest = document.getElementById('fPacingRest'),
+  pacingFields = document.getElementById('pacingFields'),
+  hiitView = document.getElementById('hiitView'),
+  hiitBackBtn = document.getElementById('hiitBackBtn'),
+  hiitCfgBtn = document.getElementById('hiitCfgBtn'),
+  hiitPhaseBadge = document.getElementById('hiitPhaseBadge'),
+  hiitExName = document.getElementById('hiitExName'),
+  hiitRingFill = document.getElementById('hiitRingFill'),
+  hiitClock = document.getElementById('hiitClock'),
+  hiitRoundLbl = document.getElementById('hiitRoundLbl'),
+  hiitNext = document.getElementById('hiitNext'),
+  hiitChips = document.getElementById('hiitChips'),
+  hiitStartBtn = document.getElementById('hiitStartBtn'),
+  hiitBtn = document.getElementById('hiitBtn'),
+  ctrSheetSection = document.getElementById('ctrSheetSection'),
+  hiitSheetSection = document.getElementById('hiitSheetSection'),
+  fHiitExercises = document.getElementById('fHiitExercises'),
+  fHiitWork = document.getElementById('fHiitWork'),
+  fHiitRest = document.getElementById('fHiitRest'),
+  fHiitRounds = document.getElementById('fHiitRounds');
+
+COLORS.forEach(c => {
+  const d = document.createElement('div');
+  d.className = 'cdot'; d.style.background = c;
+  d.addEventListener('click', () => pickColor(c));
+  colorGrid.appendChild(d);
+});
+function pickColor(c) {
+  pickedColor = c;
+  colorGrid.querySelectorAll('.cdot').forEach((d, i) => d.classList.toggle('sel', COLORS[i] === c));
+}
+pickColor(COLORS[0]);
+
+fAmrap.addEventListener('change', () => {
+  amrapFields.style.display = fAmrap.checked ? 'block' : 'none';
+});
+fPacing.addEventListener('change', () => {
+  pacingFields.style.display = fPacing.checked ? 'block' : 'none';
+});
+
+function renderList() {
+  openCard = null;
+  grid.innerHTML = '';
+  if (!data.length) {
+    grid.innerHTML = '<div class="empty">Appuie sur <strong>+</strong> pour creer ton premier compteur</div>';
+    return;
+  }
+  data.forEach(c => {
+    const wrap = document.createElement('div');
+    wrap.className = 'card-wrap';
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'card-del-btn';
+    delBtn.setAttribute('aria-label', 'Supprimer');
+    delBtn.textContent = '\u{1F5D1}';
+
+    const el = document.createElement('div');
+    el.className = 'counter-card';
+    el.style.background = c.color;
+    const pct = c.goal != null && c.goal !== c.start
+      ? Math.min(100, Math.max(0, Math.round((c.value - c.start) / (c.goal - c.start) * 100))) : null;
+    const todaySets = c.seriesMode ? getTodaySets(c.id) : [];
+    const todayTotal = todaySets.reduce((s, e) => s + e.reps, 0);
+    el.innerHTML =
+      '<span class="card-name">' + esc(c.title) + '</span>' +
+      '<span class="card-val">' + c.value + '</span>' +
+      (pct !== null ? '<span class="card-meta">' + pct + '% / ' + c.goal + '</span>' : '') +
+      (pct === 100 ? '<div class="card-ribbon">ATTEINT</div>' : '') +
+      (c.amrap && c.amrap.enabled ? '<div class="card-amrap-badge">' + (c.amrap.singleRound ? '&#127937;' : '&#9201;') + ' ' + fmtSec(c.amrap.duration) + '</div>' : '') +
+      (c.seriesMode && todayTotal > 0 ? '<div class="card-series-badge">&#128293; ' + todayTotal + ' auj.</div>' : '');
+
+    let startX, startY, dirLocked = null, swipeOffset = 0, didSwipe = false;
+    wrap.addEventListener('touchstart', e => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      dirLocked = null; didSwipe = false; swipeOffset = 0;
+      if (openCard && openCard !== el) {
+        openCard.style.transition = 'transform 0.22s cubic-bezier(0.4,0,0.2,1)';
+        openCard.style.transform = '';
+        openCard = null;
+      }
+    }, { passive: true });
+    wrap.addEventListener('touchmove', e => {
+      const dx = e.touches[0].clientX - startX;
+      const dy = e.touches[0].clientY - startY;
+      if (!dirLocked) {
+        if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
+        dirLocked = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
+      }
+      if (dirLocked === 'v') return;
+      e.preventDefault();
+      didSwipe = true;
+      swipeOffset = Math.max(-70, Math.min(0, dx));
+      el.style.transition = 'none';
+      el.style.transform = 'translateX(' + swipeOffset + 'px)';
+    }, { passive: false });
+    wrap.addEventListener('touchend', () => {
+      el.style.transition = 'transform 0.22s cubic-bezier(0.4,0,0.2,1)';
+      if (swipeOffset < -35) {
+        el.style.transform = 'translateX(-70px)';
+        openCard = el;
+      } else {
+        el.style.transform = '';
+        openCard = null;
+      }
+    });
+
+    el.addEventListener('click', () => {
+      if (didSwipe) { didSwipe = false; return; }
+      if (openCard === el) {
+        el.style.transform = '';
+        openCard = null;
+        return;
+      }
+      openCounter(c.id);
+    });
+
+    delBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      data = data.filter(x => x.id !== c.id);
+      persist();
+      if (histData[c.id]) { delete histData[c.id]; persistHist(); }
+      wrap.style.transition = 'opacity 0.2s, transform 0.2s';
+      wrap.style.opacity = '0';
+      wrap.style.transform = 'translateX(-20px)';
+      openCard = null;
+      setTimeout(() => renderList(), 220);
+    });
+
+    wrap.appendChild(delBtn);
+    wrap.appendChild(el);
+    grid.appendChild(wrap);
+  });
+}
+
+function openCounter(id) {
+  activeId = id;
+  const c = byId(id);
+  cv.style.background = c.color;
+  cvTitle.textContent = c.title;
+  refreshNum(c); refreshProg(c);
+  stopTimer();
+  itStop();
+  stStop();
+  sessionSets = [];
+  lastLogVal = c.value;
+  sessionList.style.display = 'none';
+
+  const hasSeries = !!c.seriesMode;
+  const hasPacing = !!(c.pacing && c.pacing.enabled);
+  logZone.style.display = (hasSeries || hasPacing) ? 'flex' : 'none';
+  cvHistBtn.style.display = (hasSeries || hasPacing) ? 'flex' : 'none';
+  itZone.classList.toggle('on', hasSeries && !(c.amrap && c.amrap.enabled));
+  pacingZone.classList.toggle('on', hasPacing);
+  if (hasSeries) { itStart(); }
+  if (hasPacing) {
+    pacingIndex = 0; pacingResults = []; pacingResting = false;
+    refreshPacingUI(c);
+  }
+  if (hasSeries || hasPacing) { stStart(); refreshLogBtn(); }
+
+  if (c.amrap && c.amrap.enabled) {
+    amrapZone.classList.add('on');
+    timerDuration = c.amrap.duration || 60;
+    timerRemaining = timerDuration;
+    timerRound = 1;
+    amrapRingFill.style.strokeDashoffset = '0';
+    amrapHint.textContent = 'Appuie pour lancer';
+    updateAmrapUI(c);
+  } else {
+    amrapZone.classList.remove('on');
+  }
+  lv.classList.add('gone');
+  cv.classList.remove('gone');
+}
+
+backBtn.addEventListener('click', () => {
+  stopTimer();
+  itStop();
+  stStop();
+  itZone.classList.remove('on');
+  pacingZone.classList.remove('on');
+  pacingIndex = 0; pacingResults = []; pacingResting = false;
+  cv.classList.add('gone'); lv.classList.remove('gone'); activeId = null; renderList();
+});
+
+function refreshNum(c) { bigNum.textContent = c.value; }
+function bumpNum(dir) {
+  const cls = dir > 0 ? 'up' : 'down';
+  bigNum.classList.remove('up', 'down'); void bigNum.offsetWidth;
+  bigNum.classList.add(cls); setTimeout(() => bigNum.classList.remove(cls), 200);
+}
+function refreshProg(c) {
+  if (c.goal == null) { cvProg.style.display = 'none'; return; }
+  cvProg.style.display = 'block';
+  const range = c.goal - c.start;
+  const pct = range > 0 ? Math.min(100, Math.max(0, (c.value - c.start) / range * 100)) : 0;
+  progFill.style.width = pct.toFixed(1) + '%';
+  progLabel.textContent = c.value + ' / ' + c.goal;
+}
+function refreshLogBtn() {
+  const c = byId(activeId); if (!c) return;
+  if (c.pacing && c.pacing.enabled) {
+    if (pacingResting) {
+      logBtn.textContent = 'Repos en cours…';
+      logBtn.style.opacity = '0.35';
+      return;
+    }
+    if (pacingIndex >= (c.pacing.sets || []).length) {
+      logBtn.textContent = '✓ Séance terminée';
+      logBtn.style.opacity = '0.4';
+      return;
+    }
+    const actual = c.value - c.start;
+    const target = c.pacing.sets[pacingIndex];
+    logBtn.textContent = actual > 0
+      ? '✓ Série ' + (pacingIndex+1) + ' faite · ' + actual + ' rep' + (actual>1?'s':'')
+      : '✓ Valider la série ' + (pacingIndex+1);
+    logBtn.style.opacity = '1';
+    return;
+  }
+  const reps = c.value - lastLogVal;
+  if (reps > 0) {
+    logBtn.textContent = 'Enregistrer · ' + reps + ' rep' + (reps > 1 ? 's' : '');
+    logBtn.style.opacity = '1';
+  } else {
+    logBtn.textContent = 'Enregistrer la série';
+    logBtn.style.opacity = '0.5';
+  }
+}
+
+function doInc() {
+  const c = byId(activeId); if (!c) return;
+  c.value += c.step; persist(); refreshNum(c); bumpNum(1); refreshProg(c); vib(10);
+  if (c.seriesMode || (c.pacing && c.pacing.enabled)) refreshLogBtn();
+  if (c.goal != null && c.value >= c.goal) {
+    if (c.seriesMode) {
+      flashBanner('&#127919; Objectif atteint !', [40,25,40,25,80]);
+      setTimeout(logSet, 350);
+    } else {
+      flashBanner('&#127919; Objectif atteint !', [40,25,40,25,80]);
+    }
+  }
+}
+function doDec() {
+  const c = byId(activeId); if (!c) return;
+  c.value -= c.step; persist(); refreshNum(c); bumpNum(-1); refreshProg(c); vib([8,20,8]);
+  if (c.seriesMode || (c.pacing && c.pacing.enabled)) refreshLogBtn();
+}
+function flashBanner(msg, vibPat) {
+  goalBnr.innerHTML = msg; goalBnr.classList.add('show');
+  if (vibPat) vib(vibPat);
+  setTimeout(() => goalBnr.classList.remove('show'), 2400);
+}
+
+incBtn.addEventListener('click', doInc);
+decBtn.addEventListener('click', doDec);
+
+/* — Interval countdown timer (auto-loops, vibrates on each reset) — */
+function itStart() {
+  if (itInterval) clearInterval(itInterval);
+  itRemaining = itDuration;
+  updateItDisplay();
+  itInterval = setInterval(tickIt, 1000);
+}
+function itStop() {
+  clearInterval(itInterval); itInterval = null;
+  itRemaining = itDuration;
+  updateItDisplay();
+}
+function tickIt() {
+  itRemaining--;
+  if (itRemaining <= 0) {
+    itRemaining = itDuration;
+    vib([60, 30, 60]);
+    beepWork();
+  } else if (itRemaining <= 3) {
+    beepTick();
+  }
+  updateItDisplay();
+}
+function updateItDisplay() {
+  const m = Math.floor(itRemaining / 60);
+  const s = itRemaining % 60;
+  itDisplay.textContent = m + ':' + String(s).padStart(2, '0');
+  itRingFill.style.strokeDashoffset = String(CIRC * (1 - itRemaining / itDuration));
+}
+function itSetDuration(sec) {
+  itDuration = sec; itRemaining = sec;
+  updateItDisplay();
+  itPreset30.classList.toggle('active', sec === 30);
+  itPreset60.classList.toggle('active', sec === 60);
+  if (itInterval) { clearInterval(itInterval); itInterval = setInterval(tickIt, 1000); }
+}
+itPreset30.addEventListener('click', () => itSetDuration(30));
+itPreset60.addEventListener('click', () => itSetDuration(60));
+
+/* — Pacing séance — */
+function refreshPacingUI(c) {
+  if (!c || !c.pacing || !c.pacing.enabled) return;
+  const sets = c.pacing.sets || [];
+  pacingSetLabel.textContent = 'SÉRIE ' + (pacingIndex+1) + '/' + sets.length;
+  pacingTarget.textContent = 'Objectif · ' + (sets[pacingIndex] || '—');
+  renderPacingChips(c);
+  const tot = sets.reduce((s, t) => s + t, 0);
+  const done = pacingResults.reduce((s, r) => s + r.actual, 0);
+  pacingTotal.textContent = done + ' / ' + tot + ' reps';
+}
+function renderPacingChips(c) {
+  pacingChips.innerHTML = '';
+  (c.pacing.sets || []).forEach((t, i) => {
+    const chip = document.createElement('span');
+    chip.className = 'pacing-chip';
+    if (i < pacingResults.length) {
+      const r = pacingResults[i];
+      chip.textContent = r.actual;
+      chip.classList.add(r.actual >= r.target ? 'ok' : 'miss');
+    } else if (i === pacingIndex && !pacingResting) {
+      chip.textContent = t;
+      chip.classList.add('active');
+    } else {
+      chip.textContent = t;
+    }
+    pacingChips.appendChild(chip);
+  });
+}
+function logPacingSet() {
+  const c = byId(activeId);
+  if (!c || !c.pacing || pacingResting || pacingIndex >= (c.pacing.sets || []).length) return;
+  const actual = c.value - c.start;
+  const target = c.pacing.sets[pacingIndex];
+  pacingResults.push({actual, target});
+  if (!histData[c.id]) histData[c.id] = [];
+  histData[c.id].push({ts: Date.now(), reps: actual, target});
+  persistHist();
+  renderPacingChips(c);
+  const tot = c.pacing.sets.reduce((s, t) => s + t, 0);
+  const done = pacingResults.reduce((s, r) => s + r.actual, 0);
+  pacingTotal.textContent = done + ' / ' + tot + ' reps';
+  vib([25, 15, 80]);
+  const setNum = pacingIndex + 1;
+  const isOk = actual >= target;
+  logBtn.textContent = '✓ Série ' + setNum + ' — ' + actual + '/' + target + (isOk ? ' ✓' : ' ↓');
+  logBtn.style.background = isOk ? 'rgba(48,209,88,0.22)' : 'rgba(251,191,36,0.18)';
+  logBtn.style.borderColor = isOk ? 'rgba(48,209,88,0.5)' : 'rgba(251,191,36,0.4)';
+  logBtn.style.opacity = '1';
+  const isLast = pacingIndex >= c.pacing.sets.length - 1;
+  setTimeout(() => {
+    logBtn.style.background = '';
+    logBtn.style.borderColor = '';
+    if (isLast) { pacingDone(c); return; }
+    c.value = c.start; persist(); refreshNum(c); refreshProg(c);
+    pacingStartRest(c);
+    refreshLogBtn();
+  }, 700);
+}
+function pacingStartRest(c) {
+  pacingResting = true;
+  beepRest();
+  const restSec = c.pacing.rest || 12;
+  itDuration = restSec; itRemaining = restSec;
+  updateItDisplay();
+  itZone.classList.add('on');
+  if (itInterval) clearInterval(itInterval);
+  itInterval = setInterval(() => {
+    itRemaining--;
+    updateItDisplay();
+    if (itRemaining <= 0) {
+      clearInterval(itInterval); itInterval = null;
+      itZone.classList.remove('on');
+      pacingResting = false;
+      pacingIndex++;
+      const cc = byId(activeId); if (!cc || !cc.pacing) return;
+      vib([60, 30, 60]);
+      beepWork();
+      refreshPacingUI(cc);
+      refreshLogBtn();
+    }
+  }, 1000);
+}
+function pacingDone(c) {
+  vib([80, 40, 80, 40, 160]);
+  const total = pacingResults.reduce((s, r) => s + r.actual, 0);
+  const target = (c.pacing.sets || []).reduce((s, t) => s + t, 0);
+  flashBanner(total >= target ? '🏆 ' + total + '/' + target + ' reps !' : '✓ ' + total + '/' + target + ' reps', null);
+  pacingZone.classList.remove('on');
+  itZone.classList.remove('on');
+  logBtn.textContent = '✓ Séance terminée · ' + total + ' reps';
+  logBtn.style.opacity = '0.45';
+}
+
+/* — HIIT Circuit — */
+function fmtHiitTime(s) { return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+
+function loadHiitExList() {
+  hiitExList = hiitCfg.exercises.filter(e => e.trim().length > 0);
+  if (!hiitExList.length) hiitExList = ['Exercice 1'];
+}
+function openHiit() {
+  lv.classList.add('gone');
+  hiitView.classList.remove('gone');
+  loadHiitExList();
+  renderHiitIdle();
+}
+function closeHiit() {
+  if (hiitPhase === 'work' || hiitPhase === 'rest') hiitStopNow();
+  hiitView.classList.add('gone');
+  lv.classList.remove('gone');
+}
+function renderHiitIdle() {
+  hiitPhase = 'idle'; hiitExIdx = 0; hiitRound = 1;
+  hiitPhaseBadge.textContent = 'En attente';
+  hiitPhaseBadge.className = 'hiit-phase-badge';
+  hiitExName.textContent = hiitExList[0] || '—';
+  hiitClock.textContent = fmtHiitTime(hiitCfg.workSec);
+  hiitClock.classList.remove('urgent');
+  hiitRoundLbl.textContent = 'ROUND 1/' + hiitCfg.rounds;
+  hiitRingFill.style.strokeDashoffset = '0';
+  hiitRingFill.classList.remove('rest-color');
+  hiitNext.innerHTML = '';
+  hiitStartBtn.textContent = 'Lancer ⚡';
+  hiitStartBtn.classList.remove('stop-mode');
+  renderHiitChips();
+}
+function renderHiitChips() {
+  hiitChips.innerHTML = '';
+  const N = hiitExList.length;
+  for (let r = 0; r < hiitCfg.rounds; r++) {
+    hiitExList.forEach((ex, i) => {
+      const chip = document.createElement('div');
+      chip.className = 'hiit-chip';
+      chip.textContent = ex;
+      const global = r * N + i;
+      const cur = (hiitRound - 1) * N + hiitExIdx;
+      if (hiitPhase === 'done') {
+        chip.classList.add('h-done');
+      } else if (hiitPhase !== 'idle') {
+        if (global < cur) chip.classList.add('h-done');
+        else if (global === cur) chip.classList.add(hiitPhase === 'rest' ? 'h-rest' : 'h-active');
+      }
+      hiitChips.appendChild(chip);
+    });
+  }
+}
+function hiitShowWork() {
+  const ex = hiitExList[hiitExIdx] || '—';
+  hiitPhaseBadge.textContent = 'Travail';
+  hiitPhaseBadge.className = 'hiit-phase-badge work';
+  hiitExName.textContent = ex;
+  hiitRingFill.classList.remove('rest-color');
+  hiitRingFill.style.strokeDashoffset = '0';
+  hiitRoundLbl.textContent = 'ROUND ' + hiitRound + '/' + hiitCfg.rounds;
+  const isLastInRound = hiitExIdx >= hiitExList.length - 1;
+  const isLastRound = hiitRound >= hiitCfg.rounds;
+  let nextEx = null;
+  if (!isLastInRound) nextEx = hiitExList[hiitExIdx + 1];
+  else if (!isLastRound) nextEx = hiitExList[0];
+  hiitNext.innerHTML = nextEx ? 'Prochain : <strong>' + esc(nextEx) + '</strong>' : '';
+  renderHiitChips();
+}
+function hiitShowRest() {
+  const ex = hiitExList[hiitExIdx] || '—';
+  hiitPhaseBadge.textContent = 'Repos';
+  hiitPhaseBadge.className = 'hiit-phase-badge rest';
+  hiitExName.textContent = ex;
+  hiitRingFill.classList.add('rest-color');
+  hiitRingFill.style.strokeDashoffset = '0';
+  hiitRoundLbl.textContent = 'ROUND ' + hiitRound + '/' + hiitCfg.rounds;
+  hiitNext.innerHTML = '';
+  renderHiitChips();
+}
+function hiitStart() {
+  if (hiitInterval) { clearInterval(hiitInterval); hiitInterval = null; }
+  loadHiitExList();
+  hiitPhase = 'work'; hiitExIdx = 0; hiitRound = 1; hiitTime = hiitCfg.workSec;
+  hiitStartBtn.textContent = 'Arrêter';
+  hiitStartBtn.classList.add('stop-mode');
+  hiitClock.textContent = fmtHiitTime(hiitTime);
+  hiitClock.classList.remove('urgent');
+  hiitShowWork();
+  beepWork(); vib([60]);
+  hiitInterval = setInterval(hiitTick, 1000);
+}
+function hiitStopNow() {
+  if (hiitInterval) { clearInterval(hiitInterval); hiitInterval = null; }
+  renderHiitIdle();
+}
+function hiitTick() {
+  hiitTime--;
+  const dur = hiitPhase === 'work' ? hiitCfg.workSec : hiitCfg.restSec;
+  hiitRingFill.style.strokeDashoffset = String(CIRC * (1 - hiitTime / dur));
+  hiitClock.textContent = fmtHiitTime(hiitTime);
+  hiitClock.classList.toggle('urgent', hiitTime <= 3 && hiitTime > 0);
+  if (hiitTime <= 3 && hiitTime > 0) beepTick();
+  if (hiitTime > 0) return;
+  if (hiitPhase === 'work') {
+    const isLastEx = hiitExIdx >= hiitExList.length - 1;
+    const isLastRound = hiitRound >= hiitCfg.rounds;
+    if (isLastEx && isLastRound) { hiitDone(); return; }
+    hiitExIdx++;
+    if (hiitExIdx >= hiitExList.length) { hiitExIdx = 0; hiitRound++; }
+    hiitPhase = 'rest'; hiitTime = hiitCfg.restSec;
+    vib([60, 30, 60]); beepRest();
+    hiitClock.textContent = fmtHiitTime(hiitTime);
+    hiitClock.classList.remove('urgent');
+    hiitShowRest();
+  } else {
+    hiitPhase = 'work'; hiitTime = hiitCfg.workSec;
+    vib([60, 30, 60]); beepWork();
+    hiitClock.textContent = fmtHiitTime(hiitTime);
+    hiitClock.classList.remove('urgent');
+    hiitShowWork();
+  }
+}
+function hiitDone() {
+  clearInterval(hiitInterval); hiitInterval = null;
+  hiitPhase = 'done';
+  vib([80, 40, 80, 40, 160]); beepDone();
+  hiitPhaseBadge.textContent = 'Terminé !';
+  hiitPhaseBadge.className = 'hiit-phase-badge work';
+  hiitExName.textContent = '🏆 Circuit complet !';
+  hiitClock.textContent = '0:00';
+  hiitClock.classList.remove('urgent');
+  hiitRingFill.style.strokeDashoffset = String(CIRC);
+  hiitNext.innerHTML = '';
+  hiitStartBtn.textContent = 'Recommencer';
+  hiitStartBtn.classList.remove('stop-mode');
+  renderHiitChips();
+}
+
+hiitBtn.addEventListener('click', openHiit);
+hiitBackBtn.addEventListener('click', closeHiit);
+hiitCfgBtn.addEventListener('click', () => openSheet('hiit'));
+hiitStartBtn.addEventListener('click', () => {
+  initAudio();
+  if (hiitPhase === 'work' || hiitPhase === 'rest') { hiitStopNow(); }
+  else { hiitStart(); }
+});
+
+/* — Session timer (auto-runs, never resets mid-session) — */
+function stStart() {
+  if (stRunning) return;
+  stRunning = true; stStartAt = Date.now();
+  stInterval = setInterval(tickSt, 1000);
+  tickSt();
+}
+function stStop() {
+  stRunning = false;
+  clearInterval(stInterval); stInterval = null;
+  stDisplay.textContent = '0:00';
+}
+function tickSt() {
+  const t = Math.floor((Date.now() - stStartAt) / 1000);
+  stDisplay.textContent = Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0');
+}
+
+/* — Log set — */
+function logSet() {
+  const c = byId(activeId); if (!c) return;
+  const reps = c.value - lastLogVal;
+  if (reps <= 0) { vib([10, 20, 10]); return; }
+  const entry = { ts: Date.now(), reps };
+  if (!histData[c.id]) histData[c.id] = [];
+  histData[c.id].push(entry);
+  persistHist();
+  sessionSets.unshift(entry);
+  c.value = c.start; persist(); refreshNum(c); refreshProg(c);
+  lastLogVal = c.start;
+  refreshLogBtn();
+  renderSessionList();
+  vib([25, 15, 80]);
+  logBtn.textContent = '✓ Enregistré !';
+  logBtn.style.background = 'rgba(48,209,88,0.22)';
+  logBtn.style.borderColor = 'rgba(48,209,88,0.5)';
+  logBtn.style.opacity = '1';
+  setTimeout(() => {
+    logBtn.style.background = '';
+    logBtn.style.borderColor = '';
+    refreshLogBtn();
+  }, 1200);
+}
+
+let _logLastTouch = 0;
+logBtn.addEventListener('touchend', e => {
+  e.preventDefault(); _logLastTouch = Date.now();
+  const c = byId(activeId);
+  if (c && c.pacing && c.pacing.enabled) { logPacingSet(); return; }
+  logSet();
+});
+logBtn.addEventListener('click', () => {
+  if (Date.now() - _logLastTouch < 500) return;
+  const c = byId(activeId);
+  if (c && c.pacing && c.pacing.enabled) { logPacingSet(); return; }
+  logSet();
+});
+
+function renderSessionList() {
+  if (!sessionSets.length) { sessionList.style.display = 'none'; return; }
+  sessionList.style.display = 'flex';
+  sessionList.innerHTML = '';
+  sessionSets.forEach((e, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'set-chip' + (i === 0 ? ' chip-new' : '');
+    chip.innerHTML = '<span class="chip-reps">' + e.reps + '</span><span class="chip-detail">' + (e.elapsed ? fmtMs(e.elapsed) : 'reps') + '</span>';
+    sessionList.appendChild(chip);
+  });
+}
+
+/* — AMRAP ring touch — */
+let _ringTX = 0, _ringTY = 0;
+amrapRingWrap.addEventListener('touchstart', e => {
+  _ringTX = e.touches[0].clientX; _ringTY = e.touches[0].clientY;
+}, { passive: true });
+amrapRingWrap.addEventListener('touchend', e => {
+  const dx = Math.abs(e.changedTouches[0].clientX - _ringTX);
+  const dy = Math.abs(e.changedTouches[0].clientY - _ringTY);
+  if (dx < 12 && dy < 12) {
+    e.preventDefault();
+    if (timerRunning) pauseTimer(); else startTimer();
+  }
+});
+
+function startTimer() {
+  if (timerRunning) return;
+  timerRunning = true;
+  amrapRingWrap.classList.add('running');
+  amrapHint.textContent = 'Appuie pour pause';
+  timerEndAt = Date.now() + timerRemaining * 1000;
+  timerInterval = setInterval(tickAccurate, 200);
+  tickAccurate();
+}
+function pauseTimer() {
+  timerRunning = false;
+  amrapRingWrap.classList.remove('running');
+  timerRemaining = Math.max(0, Math.ceil((timerEndAt - Date.now()) / 1000));
+  amrapHint.textContent = 'Appuie pour reprendre';
+  clearInterval(timerInterval); timerInterval = null;
+  const c = byId(activeId); if (c) updateAmrapUI(c);
+}
+function stopTimer() {
+  timerRunning = false;
+  amrapRingWrap.classList.remove('running');
+  clearInterval(timerInterval); timerInterval = null;
+  timerRound = 1; timerRemaining = timerDuration; timerEndAt = 0;
+}
+
+function tickAccurate() {
+  const remaining = Math.max(0, Math.ceil((timerEndAt - Date.now()) / 1000));
+  if (remaining !== timerRemaining) {
+    timerRemaining = remaining;
+    if (timerRemaining <= 0) { onRoundEnd(); return; }
+    if (timerRemaining <= 3) beepTick();
+    const c = byId(activeId); if (c) updateAmrapUI(c);
+  }
+}
+
+function onRoundEnd() {
+  clearInterval(timerInterval); timerInterval = null; timerRunning = false;
+  amrapRingWrap.classList.remove('running');
+  vib([80, 40, 80, 40, 160]);
+  beepDone();
+  const c = byId(activeId);
+  const isSingle = c && c.amrap && c.amrap.singleRound;
+  if (isSingle) {
+    flashBanner('&#127937; Terminé ! ' + (c ? c.value : 0) + ' reps', null);
+    amrapHint.innerHTML = 'Appuie &#8635; pour recommencer';
+    amrapRound.textContent = 'TERMINÉ';
+    timerRemaining = 0;
+    amrapRingFill.style.strokeDashoffset = String(CIRC);
+    amrapClock.textContent = '0:00';
+    return;
+  }
+  flashBanner('&#128260; Round suivant !', null);
+  timerRound++;
+  if (c && c.amrap && c.amrap.autoReset) { c.value = c.start; persist(); refreshNum(c); refreshProg(c); }
+  timerRemaining = timerDuration;
+  if (c) updateAmrapUI(c);
+  setTimeout(() => startTimer(), 600);
+}
+
+function resetTimer() {
+  stopTimer();
+  const c = byId(activeId); if (!c) return;
+  timerDuration = c.amrap.duration || 60;
+  timerRemaining = timerDuration;
+  timerRound = 1; timerEndAt = 0;
+  amrapRingFill.style.strokeDashoffset = '0';
+  amrapHint.textContent = 'Appuie pour lancer';
+  updateAmrapUI(c);
+}
+
+function updateAmrapUI(c) {
+  const m = Math.floor(timerRemaining / 60);
+  const s = timerRemaining % 60;
+  amrapClock.textContent = m + ':' + String(s).padStart(2, '0');
+  const isSingle = c && c.amrap && c.amrap.singleRound;
+  amrapRound.innerHTML = isSingle ? '&#127937; COURSE' : 'Round ' + timerRound;
+  const pct = timerRemaining / timerDuration;
+  amrapRingFill.style.strokeDashoffset = String(CIRC * (1 - pct));
+  amrapClock.classList.toggle('urgent', timerRemaining <= 5 && timerRemaining > 0);
+  if (c && c.amrap && c.amrap.targetReps > 0) {
+    amrapMetaEl.textContent = isSingle ? 'Objectif max : ' + c.amrap.targetReps + ' reps' : 'Objectif : ' + c.amrap.targetReps + ' reps / round';
+  } else { amrapMetaEl.textContent = ''; }
+}
+
+amrapResetBtn.addEventListener('click', resetTimer);
+
+/* — History view — */
+function openHistory(from, focusId) {
+  histFrom = from || 'list';
+  histFocusId = focusId || null;
+  renderHistory();
+  if (histFrom === 'list') lv.classList.add('gone');
+  else cv.classList.add('gone');
+  hv.classList.remove('gone');
+}
+function closeHistory() {
+  hv.classList.add('gone');
+  if (histFrom === 'list') lv.classList.remove('gone');
+  else cv.classList.remove('gone');
+}
+
+histBtn.addEventListener('click', () => openHistory('list'));
+cvHistBtn.addEventListener('click', () => openHistory('counter', activeId));
+histBackBtn.addEventListener('click', closeHistory);
+
+function renderHistory() {
+  histScroll.innerHTML = '';
+  let counters = data.filter(c => histData[c.id] && histData[c.id].length > 0);
+  if (histFocusId) {
+    counters.sort((a, b) => (b.id === histFocusId ? 1 : 0) - (a.id === histFocusId ? 1 : 0));
+  }
+  if (!counters.length) {
+    histScroll.innerHTML = '<div class="hist-empty"><div class="hist-empty-icon">&#128202;</div><div>Aucune série enregistrée</div><div class="hist-empty-sub">Active le mode Séries dans les réglages d\'un compteur, puis appuie sur Enregistrer après chaque série.</div></div>';
+    return;
+  }
+  counters.forEach(counter => {
+    const section = document.createElement('div');
+    section.className = 'hist-counter';
+    const label = document.createElement('div');
+    label.className = 'hist-counter-label';
+    label.innerHTML = '<span class="h-dot" style="background:' + counter.color + '"></span>' + esc(counter.title);
+    section.appendChild(label);
+
+    const entries = histData[counter.id].slice();
+    const byDay = {};
+    entries.forEach(e => {
+      const d = new Date(e.ts); d.setHours(0,0,0,0);
+      const key = d.getTime();
+      if (!byDay[key]) byDay[key] = [];
+      byDay[key].push(e);
+    });
+
+    const days = Object.keys(byDay).map(Number).sort((a, b) => b - a);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+
+    days.forEach(dayTs => {
+      const dayEntries = byDay[dayTs].slice().sort((a, b) => b.ts - a.ts);
+      const dayDiv = document.createElement('div');
+      dayDiv.className = 'hist-day';
+
+      const d = new Date(dayTs);
+      let dayLabel;
+      if (d.getTime() === today.getTime()) dayLabel = "Aujourd'hui";
+      else if (d.getTime() === yesterday.getTime()) dayLabel = 'Hier';
+      else dayLabel = d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+
+      const dayLbl = document.createElement('div');
+      dayLbl.className = 'hist-day-label';
+      dayLbl.textContent = dayLabel;
+      dayDiv.appendChild(dayLbl);
+
+      dayEntries.forEach(e => {
+        const row = document.createElement('div');
+        row.className = 'hist-entry';
+        const t = new Date(e.ts);
+        const timeStr = String(t.getHours()).padStart(2,'0') + ':' + String(t.getMinutes()).padStart(2,'0');
+        row.innerHTML =
+          '<span class="he-reps">' + e.reps + '</span>' +
+          '<span class="he-unit">reps</span>' +
+          (e.elapsed ? '<span class="he-elapsed">&#9201; ' + fmtMs(e.elapsed) + '</span>' : '') +
+          '<span class="he-time">' + timeStr + '</span>';
+        dayDiv.appendChild(row);
+      });
+
+      const total = dayEntries.reduce((s, e) => s + e.reps, 0);
+      const best = Math.max(...dayEntries.map(e => e.reps));
+      const tot = document.createElement('div');
+      tot.className = 'hist-day-total';
+      tot.textContent = 'Total ' + total + ' · Meilleur ' + best + ' · ' + dayEntries.length + ' série' + (dayEntries.length > 1 ? 's' : '');
+      dayDiv.appendChild(tot);
+      section.appendChild(dayDiv);
+    });
+    histScroll.appendChild(section);
+  });
+}
+
+/* — Settings sheet — */
+function openSheet(mode, id) {
+  sheetMode = mode; editId = id || null;
+  const isHiit = (mode === 'hiit');
+  ctrSheetSection.classList.toggle('off', isHiit);
+  hiitSheetSection.classList.toggle('on', isHiit);
+  if (mode === 'hiit') {
+    sheetHdr.textContent = 'Config Circuit HIIT';
+    fHiitExercises.value = hiitCfg.exercises.join(', ');
+    fHiitWork.value = hiitCfg.workSec;
+    fHiitRest.value = hiitCfg.restSec;
+    fHiitRounds.value = hiitCfg.rounds;
+    resetBtn.style.display = 'none'; deleteBtn.style.display = 'none';
+    backdrop.classList.add('on'); sheet.classList.add('on');
+    setTimeout(() => fHiitExercises.focus(), 380);
+    return;
+  }
+  if (mode === 'new') {
+    sheetHdr.textContent = 'Nouveau compteur';
+    fTitle.value = ''; fStart.value = '0'; fStep.value = '1'; fGoal.value = '';
+    fAmrap.checked = false; fAmrapDur.value = '60'; fAmrapReps.value = '5'; fAmrapReset.checked = false; fAmrapSingle.checked = false;
+    amrapFields.style.display = 'none';
+    fSeries.checked = false;
+    fPacing.checked = false; fPacingSets.value = '10,10,9,8,7,6'; fPacingRest.value = '12';
+    pacingFields.style.display = 'none';
+    pickColor(COLORS[0]); resetBtn.style.display = 'none'; deleteBtn.style.display = 'none';
+  } else {
+    const c = byId(id);
+    sheetHdr.textContent = 'Modifier';
+    fTitle.value = c.title; fStart.value = c.start; fStep.value = c.step;
+    fGoal.value = c.goal != null ? c.goal : '';
+    const a = c.amrap || {};
+    fAmrap.checked = !!a.enabled; fAmrapDur.value = a.duration || 60;
+    fAmrapReps.value = a.targetReps || 5; fAmrapReset.checked = !!a.autoReset; fAmrapSingle.checked = !!a.singleRound;
+    amrapFields.style.display = a.enabled ? 'block' : 'none';
+    fSeries.checked = !!c.seriesMode;
+    const p = c.pacing || {};
+    fPacing.checked = !!p.enabled;
+    fPacingSets.value = p.sets ? p.sets.join(',') : '10,10,9,8,7,6';
+    fPacingRest.value = p.rest || 12;
+    pacingFields.style.display = p.enabled ? 'block' : 'none';
+    pickColor(c.color); resetBtn.style.display = 'block'; deleteBtn.style.display = 'block';
+  }
+  backdrop.classList.add('on'); sheet.classList.add('on');
+  setTimeout(() => fTitle.focus(), 380);
+}
+function closeSheet() { backdrop.classList.remove('on'); sheet.classList.remove('on'); }
+
+backdrop.addEventListener('click', closeSheet);
+addBtn.addEventListener('click', () => openSheet('new'));
+editBtn.addEventListener('click', () => activeId && openSheet('edit', activeId));
+
+saveBtn.addEventListener('click', () => {
+  if (sheetMode === 'hiit') {
+    hiitCfg.exercises = fHiitExercises.value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+    if (!hiitCfg.exercises.length) hiitCfg.exercises = ['Exercice 1'];
+    hiitCfg.workSec = Math.max(5, parseInt(fHiitWork.value) || 40);
+    hiitCfg.restSec = Math.max(3, parseInt(fHiitRest.value) || 20);
+    hiitCfg.rounds = Math.max(1, parseInt(fHiitRounds.value) || 1);
+    localStorage.setItem('hiit_cfg', JSON.stringify(hiitCfg));
+    closeSheet();
+    loadHiitExList();
+    renderHiitIdle();
+    return;
+  }
+  const title = fTitle.value.trim() || 'Compteur';
+  const start = parseFloat(fStart.value) || 0;
+  const step = Math.max(1, parseFloat(fStep.value) || 1);
+  const goal = fGoal.value.trim() !== '' ? parseFloat(fGoal.value) : null;
+  const amrap = {
+    enabled: fAmrap.checked,
+    duration: Math.max(5, parseInt(fAmrapDur.value) || 60),
+    targetReps: Math.max(1, parseInt(fAmrapReps.value) || 5),
+    autoReset: fAmrapReset.checked,
+    singleRound: fAmrapSingle.checked
+  };
+  const seriesMode = fSeries.checked;
+  const pacingEnabled = fPacing.checked;
+  const pacingRestSec = Math.max(3, parseInt(fPacingRest.value) || 12);
+  const pacingSets = (fPacingSets.value.trim() || '10,10,9,8,7,6')
+    .split(',').map(s => Math.max(1, parseInt(s.trim()) || 1));
+  const pacing = {enabled: pacingEnabled, sets: pacingSets, rest: pacingRestSec};
+  if (sheetMode === 'new') {
+    const c = { id: uid(), title, value: start, start, step, goal, color: pickedColor, amrap, seriesMode, pacing };
+    data.push(c); persist(); closeSheet(); renderList(); openCounter(c.id);
+  } else {
+    const c = byId(editId);
+    c.title = title; c.start = start; c.step = step; c.goal = goal; c.color = pickedColor; c.amrap = amrap; c.seriesMode = seriesMode; c.pacing = pacing;
+    persist(); closeSheet(); renderList();
+    if (activeId === editId) {
+      cvTitle.textContent = c.title; cv.style.background = c.color; refreshProg(c);
+      const hp = !!(c.pacing && c.pacing.enabled);
+      logZone.style.display = (c.seriesMode || hp) ? 'flex' : 'none';
+      cvHistBtn.style.display = (c.seriesMode || hp) ? 'flex' : 'none';
+      pacingZone.classList.toggle('on', hp);
+      if (!c.seriesMode && !hp) { sessionList.style.display = 'none'; itStop(); stStop(); itZone.classList.remove('on'); }
+      if (c.seriesMode || hp) refreshLogBtn();
+      stopTimer();
+      if (c.amrap.enabled) {
+        amrapZone.classList.add('on'); timerDuration = c.amrap.duration;
+        timerRemaining = timerDuration; timerRound = 1;
+        amrapRingFill.style.strokeDashoffset = '0';
+        amrapHint.textContent = 'Appuie pour lancer';
+        updateAmrapUI(c);
+      } else { amrapZone.classList.remove('on'); }
+    }
+  }
+});
+
+resetBtn.addEventListener('click', () => {
+  const c = byId(editId); if (c) { c.value = c.start; persist(); }
+  closeSheet(); renderList();
+  if (activeId === editId) { refreshNum(byId(editId)); refreshProg(byId(editId)); }
+});
+
+deleteBtn.addEventListener('click', () => {
+  const id = editId;
+  data = data.filter(c => c.id !== id); persist();
+  if (histData[id]) { delete histData[id]; persistHist(); }
+  closeSheet(); renderList();
+  if (activeId === id) { stopTimer(); itStop(); stStop(); itZone.classList.remove('on'); pacingZone.classList.remove('on'); pacingIndex = 0; pacingResults = []; pacingResting = false; cv.classList.add('gone'); lv.classList.remove('gone'); activeId = null; }
+});
+
+document.addEventListener('touchstart', e => {
+  initAudio();
+  if (openCard && !e.target.closest('.card-wrap')) {
+    openCard.style.transition = 'transform 0.22s cubic-bezier(0.4,0,0.2,1)';
+    openCard.style.transform = '';
+    openCard = null;
+  }
+}, { passive: true });
+
+renderList();
+</script>
+</body>
+</html>
