@@ -428,6 +428,7 @@
     .tm-mode.sel { background: var(--text); color: var(--bg); border-color: var(--text); }
     .tm-modes.locked { opacity: 0.32; pointer-events: none; }
     .tm-phase {
+      margin-top: auto;
       font-size: 12px; font-weight: 800; letter-spacing: 0.12em; padding: 5px 18px;
       border-radius: 20px; background: rgba(255,255,255,0.06); color: var(--text-dim);
       text-transform: uppercase; transition: background 0.4s, color 0.4s; flex-shrink: 0;
@@ -1033,9 +1034,9 @@ pickColor(COLORS[0]);
 /* — Mode du compteur : un seul mode actif a la fois — */
 let ctrMode = 'simple';
 const CTR_MODE_HINTS = {
-  simple: 'Compteur nu : tu incrementes, c\'est tout. Ideal pour un total sur la journee.',
-  series: 'Chrono d\'intervalle + bouton « Enregistrer la serie ». Chaque serie part a l\'historique.',
-  pacing: 'Tu programmes tes series a l\'avance (ex : 10,10,9,8,7,6). Repos automatique entre chaque.',
+  simple: 'Compteur nu : tu incrémentes, c\'est tout. Idéal pour un total sur la journée.',
+  series: 'Chrono d\'intervalle + bouton « Enregistrer la série ». Chaque série part à l\'historique.',
+  pacing: 'Tu programmes tes séries à l\'avance (ex : 10,10,9,8,7,6). Repos automatique entre chaque.',
   amrap:  'Chrono par round qui tourne en boucle. Tu comptes tes reps pendant le temps imparti.'
 };
 function setCtrMode(m) {
