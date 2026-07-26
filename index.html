@@ -1,261 +1,589 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Gym Valentine 💪</title>
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Blackhole">
-<link rel="apple-touch-icon" href="icon-180.png">
-<link rel="manifest" href="manifest.json">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+  <title>blackhole</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Blackhole">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-<style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+    :root {
+      --bg: #0d0d0d;
+      --card: #1c1c1e;
+      --border: #2a2a2a;
+      --text: #e8e8e8;
+      --text-dim: #666;
+      --text-mid: #999;
+    }
 
-body {
-  font-family: Arial, sans-serif;
-  min-height: 100vh;
-  background: radial-gradient(circle at top, #2a0000, #000000 70%);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-}
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
 
-/* Particules */
-.hearts {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: max(env(safe-area-inset-top), 52px) 16px max(env(safe-area-inset-bottom), 28px);
+    }
 
-.fall-item {
-  position: absolute;
-  animation: fall linear infinite;
-  will-change: transform, opacity;
-}
+    .wrap {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-.heart {
-  font-size: 24px;
-  filter: drop-shadow(0 10px 18px rgba(0,0,0,.55));
-}
+    /* ── Header ── */
+    .top-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 40px;
+    }
+    .logo { font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: 0.5px; }
+    .icon-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-mid);
+      width: 34px; height: 34px;
+      border-radius: 9px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, color 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .icon-btn:active, .icon-btn.on { background: var(--card); color: var(--text); }
+    .icon-btn svg { width: 16px; height: 16px; }
 
-.plate {
-  width: 44px;
-  height: 44px;
-  background-image: url("plate.png");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  filter: drop-shadow(0 12px 22px rgba(0,0,0,.65));
-  transform: rotate(var(--rot, 0deg));
-}
+    /* ── Settings ── */
+    .settings {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 24px;
+      display: none;
+      gap: 12px;
+      flex-direction: column;
+    }
+    .settings.open { display: flex; }
+    .s-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .s-group label {
+      font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--text-dim); display: block; margin-bottom: 6px;
+    }
+    .s-group select {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      color: var(--text); padding: 9px 10px; border-radius: 9px;
+      font-size: 13px; font-family: inherit; -webkit-appearance: none; cursor: pointer;
+    }
+    .s-group select:focus { outline: none; border-color: var(--text-mid); }
+    .s-full { grid-column: span 2; }
+    .mode-row { display: flex; gap: 6px; }
+    .mode-btn {
+      flex: 1; padding: 9px 6px;
+      border: 1px solid var(--border); background: var(--bg);
+      color: var(--text-dim); border-radius: 9px;
+      cursor: pointer; font-size: 11px; font-family: inherit;
+      transition: all 0.15s; -webkit-tap-highlight-color: transparent;
+    }
+    .mode-btn.on { background: var(--text); color: var(--bg); border-color: var(--text); font-weight: 600; }
 
-@keyframes fall {
-  from { transform: translateY(-12vh) translateX(0); opacity: 0; }
-  10% { opacity: 1; }
-  to   { transform: translateY(112vh) translateX(var(--drift, 0px)); opacity: 0; }
-}
+    /* ── Black hole ── */
+    .hole-area {
+      position: relative;
+      width: 220px; height: 220px;
+      margin-bottom: 28px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      flex-shrink: 0;
+    }
 
-.wrapper {
-  background: white;
-  width: 90%;
-  max-width: 420px;
-  border-radius: 28px;
-  padding: 30px 24px 28px;
-  text-align: center;
-  box-shadow: 0 20px 60px rgba(255,0,0,.35);
-}
+    .ring {
+      position: absolute; border-radius: 50%;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%) rotateX(68deg);
+      pointer-events: none;
+      border: 1px solid;
+    }
+    .r1 { width: 178px; height: 178px; border-color: #2e2e2e; animation: rot 20s linear infinite; }
+    .r2 { width: 210px; height: 210px; border-color: #222; animation: rot 32s linear infinite reverse; }
+    .r3 { width: 240px; height: 240px; border-color: #1a1a1a; animation: rot 48s linear infinite; }
 
-h1 {
-  position: absolute;
-  top: 30px;
-  width: 100%;
-  text-align: center;
-  color: white;
-  font-size: 2.4rem;
-}
+    @keyframes rot {
+      from { transform: translate(-50%,-50%) rotateX(68deg) rotate(0deg); }
+      to   { transform: translate(-50%,-50%) rotateX(68deg) rotate(360deg); }
+    }
 
-h1 span {
-  color: #ff1e1e;
-}
+    .hole-core {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      width: 154px; height: 154px; border-radius: 50%;
+      background: radial-gradient(ellipse at 36% 34%, #1e1e1e 0%, #000 58%);
+      box-shadow: 0 0 0 1px #2a2a2a, 0 0 50px rgba(0,0,0,0.9), inset 0 0 30px #000;
+      transition: box-shadow 0.35s, transform 0.35s;
+    }
 
-.character-image {
-  width: 220px;
-  display: block;
-  margin: 0 auto 18px;
-  animation: float 3s ease-in-out infinite;
-  filter: drop-shadow(0 18px 30px rgba(0,0,0,.45));
-}
+    /* states */
+    .hole-area.ready .hole-core {
+      box-shadow: 0 0 0 1px #555, 0 0 50px rgba(255,255,255,0.06), inset 0 0 30px #000;
+    }
+    .hole-area.ready .r1 { border-color: #3a3a3a; }
+    .hole-area.ready .r2 { border-color: #2e2e2e; }
 
-@keyframes float {
-  0%,100% { transform: translateY(0); }
-  50% { transform: translateY(-14px); }
-}
+    .hole-area.loading .hole-core {
+      box-shadow: 0 0 0 1px #666, 0 0 60px rgba(255,255,255,0.1), inset 0 0 30px #000;
+    }
 
-.question {
-  font-size: 1.35rem;
-  font-weight: bold;
-  color: #e10600;
-  margin-bottom: 22px;
-}
+    .spin-ring {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      width: 164px; height: 164px; border-radius: 50%;
+      border: 1.5px solid transparent;
+      border-top-color: #888;
+      display: none;
+      animation: fast-spin 0.75s linear infinite;
+      pointer-events: none;
+    }
+    .hole-area.loading .spin-ring { display: block; }
+    @keyframes fast-spin { to { transform: translate(-50%,-50%) rotate(360deg); } }
 
-.buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
+    .hole-area.suck .hole-core { animation: suck-anim 0.55s ease-in-out; }
+    @keyframes suck-anim {
+      0%   { transform: translate(-50%,-50%) scale(1); }
+      30%  { transform: translate(-50%,-50%) scale(1.1); }
+      70%  { transform: translate(-50%,-50%) scale(0.93); }
+      100% { transform: translate(-50%,-50%) scale(1); }
+    }
 
-.btn {
-  border: none;
-  padding: 16px;
-  border-radius: 14px;
-  font-size: 1.2rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all .25s ease;
-  width: 100%;
-}
+    /* ── Status ── */
+    .status {
+      text-align: center;
+      min-height: 40px;
+      margin-bottom: 20px;
+    }
+    .status-main {
+      font-size: 14px; color: var(--text); font-weight: 500;
+      transition: opacity 0.2s;
+    }
+    .status-sub {
+      font-size: 12px; color: var(--text-dim); margin-top: 4px;
+      word-break: break-all; max-width: 320px;
+      display: -webkit-box; -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
 
-.yes-button {
-  background: #ff1e1e;
-  color: white;
-  box-shadow: 0 8px 20px rgba(255,30,30,.5);
-}
+    /* ── Manual input (fallback) ── */
+    .manual-wrap {
+      width: 100%; max-width: 380px;
+      margin-bottom: 20px;
+    }
+    .manual-row {
+      display: flex; align-items: center;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .manual-row:focus-within { border-color: #444; }
+    .manual-input {
+      flex: 1; background: none; border: none; outline: none;
+      color: var(--text); font-size: 14px; padding: 11px 14px;
+      font-family: inherit; min-width: 0;
+    }
+    .manual-input::placeholder { color: var(--text-dim); }
+    .manual-go {
+      background: var(--text); border: none; color: var(--bg);
+      padding: 0 14px; height: 44px;
+      cursor: pointer; font-size: 12px; font-weight: 600;
+      font-family: inherit; margin: 4px;
+      border-radius: 9px; white-space: nowrap;
+      transition: opacity 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .manual-go:disabled { opacity: 0.3; cursor: default; }
 
-.no-button {
-  background: #e6e6e6;
-  color: #333;
-}
+    /* ── Results ── */
+    .results { width: 100%; max-width: 380px; }
 
-.yes-button:hover {
-  transform: scale(1.06);
-}
+    .result-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden; display: none;
+    }
+    .result-card.show { display: block; }
+    .result-head {
+      padding: 11px 15px; font-size: 11px; color: var(--text-dim);
+      border-bottom: 1px solid var(--border); letter-spacing: 0.3px;
+    }
+    .dl-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 13px 15px; border-bottom: 1px solid var(--border);
+      text-decoration: none; color: var(--text); gap: 10px;
+      -webkit-tap-highlight-color: transparent; transition: background 0.15s;
+    }
+    .dl-item:last-child { border-bottom: none; }
+    .dl-item:active { background: rgba(255,255,255,0.04); }
+    .dl-name { font-size: 14px; font-weight: 500; }
+    .dl-sub  { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+    .dl-icon {
+      width: 32px; height: 32px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 8px; display: flex;
+      align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .dl-icon svg { width: 14px; height: 14px; }
 
-.footer {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid #eee;
-  font-style: italic;
-  color: #555;
-}
+    .err-card {
+      background: #180e0e; border: 1px solid #3a1a1a;
+      border-radius: 14px; padding: 15px;
+      font-size: 13px; color: #d45555;
+      display: none; line-height: 1.5; text-align: center;
+    }
+    .err-card.show { display: block; }
 
-/* Mobile: tout reste lisible sans casser le look */
-@media (max-width: 480px) {
-  body { align-items: flex-start; padding-top: 72px; }
-  h1 { top: 14px; font-size: 1.85rem; }
-  .wrapper { padding: 20px 16px 20px; border-radius: 22px; }
-  .character-image { width: 160px; margin: 0 auto 12px; }
-  .question { font-size: 1.1rem; margin-bottom: 14px; }
-  .buttons { gap: 12px; }
-  .btn { padding: 14px; font-size: 1.12rem; border-radius: 14px; }
-  .footer { font-size: 0.95rem; margin-top: 14px; }
-}
-</style>
+    /* ── Platforms ── */
+    .platforms {
+      display: flex; gap: 5px; flex-wrap: wrap;
+      justify-content: center; margin-top: 28px;
+    }
+    .plat {
+      font-size: 10px; color: #3a3a3a;
+      border: 1px solid #1e1e1e; border-radius: 6px;
+      padding: 3px 7px;
+    }
+
+    .footer {
+      margin-top: auto; padding-top: 32px;
+      text-align: center; font-size: 10px;
+      color: #2e2e2e; letter-spacing: 1.5px;
+    }
+  </style>
 </head>
-
 <body>
+<div class="wrap">
 
-<h1>Be My <span>Valentine</span> 💪</h1>
-
-<div class="hearts" id="hearts"></div>
-
-<div class="wrapper">
-  <img src="gymbear.png" alt="Gym Bear" class="character-image">
-
-  <div class="question">
-    Tu viens t'entraîner avec moi le jour de la Saint-Valentin ?
+  <div class="top-bar">
+    <span class="logo">blackhole</span>
+    <button class="icon-btn" id="settingsBtn" aria-label="Paramètres">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+           stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
   </div>
 
-  <div class="buttons">
-    <button class="btn yes-button" onclick="handleYes()">Let's train 💥</button>
-    <button class="btn no-button" onclick="handleNo()">Tu es sûre ?</button>
+  <div class="settings" id="settingsPanel">
+    <div class="s-row">
+      <div class="s-group">
+        <label>Qualité vidéo</label>
+        <select id="qualitySel">
+          <option value="max">Max</option>
+          <option value="2160">4K</option>
+          <option value="1440">1440p</option>
+          <option value="1080" selected>1080p</option>
+          <option value="720">720p</option>
+          <option value="480">480p</option>
+          <option value="360">360p</option>
+        </select>
+      </div>
+      <div class="s-group">
+        <label>Format audio</label>
+        <select id="audioSel">
+          <option value="best" selected>Meilleur</option>
+          <option value="mp3">MP3</option>
+          <option value="ogg">OGG</option>
+          <option value="wav">WAV</option>
+          <option value="opus">Opus</option>
+        </select>
+      </div>
+    </div>
+    <div class="s-group s-full">
+      <label>Mode</label>
+      <div class="mode-row">
+        <button class="mode-btn on" data-mode="auto">Auto</button>
+        <button class="mode-btn" data-mode="audio">Audio</button>
+        <button class="mode-btn" data-mode="mute">Muet</button>
+      </div>
+    </div>
   </div>
 
-  <div class="footer">
-    Promis, on fait les jambes ! 😏
+  <!-- Black hole -->
+  <div class="hole-area" id="holeArea">
+    <div class="ring r1"></div>
+    <div class="ring r2"></div>
+    <div class="ring r3"></div>
+    <div class="hole-core"></div>
+    <div class="spin-ring"></div>
   </div>
+
+  <!-- Status text -->
+  <div class="status">
+    <div class="status-main" id="statusMain">Appuie sur le trou</div>
+    <div class="status-sub" id="statusSub">Le lien sera lu depuis ton presse-papiers</div>
+  </div>
+
+  <!-- Manual fallback input -->
+  <div class="manual-wrap" id="manualWrap" style="display:none">
+    <div class="manual-row">
+      <input type="url" class="manual-input" id="manualInput"
+        placeholder="ou colle un lien manuellement…"
+        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <button class="manual-go" id="manualGo" disabled>OK</button>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="results">
+    <div class="result-card" id="resultCard">
+      <div class="result-head" id="resultHead"></div>
+      <div id="resultLinks"></div>
+    </div>
+    <div class="err-card" id="errCard"></div>
+  </div>
+
+  <div class="platforms">
+    <span class="plat">YouTube</span>
+    <span class="plat">Instagram</span>
+    <span class="plat">TikTok</span>
+    <span class="plat">Twitter · X</span>
+    <span class="plat">Facebook</span>
+    <span class="plat">Vimeo</span>
+    <span class="plat">SoundCloud</span>
+    <span class="plat">Twitch</span>
+    <span class="plat">Pinterest</span>
+    <span class="plat">Reddit</span>
+  </div>
+
+  <div class="footer">BLACKHOLE · COBALT</div>
 </div>
 
 <script>
-const messages = [
-  "Vraiment sûre ?",
-  "Même pour les bras ?",
-  "Allez… juste un workout",
-  "Tu vas regretter 😌",
-  "Dernière chance 💪"
-];
+  const holeArea   = document.getElementById('holeArea');
+  const statusMain = document.getElementById('statusMain');
+  const statusSub  = document.getElementById('statusSub');
+  const manualWrap = document.getElementById('manualWrap');
+  const manualInput= document.getElementById('manualInput');
+  const manualGo   = document.getElementById('manualGo');
+  const settingsBtn= document.getElementById('settingsBtn');
+  const settingsPanel = document.getElementById('settingsPanel');
+  const qualitySel = document.getElementById('qualitySel');
+  const audioSel   = document.getElementById('audioSel');
+  const resultCard = document.getElementById('resultCard');
+  const resultHead = document.getElementById('resultHead');
+  const resultLinks= document.getElementById('resultLinks');
+  const errCard    = document.getElementById('errCard');
 
-let index = 0;
+  let dlMode = 'auto';
+  let isLoading = false;
 
-function handleNo() {
-  const noBtn = document.querySelector('.no-button');
-  const yesBtn = document.querySelector('.yes-button');
+  /* ── Settings ── */
+  settingsBtn.addEventListener('click', () => {
+    settingsPanel.classList.toggle('open');
+    settingsBtn.classList.toggle('on');
+  });
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      dlMode = btn.dataset.mode;
+    });
+  });
 
-  noBtn.textContent = messages[index % messages.length];
-  index++;
+  /* ── Manual input ── */
+  manualInput.addEventListener('input', () => {
+    manualGo.disabled = !manualInput.value.trim();
+  });
+  manualGo.addEventListener('click', () => {
+    const url = manualInput.value.trim();
+    if (url) startDownload(url);
+  });
+  manualInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !manualGo.disabled) startDownload(manualInput.value.trim());
+  });
 
-  // Version d'origine: le bouton YES grossit progressivement
-  const size = parseFloat(getComputedStyle(yesBtn).fontSize);
-  yesBtn.style.fontSize = (size * 1.12) + "px";
+  /* ── Hole tap: read clipboard then download ── */
+  holeArea.addEventListener('click', async () => {
+    if (isLoading) return;
 
-  // Particules à chaque "non"
-  for (let k = 0; k < 3; k++) createFallingItem();
-}
+    let url = '';
+    try {
+      url = (await navigator.clipboard.readText()).trim();
+    } catch {
+      /* clipboard access denied or not available */
+    }
 
-function handleYes() {
-  // Au clic sur YES, on va sur la page vidéo
-  window.location.href = "page2.html";
-}
+    if (url && isValidUrl(url)) {
+      statusSub.textContent = url;
+      startDownload(url);
+    } else {
+      /* no URL in clipboard → show manual input */
+      manualWrap.style.display = 'block';
+      manualInput.focus();
+      setStatus('Colle un lien ci-dessous', url ? 'Ce lien ne semble pas valide' : 'Rien trouvé dans le presse-papiers');
+      holeArea.classList.remove('ready');
+    }
+  });
 
-function createFallingItem() {
-  const el = document.createElement("div");
-  el.className = "fall-item";
-
-  // 70% coeurs, 30% disques
-  const isHeart = Math.random() < 0.70;
-
-  if (isHeart) {
-    el.classList.add("heart");
-    el.textContent = "❤️";
-  } else {
-    el.classList.add("plate");
-    el.style.setProperty("--rot", (Math.random() * 360) + "deg");
+  function isValidUrl(s) {
+    try { return ['http:','https:'].includes(new URL(s).protocol); } catch { return false; }
   }
 
-  el.style.left = (Math.random() * 100) + "%";
-
-  const dur = (2 + Math.random() * 3);
-  el.style.animationDuration = dur + "s";
-
-  const drift = (Math.random() - 0.5) * 160;
-  el.style.setProperty("--drift", drift + "px");
-
-  // Taille aléatoire
-  if (!isHeart) {
-    const s = 28 + Math.random() * 34;
-    el.style.width = s + "px";
-    el.style.height = s + "px";
-  } else {
-    const fs = 20 + Math.random() * 18;
-    el.style.fontSize = fs + "px";
+  /* ── Check clipboard on load / returning to app ── */
+  async function checkClipboard() {
+    try {
+      const text = (await navigator.clipboard.readText()).trim();
+      if (text && isValidUrl(text)) {
+        holeArea.classList.add('ready');
+        setStatus('Lien prêt — appuie sur le trou', shorten(text));
+      }
+    } catch { /* silently ignore */ }
   }
 
-  document.getElementById("hearts").appendChild(el);
-  setTimeout(() => el.remove(), (dur * 1000) + 300);
-}
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && !isLoading) {
+      checkClipboard();
+    }
+  });
+  /* try on load too (may fail without gesture on some browsers) */
+  checkClipboard();
 
-// Pluie continue (coeurs + disques)
-setInterval(() => {
-  if (Math.random() > 0.35) createFallingItem();
-}, 260);
+  function shorten(url) {
+    try {
+      const u = new URL(url);
+      return u.hostname.replace('www.','') + u.pathname.slice(0, 40) + (u.pathname.length > 40 ? '…' : '');
+    } catch { return url.slice(0, 50); }
+  }
+
+  function setStatus(main, sub) {
+    statusMain.textContent = main;
+    statusSub.textContent = sub || '';
+  }
+
+  function clearResults() {
+    resultCard.classList.remove('show');
+    errCard.classList.remove('show');
+  }
+
+  /* ── Download flow ── */
+  async function startDownload(url) {
+    isLoading = true;
+    clearResults();
+    holeArea.classList.remove('ready', 'suck');
+    holeArea.classList.add('loading');
+    setStatus('Aspiration en cours…', shorten(url));
+
+    try {
+      const data = await cobalt(url);
+      holeArea.classList.remove('loading');
+      holeArea.classList.add('suck');
+      setTimeout(() => holeArea.classList.remove('suck'), 600);
+      showResult(data);
+      setStatus('Téléchargement prêt', shorten(url));
+    } catch (e) {
+      holeArea.classList.remove('loading');
+      errCard.textContent = e.message;
+      errCard.classList.add('show');
+      setStatus('Appuie sur le trou', 'Le lien sera lu depuis ton presse-papiers');
+    }
+
+    isLoading = false;
+  }
+
+  async function cobalt(url) {
+    let res;
+    try {
+      res = await fetch('https://api.cobalt.tools/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          url,
+          videoQuality: qualitySel.value,
+          audioFormat: audioSel.value,
+          downloadMode: dlMode
+        })
+      });
+    } catch {
+      throw new Error('Impossible de contacter le serveur. Vérifie ta connexion.');
+    }
+
+    let d;
+    try { d = await res.json(); } catch { throw new Error('Réponse serveur invalide.'); }
+
+    if (d.status === 'error' || !res.ok) {
+      const code = d?.error?.code || '';
+      if (code.includes('link.unsupported')) throw new Error('Ce site n\'est pas supporté.');
+      if (code.includes('link.invalid') || code.includes('link.empty')) throw new Error('Lien invalide.');
+      if (code.includes('rate') || d.status === 'rate-limit') throw new Error('Trop de requêtes — réessaie dans quelques secondes.');
+      if (code.includes('fetch.empty')) throw new Error('Aucun contenu trouvé à cette URL.');
+      throw new Error(code ? code.replace('error.api.', '') : 'Erreur. Réessaie.');
+    }
+
+    if (d.status === 'picker') {
+      return {
+        head: `${d.picker.length} fichier(s) disponible(s)`,
+        links: d.picker.slice(0, 10).map((it, i) => ({
+          name: it.type === 'photo' ? `Photo ${i+1}` : `Vidéo ${i+1}`,
+          sub: it.type || 'media',
+          url: it.url
+        }))
+      };
+    }
+
+    if (d.url) {
+      const isAudio = dlMode === 'audio';
+      const q = qualitySel.value === 'max' ? 'max' : qualitySel.value + 'p';
+      return {
+        head: 'Prêt à télécharger',
+        links: [{
+          name: isAudio ? 'Télécharger l\'audio' : 'Télécharger la vidéo',
+          sub: isAudio ? audioSel.value : q,
+          url: d.url
+        }]
+      };
+    }
+
+    throw new Error('Réponse inattendue.');
+  }
+
+  function showResult(r) {
+    resultHead.textContent = r.head;
+    resultLinks.innerHTML = '';
+    r.links.forEach(l => {
+      const a = document.createElement('a');
+      a.className = 'dl-item';
+      a.href = l.url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.setAttribute('download', '');
+      a.innerHTML = `
+        <div>
+          <div class="dl-name">${l.name}</div>
+          <div class="dl-sub">${l.sub}</div>
+        </div>
+        <div class="dl-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14M5 12l7 7 7-7"/>
+          </svg>
+        </div>`;
+      resultLinks.appendChild(a);
+    });
+    resultCard.classList.add('show');
+  }
 </script>
-
 </body>
 </html>

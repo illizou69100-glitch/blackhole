@@ -399,56 +399,134 @@
     .btn-save { background: var(--text); color: var(--bg); }
     .btn-reset { background: #2c2c2e; color: var(--text); }
     .btn-del   { background: #2c2c2e; color: #f87171; }
-    /* ── HIIT View ─────────────────────── */
-    #hiitView {
+    /* ── Chrono / Timer View ───────────── */
+    #timerView {
       background: var(--bg); display: flex; flex-direction: column; align-items: center;
       padding-top: max(env(safe-area-inset-top), 52px);
-      padding-bottom: max(env(safe-area-inset-bottom), 24px);
+      padding-bottom: max(env(safe-area-inset-bottom), 18px);
+      transition: background 0.55s ease;
     }
-    .hiit-hdr { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 4px 16px 14px; }
-    .hiit-phase-badge {
-      font-size: 12px; font-weight: 700; letter-spacing: 0.08em; padding: 5px 16px;
+    #timerView.ph-prep      { background: #08182b; }
+    #timerView.ph-work      { background: #08240f; }
+    #timerView.ph-rest      { background: #2a1c04; }
+    #timerView.ph-cyclerest { background: #1d1033; }
+    #timerView.ph-cooldown  { background: #052228; }
+    #timerView.ph-done      { background: #2b2405; }
+    .tm-hdr { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 4px 16px 10px; }
+    .tm-hdr-title { font-size: 15px; font-weight: 700; }
+    .tm-modes {
+      display: flex; gap: 6px; padding: 0 14px 10px; width: 100%;
+      overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+    }
+    .tm-modes::-webkit-scrollbar { display: none; }
+    .tm-mode {
+      flex: 1 0 auto; padding: 8px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.11);
+      background: rgba(255,255,255,0.04); color: var(--text-dim);
+      font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer;
+      -webkit-tap-highlight-color: transparent; white-space: nowrap; transition: all 0.2s;
+    }
+    .tm-mode.sel { background: var(--text); color: var(--bg); border-color: var(--text); }
+    .tm-modes.locked { opacity: 0.32; pointer-events: none; }
+    .tm-phase {
+      margin-top: auto;
+      font-size: 12px; font-weight: 800; letter-spacing: 0.12em; padding: 5px 18px;
       border-radius: 20px; background: rgba(255,255,255,0.06); color: var(--text-dim);
-      text-transform: uppercase; transition: background 0.4s, color 0.4s;
+      text-transform: uppercase; transition: background 0.4s, color 0.4s; flex-shrink: 0;
     }
-    .hiit-phase-badge.work { background: rgba(52,199,89,0.18); color: #34c759; }
-    .hiit-phase-badge.rest { background: rgba(255,159,10,0.18); color: #ff9f0a; }
-    .hiit-ex-name {
-      font-size: clamp(20px, 5.5vw, 30px); font-weight: 800; text-align: center;
-      padding: 8px 20px 0; min-height: 50px; letter-spacing: -0.02em;
+    .tm-phase.p-prep      { background: rgba(50,140,255,0.2); color: #56a8ff; }
+    .tm-phase.p-work      { background: rgba(52,199,89,0.2);  color: #34c759; }
+    .tm-phase.p-rest      { background: rgba(255,159,10,0.2);  color: #ff9f0a; }
+    .tm-phase.p-cyclerest { background: rgba(175,110,255,0.2); color: #af6eff; }
+    .tm-phase.p-cooldown  { background: rgba(50,199,222,0.2);  color: #32c7de; }
+    .tm-phase.p-done      { background: rgba(255,214,10,0.2);  color: #ffd60a; }
+    .tm-ex {
+      font-size: clamp(19px, 5.4vw, 29px); font-weight: 800; text-align: center;
+      padding: 9px 20px 0; min-height: 44px; letter-spacing: -0.02em; line-height: 1.15;
     }
-    .hiit-ring-wrap { position: relative; width: 186px; height: 186px; margin: 8px auto 0; flex-shrink: 0; }
-    .hiit-ring-wrap svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-    .hiit-ring-bg { stroke: rgba(255,255,255,0.07); }
-    .hiit-ring-fill { stroke: #34c759; stroke-linecap: round; transform-origin: 50% 50%; transform: rotate(-90deg); transition: stroke 0.4s; }
-    .hiit-ring-fill.rest-color { stroke: #ff9f0a; }
-    .hiit-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .hiit-clock { font-size: 48px; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
-    .hiit-clock.urgent { color: #ff453a; }
-    .hiit-round-lbl { font-size: 11px; color: var(--text-dim); margin-top: 2px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
-    .hiit-next { font-size: 13px; color: var(--text-dim); margin-top: 8px; min-height: 20px; text-align: center; padding: 0 20px; }
-    .hiit-next strong { color: var(--text); font-weight: 700; }
-    .hiit-chips { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; padding: 10px 16px 0; width: 100%; }
-    .hiit-chip {
-      font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px;
+    .tm-ring-wrap { position: relative; width: min(200px, 54vw); aspect-ratio: 1; margin: 6px auto 0; flex-shrink: 0; }
+    .tm-ring-wrap svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .tm-ring-bg { stroke: rgba(255,255,255,0.07); }
+    .tm-ring-fill {
+      stroke: #34c759; stroke-linecap: round;
+      transform-origin: 50% 50%; transform: rotate(-90deg);
+      transition: stroke 0.45s, stroke-dashoffset 0.25s linear;
+    }
+    .tm-ring-fill.c-prep      { stroke: #56a8ff; }
+    .tm-ring-fill.c-work      { stroke: #34c759; }
+    .tm-ring-fill.c-rest      { stroke: #ff9f0a; }
+    .tm-ring-fill.c-cyclerest { stroke: #af6eff; }
+    .tm-ring-fill.c-cooldown  { stroke: #32c7de; }
+    .tm-ring-fill.c-done      { stroke: #ffd60a; }
+    .tm-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .tm-clock { font-size: clamp(42px, 13vw, 56px); font-weight: 700; letter-spacing: -0.035em; font-variant-numeric: tabular-nums; line-height: 1; }
+    .tm-clock.urgent { color: #ff453a; }
+    .tm-sub { font-size: 11px; color: var(--text-dim); margin-top: 5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+    .tm-next { font-size: 13px; color: var(--text-dim); margin-top: 9px; min-height: 19px; text-align: center; padding: 0 20px; }
+    .tm-next strong { color: var(--text); font-weight: 700; }
+    .tm-total {
+      width: calc(100% - 36px); margin: 11px auto 0; flex-shrink: 0;
+      display: flex; flex-direction: column; gap: 5px;
+    }
+    .tm-total-track { height: 4px; border-radius: 4px; background: rgba(255,255,255,0.1); overflow: hidden; }
+    .tm-total-fill { height: 100%; background: var(--text); border-radius: 4px; transition: width 0.3s linear; }
+    .tm-total-lbl { font-size: 11px; color: var(--text-dim); display: flex; justify-content: space-between; font-variant-numeric: tabular-nums; }
+    .tm-chips {
+      display: flex; gap: 4px; justify-content: flex-start; align-items: center;
+      padding: 10px 16px 0; width: 100%; overflow-x: auto;
+      -webkit-overflow-scrolling: touch; scrollbar-width: none; min-height: 34px;
+    }
+    .tm-chips::-webkit-scrollbar { display: none; }
+    .tm-chip {
+      flex: 0 0 auto; font-size: 11px; font-weight: 700; padding: 5px 11px; border-radius: 20px;
       border: 1px solid rgba(255,255,255,0.1); color: var(--text-dim);
-      white-space: nowrap; max-width: 110px; overflow: hidden; text-overflow: ellipsis; transition: all 0.25s;
+      white-space: nowrap; max-width: 128px; overflow: hidden; text-overflow: ellipsis; transition: all 0.25s;
     }
-    .hiit-chip.h-active { border-color: #34c759; color: #34c759; background: rgba(52,199,89,0.1); }
-    .hiit-chip.h-rest   { border-color: #ff9f0a; color: #ff9f0a; background: rgba(255,159,10,0.1); }
-    .hiit-chip.h-done   { opacity: 0.28; }
-    .hiit-start-btn {
-      margin-top: auto; width: calc(100% - 40px); flex-shrink: 0;
-      padding: 16px; border: none; border-radius: 16px;
-      background: #34c759; color: #000; font-size: 17px; font-weight: 700;
-      font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent;
-      transition: opacity 0.15s, background 0.3s;
+    .tm-chip.c-on   { border-color: #34c759; color: #34c759; background: rgba(52,199,89,0.12); }
+    .tm-chip.c-rest { border-color: #ff9f0a; color: #ff9f0a; background: rgba(255,159,10,0.12); }
+    .tm-chip.c-off  { opacity: 0.3; }
+    .tm-controls { margin-top: auto; width: 100%; padding: 14px 18px 0; display: flex; gap: 9px; align-items: center; flex-shrink: 0; }
+    .tm-btn {
+      padding: 16px 10px; border: none; border-radius: 16px;
+      font-size: 16px; font-weight: 700; font-family: inherit; cursor: pointer;
+      -webkit-tap-highlight-color: transparent; transition: opacity 0.15s, background 0.3s;
     }
-    .hiit-start-btn:active { opacity: 0.75; }
-    .hiit-start-btn.stop-mode { background: #ff453a; color: #fff; }
-    #hiitSheetSection { display: none; }
-    #hiitSheetSection.on { display: block; }
+    .tm-btn:active { opacity: 0.7; }
+    .tm-btn-main { flex: 1; background: #34c759; color: #000; }
+    .tm-btn-main.running { background: #ff9f0a; }
+    .tm-btn-side {
+      flex: 0 0 58px; background: rgba(255,255,255,0.09); color: var(--text);
+      font-size: 13px; padding: 16px 0;
+    }
+    .tm-btn-side:disabled { opacity: 0.25; }
+    .tm-preset-row { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 2px; }
+    .tm-preset {
+      padding: 9px 13px; border-radius: 11px; border: 1px solid rgba(255,255,255,0.12);
+      background: #1c1c1e; color: var(--text-dim); font-size: 12.5px; font-weight: 700;
+      font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: all 0.18s;
+    }
+    .tm-preset:active { background: #2c2c2e; }
+    .tm-summary {
+      font-size: 12.5px; color: var(--text-dim); text-align: center;
+      padding: 8px 20px 0; line-height: 1.5; font-variant-numeric: tabular-nums;
+    }
+    .tm-summary strong { color: var(--text); font-weight: 700; }
+    #tmSheetSection { display: none; }
+    #tmSheetSection.on { display: block; }
     #ctrSheetSection.off { display: none; }
+    .tm-hide { display: none !important; }
+    /* ── Sélecteur de mode du compteur ── */
+    .seg {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+      background: #1c1c1e; padding: 4px; border-radius: 13px;
+    }
+    .seg button {
+      padding: 10px 4px; border: none; border-radius: 10px;
+      background: transparent; color: var(--text-dim);
+      font-size: 12.5px; font-weight: 700; font-family: inherit; cursor: pointer;
+      -webkit-tap-highlight-color: transparent; transition: background 0.18s, color 0.18s;
+    }
+    .seg button.sel { background: var(--text); color: var(--bg); }
+    .seg-hint { font-size: 12px; color: var(--text-dim); line-height: 1.45; padding: 8px 2px 0; }
   </style>
 </head>
 <body>
@@ -569,32 +647,41 @@
   <div class="hist-scroll" id="histScroll"></div>
 </div>
 
-<div class="view gone" id="hiitView">
-  <div class="hiit-hdr">
-    <button class="hdr-btn" id="hiitBackBtn" aria-label="Retour">
+<div class="view gone" id="timerView">
+  <div class="tm-hdr">
+    <button class="hdr-btn" id="tmBackBtn" aria-label="Retour">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
     </button>
-    <span style="font-size:15px;font-weight:700">Circuit HIIT</span>
-    <button class="hdr-btn" id="hiitCfgBtn" aria-label="Configurer">
+    <span class="tm-hdr-title" id="tmHdrTitle">Chrono</span>
+    <button class="hdr-btn" id="tmCfgBtn" aria-label="Configurer">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
   </div>
-  <div class="hiit-phase-badge" id="hiitPhaseBadge">En attente</div>
-  <div class="hiit-ex-name" id="hiitExName">—</div>
-  <div class="hiit-ring-wrap">
+  <div class="tm-modes" id="tmModes"></div>
+  <div class="tm-phase" id="tmPhase">Pr&#234;t</div>
+  <div class="tm-ex" id="tmEx">&#8212;</div>
+  <div class="tm-ring-wrap">
     <svg viewBox="0 0 110 110">
-      <circle class="hiit-ring-bg" cx="55" cy="55" r="48" fill="none" stroke-width="8"/>
-      <circle class="hiit-ring-fill" id="hiitRingFill" cx="55" cy="55" r="48" fill="none" stroke-width="8"
+      <circle class="tm-ring-bg" cx="55" cy="55" r="48" fill="none" stroke-width="8"/>
+      <circle class="tm-ring-fill" id="tmRingFill" cx="55" cy="55" r="48" fill="none" stroke-width="8"
         stroke-dasharray="301.6" stroke-dashoffset="0"/>
     </svg>
-    <div class="hiit-center">
-      <span class="hiit-clock" id="hiitClock">0:40</span>
-      <span class="hiit-round-lbl" id="hiitRoundLbl">ROUND 1</span>
+    <div class="tm-center">
+      <span class="tm-clock" id="tmClock">0:20</span>
+      <span class="tm-sub" id="tmSub">ROUND 1/8</span>
     </div>
   </div>
-  <div class="hiit-next" id="hiitNext"></div>
-  <div class="hiit-chips" id="hiitChips"></div>
-  <button class="hiit-start-btn" id="hiitStartBtn">Lancer &#x26A1;</button>
+  <div class="tm-next" id="tmNext"></div>
+  <div class="tm-total">
+    <div class="tm-total-track"><div class="tm-total-fill" id="tmTotalFill" style="width:0%"></div></div>
+    <div class="tm-total-lbl"><span id="tmElapsed">0:00</span><span id="tmRemain">4:00</span></div>
+  </div>
+  <div class="tm-chips" id="tmChips"></div>
+  <div class="tm-controls">
+    <button class="tm-btn tm-btn-side" id="tmResetBtn" aria-label="R&#233;initialiser">&#8635;</button>
+    <button class="tm-btn tm-btn-main" id="tmMainBtn">Lancer</button>
+    <button class="tm-btn tm-btn-side" id="tmSkipBtn" aria-label="Phase suivante">&#9197;</button>
+  </div>
 </div>
 
 <div id="backdrop"></div>
@@ -620,11 +707,15 @@
   </div>
 
   <div class="section-sep"></div>
-  <div class="section-label">Mode AMRAP / Chrono</div>
-  <div class="toggle-row">
-    <span>Activer le chrono automatique</span>
-    <label class="toggle"><input type="checkbox" id="fAmrap"><span class="slider"></span></label>
+  <div class="section-label">Mode du compteur</div>
+  <div class="seg" id="ctrModeSeg">
+    <button type="button" data-m="simple">Simple</button>
+    <button type="button" data-m="series">S&#233;ries</button>
+    <button type="button" data-m="pacing">Pacing</button>
+    <button type="button" data-m="amrap">AMRAP</button>
   </div>
+  <div class="seg-hint" id="ctrModeHint"></div>
+
   <div id="amrapFields" style="display:none">
     <div class="fields-row">
       <div class="field"><label>Duree par round (sec)</label><input type="number" id="fAmrapDur" value="60" min="5" max="3600"></div>
@@ -640,19 +731,6 @@
     </div>
   </div>
 
-  <div class="section-sep"></div>
-  <div class="section-label">S&#233;ries &amp; historique</div>
-  <div class="toggle-row">
-    <span>Mode s&#233;ries &#8212; chrono + log par s&#233;rie</span>
-    <label class="toggle"><input type="checkbox" id="fSeries"><span class="slider"></span></label>
-  </div>
-
-  <div class="section-sep"></div>
-  <div class="section-label">Pacing S&#233;ance</div>
-  <div class="toggle-row">
-    <span>S&#233;quence de s&#233;ries programm&#233;es</span>
-    <label class="toggle"><input type="checkbox" id="fPacing"><span class="slider"></span></label>
-  </div>
   <div id="pacingFields" style="display:none">
     <div class="field">
       <label>S&#233;ries cibles (ex&nbsp;: 10,10,9,8,7,6)</label>
@@ -665,19 +743,52 @@
   </div>
   </div><!-- end ctrSheetSection -->
 
-  <div id="hiitSheetSection">
+  <div id="tmSheetSection">
     <div class="field">
+      <label>Pr&#233;r&#233;glages</label>
+      <div class="tm-preset-row" id="tmPresetRow"></div>
+    </div>
+
+    <div class="field" id="tmExField">
       <label>Exercices (s&#233;par&#233;s par des virgules)</label>
-      <input type="text" id="fHiitExercises" placeholder="Burpees, Squat, Pompes, Gainage" maxlength="200">
+      <input type="text" id="fTmEx" placeholder="Burpees, Squat, Pompes, Gainage" maxlength="240">
     </div>
+
     <div class="fields-row">
-      <div class="field"><label>Travail (sec)</label><input type="number" id="fHiitWork" value="40" min="5" max="300"></div>
-      <div class="field"><label>Repos (sec)</label><input type="number" id="fHiitRest" value="20" min="3" max="300"></div>
+      <div class="field"><label>Travail (sec)</label><input type="number" id="fTmWork" value="20" min="1" max="900"></div>
+      <div class="field" id="tmRestField"><label>Repos (sec)</label><input type="number" id="fTmRest" value="10" min="0" max="900"></div>
     </div>
+
+    <div class="fields-row">
+      <div class="field"><label>Rounds par cycle</label><input type="number" id="fTmRounds" value="8" min="1" max="99"></div>
+      <div class="field"><label>Cycles</label><input type="number" id="fTmCycles" value="1" min="1" max="30"></div>
+    </div>
+
+    <div class="fields-row">
+      <div class="field"><label>Pr&#233;paration (sec)</label><input type="number" id="fTmPrep" value="10" min="0" max="120"></div>
+      <div class="field"><label>Repos entre cycles (sec)</label><input type="number" id="fTmCycleRest" value="60" min="0" max="900"></div>
+    </div>
+
     <div class="field">
-      <label>Rounds</label>
-      <input type="number" id="fHiitRounds" value="1" min="1" max="20">
+      <label>R&#233;cup&#233;ration finale (sec)</label>
+      <input type="number" id="fTmCooldown" value="0" min="0" max="900">
     </div>
+
+    <div class="section-sep"></div>
+    <div class="toggle-row">
+      <span>&#128266; Sons &amp; bips</span>
+      <label class="toggle"><input type="checkbox" id="fTmSound" checked><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <span>&#128241; Garder l'&#233;cran allum&#233;</span>
+      <label class="toggle"><input type="checkbox" id="fTmWake" checked><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <span>&#128243; Vibrations</span>
+      <label class="toggle"><input type="checkbox" id="fTmVib" checked><span class="slider"></span></label>
+    </div>
+
+    <div class="tm-summary" id="tmCfgSummary"></div>
   </div>
 
   <div class="actions">
@@ -712,9 +823,54 @@ let stInterval = null, stRunning = false, stStartAt = 0;
 let sessionSets = [], lastLogVal = 0;
 let histFrom = 'list', histFocusId = null;
 let pacingIndex = 0, pacingResults = [], pacingResting = false;
-let hiitCfg = JSON.parse(localStorage.getItem('hiit_cfg') || 'null') || {exercises:['Burpees','Squat','Mountain climbers','Pompes','Gainage'], workSec:40, restSec:20, rounds:1};
-let hiitPhase = 'idle', hiitExIdx = 0, hiitRound = 1, hiitTime = 0, hiitInterval = null, hiitExList = [];
 let audioCtx = null;
+
+/* — Chrono multi-modes (Tabata / Circuit / EMOM / Perso) — */
+const TM_MODES = [
+  { id:'tabata',  name:'Tabata',  hasEx:false, hint:'20s effort / 10s repos × 8' },
+  { id:'circuit', name:'Circuit', hasEx:true,  hint:'Encha&#238;ne des exercices nomm&#233;s' },
+  { id:'emom',    name:'EMOM',    hasEx:true,  hint:'Every Minute On the Minute' },
+  { id:'custom',  name:'Perso',   hasEx:true,  hint:'Tout est r&#233;glable' }
+];
+const TM_DEFAULTS = {
+  tabata:  { workSec:20, restSec:10, rounds:8,  cycles:1, prepSec:10, cycleRestSec:60, cooldownSec:0,  exercises:[] },
+  circuit: { workSec:40, restSec:20, rounds:5,  cycles:1, prepSec:10, cycleRestSec:60, cooldownSec:0,  exercises:['Burpees','Squat','Mountain climbers','Pompes','Gainage'] },
+  emom:    { workSec:60, restSec:0,  rounds:10, cycles:1, prepSec:10, cycleRestSec:0,  cooldownSec:0,  exercises:['Effort'] },
+  custom:  { workSec:45, restSec:15, rounds:6,  cycles:2, prepSec:10, cycleRestSec:90, cooldownSec:60, exercises:['Effort'] }
+};
+const TM_PRESETS = [
+  { label:'Tabata 20/10 ×8',  mode:'tabata',  cfg:{workSec:20, restSec:10, rounds:8,  cycles:1, prepSec:10, cycleRestSec:60, cooldownSec:0} },
+  { label:'Tabata ×4 cycles', mode:'tabata',  cfg:{workSec:20, restSec:10, rounds:8,  cycles:4, prepSec:10, cycleRestSec:60, cooldownSec:0} },
+  { label:'HIIT 40/20 ×5',    mode:'circuit', cfg:{workSec:40, restSec:20, rounds:5,  cycles:1, prepSec:10, cycleRestSec:60, cooldownSec:0} },
+  { label:'HIIT 30/30 ×8',    mode:'circuit', cfg:{workSec:30, restSec:30, rounds:8,  cycles:1, prepSec:10, cycleRestSec:60, cooldownSec:0} },
+  { label:'EMOM 10 min',      mode:'emom',    cfg:{workSec:60, restSec:0,  rounds:10, cycles:1, prepSec:10, cycleRestSec:0,  cooldownSec:0} },
+  { label:'EMOM 20 min',      mode:'emom',    cfg:{workSec:60, restSec:0,  rounds:20, cycles:1, prepSec:10, cycleRestSec:0,  cooldownSec:0} }
+];
+const TM_OPTS_DEFAULT = { sound:true, wake:true, vib:true };
+
+let tmStore = JSON.parse(localStorage.getItem('tm_cfg_v2') || 'null');
+if (!tmStore) {
+  tmStore = { mode:'tabata', opts:{...TM_OPTS_DEFAULT}, cfgs:{} };
+  TM_MODES.forEach(m => { tmStore.cfgs[m.id] = {...TM_DEFAULTS[m.id]}; });
+  // migration depuis l'ancien mode HIIT
+  const old = JSON.parse(localStorage.getItem('hiit_cfg') || 'null');
+  if (old) {
+    tmStore.mode = 'circuit';
+    tmStore.cfgs.circuit = { ...TM_DEFAULTS.circuit,
+      workSec: old.workSec || 40, restSec: old.restSec || 20,
+      exercises: old.exercises || TM_DEFAULTS.circuit.exercises,
+      rounds: (old.exercises || []).length || 5, cycles: old.rounds || 1 };
+  }
+}
+TM_MODES.forEach(m => { if (!tmStore.cfgs[m.id]) tmStore.cfgs[m.id] = {...TM_DEFAULTS[m.id]}; });
+if (!tmStore.opts) tmStore.opts = {...TM_OPTS_DEFAULT};
+
+let tmPhases = [], tmIdx = 0, tmRemain = 0, tmEndAt = 0;
+let tmRunning = false, tmInterval = null, tmState = 'idle', tmWakeLock = null;
+
+function tmCfg() { return tmStore.cfgs[tmStore.mode]; }
+function tmMode() { return TM_MODES.find(m => m.id === tmStore.mode) || TM_MODES[0]; }
+function tmPersist() { localStorage.setItem('tm_cfg_v2', JSON.stringify(tmStore)); }
 
 function mkCounter(t, c) {
   return { id: uid(), title: t, value: 0, start: 0, step: 1, goal: null, color: c,
@@ -801,7 +957,8 @@ const lv = document.getElementById('listView'),
   amrapClock = document.getElementById('amrapClock'),
   amrapHint = document.getElementById('amrapHint'),
   amrapMetaEl = document.getElementById('amrapMeta'),
-  fAmrap = document.getElementById('fAmrap'),
+  ctrModeSeg = document.getElementById('ctrModeSeg'),
+  ctrModeHint = document.getElementById('ctrModeHint'),
   fAmrapDur = document.getElementById('fAmrapDur'),
   fAmrapReps = document.getElementById('fAmrapReps'),
   fAmrapReset = document.getElementById('fAmrapReset'),
@@ -817,34 +974,50 @@ const lv = document.getElementById('listView'),
   stDisplay = document.getElementById('stDisplay'),
   logBtn = document.getElementById('logBtn'),
   sessionList = document.getElementById('sessionList'),
-  fSeries = document.getElementById('fSeries'),
   pacingZone = document.getElementById('pacingZone'),
   pacingSetLabel = document.getElementById('pacingSetLabel'),
   pacingTarget = document.getElementById('pacingTarget'),
   pacingChips = document.getElementById('pacingChips'),
   pacingTotal = document.getElementById('pacingTotal'),
-  fPacing = document.getElementById('fPacing'),
   fPacingSets = document.getElementById('fPacingSets'),
   fPacingRest = document.getElementById('fPacingRest'),
   pacingFields = document.getElementById('pacingFields'),
-  hiitView = document.getElementById('hiitView'),
-  hiitBackBtn = document.getElementById('hiitBackBtn'),
-  hiitCfgBtn = document.getElementById('hiitCfgBtn'),
-  hiitPhaseBadge = document.getElementById('hiitPhaseBadge'),
-  hiitExName = document.getElementById('hiitExName'),
-  hiitRingFill = document.getElementById('hiitRingFill'),
-  hiitClock = document.getElementById('hiitClock'),
-  hiitRoundLbl = document.getElementById('hiitRoundLbl'),
-  hiitNext = document.getElementById('hiitNext'),
-  hiitChips = document.getElementById('hiitChips'),
-  hiitStartBtn = document.getElementById('hiitStartBtn'),
+  timerView = document.getElementById('timerView'),
+  tmBackBtn = document.getElementById('tmBackBtn'),
+  tmCfgBtn = document.getElementById('tmCfgBtn'),
+  tmHdrTitle = document.getElementById('tmHdrTitle'),
+  tmModesEl = document.getElementById('tmModes'),
+  tmPhaseEl = document.getElementById('tmPhase'),
+  tmExEl = document.getElementById('tmEx'),
+  tmRingFill = document.getElementById('tmRingFill'),
+  tmClock = document.getElementById('tmClock'),
+  tmSub = document.getElementById('tmSub'),
+  tmNext = document.getElementById('tmNext'),
+  tmChips = document.getElementById('tmChips'),
+  tmTotalFill = document.getElementById('tmTotalFill'),
+  tmElapsedEl = document.getElementById('tmElapsed'),
+  tmRemainEl = document.getElementById('tmRemain'),
+  tmMainBtn = document.getElementById('tmMainBtn'),
+  tmResetBtn = document.getElementById('tmResetBtn'),
+  tmSkipBtn = document.getElementById('tmSkipBtn'),
   hiitBtn = document.getElementById('hiitBtn'),
   ctrSheetSection = document.getElementById('ctrSheetSection'),
-  hiitSheetSection = document.getElementById('hiitSheetSection'),
-  fHiitExercises = document.getElementById('fHiitExercises'),
-  fHiitWork = document.getElementById('fHiitWork'),
-  fHiitRest = document.getElementById('fHiitRest'),
-  fHiitRounds = document.getElementById('fHiitRounds');
+  tmSheetSection = document.getElementById('tmSheetSection'),
+  tmPresetRow = document.getElementById('tmPresetRow'),
+  tmExField = document.getElementById('tmExField'),
+  tmRestField = document.getElementById('tmRestField'),
+  tmCfgSummary = document.getElementById('tmCfgSummary'),
+  fTmEx = document.getElementById('fTmEx'),
+  fTmWork = document.getElementById('fTmWork'),
+  fTmRest = document.getElementById('fTmRest'),
+  fTmRounds = document.getElementById('fTmRounds'),
+  fTmCycles = document.getElementById('fTmCycles'),
+  fTmPrep = document.getElementById('fTmPrep'),
+  fTmCycleRest = document.getElementById('fTmCycleRest'),
+  fTmCooldown = document.getElementById('fTmCooldown'),
+  fTmSound = document.getElementById('fTmSound'),
+  fTmWake = document.getElementById('fTmWake'),
+  fTmVib = document.getElementById('fTmVib');
 
 COLORS.forEach(c => {
   const d = document.createElement('div');
@@ -858,11 +1031,29 @@ function pickColor(c) {
 }
 pickColor(COLORS[0]);
 
-fAmrap.addEventListener('change', () => {
-  amrapFields.style.display = fAmrap.checked ? 'block' : 'none';
-});
-fPacing.addEventListener('change', () => {
-  pacingFields.style.display = fPacing.checked ? 'block' : 'none';
+/* — Mode du compteur : un seul mode actif a la fois — */
+let ctrMode = 'simple';
+const CTR_MODE_HINTS = {
+  simple: 'Compteur nu : tu incrémentes, c\'est tout. Idéal pour un total sur la journée.',
+  series: 'Chrono d\'intervalle + bouton « Enregistrer la série ». Chaque série part à l\'historique.',
+  pacing: 'Tu programmes tes séries à l\'avance (ex : 10,10,9,8,7,6). Repos automatique entre chaque.',
+  amrap:  'Chrono par round qui tourne en boucle. Tu comptes tes reps pendant le temps imparti.'
+};
+function setCtrMode(m) {
+  ctrMode = m;
+  ctrModeSeg.querySelectorAll('button').forEach(b => b.classList.toggle('sel', b.dataset.m === m));
+  ctrModeHint.textContent = CTR_MODE_HINTS[m] || '';
+  amrapFields.style.display  = (m === 'amrap')  ? 'block' : 'none';
+  pacingFields.style.display = (m === 'pacing') ? 'block' : 'none';
+}
+function ctrModeOf(c) {
+  if (c && c.pacing && c.pacing.enabled) return 'pacing';
+  if (c && c.amrap && c.amrap.enabled) return 'amrap';
+  if (c && c.seriesMode) return 'series';
+  return 'simple';
+}
+ctrModeSeg.querySelectorAll('button').forEach(b => {
+  b.addEventListener('click', () => setCtrMode(b.dataset.m));
 });
 
 function renderList() {
@@ -1216,153 +1407,382 @@ function pacingDone(c) {
   logBtn.style.opacity = '0.45';
 }
 
-/* — HIIT Circuit — */
-function fmtHiitTime(s) { return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+/* — Chrono multi-modes : moteur — */
+function tmFmt(s) {
+  s = Math.max(0, Math.round(s));
+  const m = Math.floor(s / 60);
+  return m + ':' + String(s % 60).padStart(2, '0');
+}
+function tmFmtLong(s) {
+  s = Math.max(0, Math.round(s));
+  const m = Math.floor(s / 60), r = s % 60;
+  if (m === 0) return r + 's';
+  return r === 0 ? m + 'min' : m + 'min' + String(r).padStart(2, '0');
+}
+function tmExList() {
+  const c = tmCfg();
+  const l = (c.exercises || []).map(e => String(e).trim()).filter(e => e.length);
+  return l;
+}
+function tmExFor(round) {
+  const l = tmExList();
+  if (!l.length) return null;
+  return l[(round - 1) % l.length];
+}
 
-function loadHiitExList() {
-  hiitExList = hiitCfg.exercises.filter(e => e.trim().length > 0);
-  if (!hiitExList.length) hiitExList = ['Exercice 1'];
+/* Construit la liste complète des phases à l'avance : permet skip, retour, total exact. */
+function tmBuildPhases() {
+  const c = tmCfg();
+  const ph = [];
+  const rounds = Math.max(1, c.rounds), cycles = Math.max(1, c.cycles);
+  if (c.prepSec > 0) ph.push({ type: 'prep', dur: c.prepSec, ex: null, round: 0, cycle: 1 });
+  for (let cy = 1; cy <= cycles; cy++) {
+    for (let r = 1; r <= rounds; r++) {
+      ph.push({ type: 'work', dur: c.workSec, ex: tmExFor(r), round: r, cycle: cy });
+      const lastRound = r === rounds, lastCycle = cy === cycles;
+      if (!lastRound) {
+        if (c.restSec > 0) ph.push({ type: 'rest', dur: c.restSec, ex: tmExFor(r + 1), round: r, cycle: cy });
+      } else if (!lastCycle) {
+        if (c.cycleRestSec > 0) ph.push({ type: 'cyclerest', dur: c.cycleRestSec, ex: tmExFor(1), round: r, cycle: cy });
+        else if (c.restSec > 0) ph.push({ type: 'rest', dur: c.restSec, ex: tmExFor(1), round: r, cycle: cy });
+      }
+    }
+  }
+  if (c.cooldownSec > 0) ph.push({ type: 'cooldown', dur: c.cooldownSec, ex: null, round: 0, cycle: cycles });
+  return ph;
 }
-function openHiit() {
+function tmTotalDur() { return tmPhases.reduce((s, p) => s + p.dur, 0); }
+function tmElapsedBefore(i) { let s = 0; for (let k = 0; k < i; k++) s += tmPhases[k].dur; return s; }
+
+const TM_LABELS = { prep: 'Préparation', work: 'Travail', rest: 'Repos', cyclerest: 'Repos de cycle', cooldown: 'Récupération', done: 'Terminé' };
+
+/* — Sons & retours (respectent les réglages) — */
+function tmSnd(fn) { if (tmStore.opts.sound) fn(); }
+function tmVibrate(p) { if (tmStore.opts.vib) vib(p); }
+
+/* — Wake lock : l'écran ne s'éteint pas pendant la séance — */
+async function tmAcquireWake() {
+  if (!tmStore.opts.wake) return;
+  try { if ('wakeLock' in navigator && !tmWakeLock) tmWakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
+}
+function tmReleaseWake() {
+  try { if (tmWakeLock) { tmWakeLock.release(); tmWakeLock = null; } } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && tmRunning) tmAcquireWake();
+});
+
+/* — Ouverture / fermeture — */
+function tmOpen() {
   lv.classList.add('gone');
-  hiitView.classList.remove('gone');
-  loadHiitExList();
-  renderHiitIdle();
+  timerView.classList.remove('gone');
+  tmRenderModes();
+  tmReset();
 }
-function closeHiit() {
-  if (hiitPhase === 'work' || hiitPhase === 'rest') hiitStopNow();
-  hiitView.classList.add('gone');
+function tmClose() {
+  tmHardStop();
+  timerView.classList.add('gone');
   lv.classList.remove('gone');
 }
-function renderHiitIdle() {
-  hiitPhase = 'idle'; hiitExIdx = 0; hiitRound = 1;
-  hiitPhaseBadge.textContent = 'En attente';
-  hiitPhaseBadge.className = 'hiit-phase-badge';
-  hiitExName.textContent = hiitExList[0] || '—';
-  hiitClock.textContent = fmtHiitTime(hiitCfg.workSec);
-  hiitClock.classList.remove('urgent');
-  hiitRoundLbl.textContent = 'ROUND 1/' + hiitCfg.rounds;
-  hiitRingFill.style.strokeDashoffset = '0';
-  hiitRingFill.classList.remove('rest-color');
-  hiitNext.innerHTML = '';
-  hiitStartBtn.textContent = 'Lancer ⚡';
-  hiitStartBtn.classList.remove('stop-mode');
-  renderHiitChips();
-}
-function renderHiitChips() {
-  hiitChips.innerHTML = '';
-  const N = hiitExList.length;
-  for (let r = 0; r < hiitCfg.rounds; r++) {
-    hiitExList.forEach((ex, i) => {
-      const chip = document.createElement('div');
-      chip.className = 'hiit-chip';
-      chip.textContent = ex;
-      const global = r * N + i;
-      const cur = (hiitRound - 1) * N + hiitExIdx;
-      if (hiitPhase === 'done') {
-        chip.classList.add('h-done');
-      } else if (hiitPhase !== 'idle') {
-        if (global < cur) chip.classList.add('h-done');
-        else if (global === cur) chip.classList.add(hiitPhase === 'rest' ? 'h-rest' : 'h-active');
-      }
-      hiitChips.appendChild(chip);
-    });
-  }
-}
-function hiitShowWork() {
-  const ex = hiitExList[hiitExIdx] || '—';
-  hiitPhaseBadge.textContent = 'Travail';
-  hiitPhaseBadge.className = 'hiit-phase-badge work';
-  hiitExName.textContent = ex;
-  hiitRingFill.classList.remove('rest-color');
-  hiitRingFill.style.strokeDashoffset = '0';
-  hiitRoundLbl.textContent = 'ROUND ' + hiitRound + '/' + hiitCfg.rounds;
-  const isLastInRound = hiitExIdx >= hiitExList.length - 1;
-  const isLastRound = hiitRound >= hiitCfg.rounds;
-  let nextEx = null;
-  if (!isLastInRound) nextEx = hiitExList[hiitExIdx + 1];
-  else if (!isLastRound) nextEx = hiitExList[0];
-  hiitNext.innerHTML = nextEx ? 'Prochain : <strong>' + esc(nextEx) + '</strong>' : '';
-  renderHiitChips();
-}
-function hiitShowRest() {
-  const ex = hiitExList[hiitExIdx] || '—';
-  hiitPhaseBadge.textContent = 'Repos';
-  hiitPhaseBadge.className = 'hiit-phase-badge rest';
-  hiitExName.textContent = ex;
-  hiitRingFill.classList.add('rest-color');
-  hiitRingFill.style.strokeDashoffset = '0';
-  hiitRoundLbl.textContent = 'ROUND ' + hiitRound + '/' + hiitCfg.rounds;
-  hiitNext.innerHTML = '';
-  renderHiitChips();
-}
-function hiitStart() {
-  if (hiitInterval) { clearInterval(hiitInterval); hiitInterval = null; }
-  loadHiitExList();
-  hiitPhase = 'work'; hiitExIdx = 0; hiitRound = 1; hiitTime = hiitCfg.workSec;
-  hiitStartBtn.textContent = 'Arrêter';
-  hiitStartBtn.classList.add('stop-mode');
-  hiitClock.textContent = fmtHiitTime(hiitTime);
-  hiitClock.classList.remove('urgent');
-  hiitShowWork();
-  beepWork(); vib([60]);
-  hiitInterval = setInterval(hiitTick, 1000);
-}
-function hiitStopNow() {
-  if (hiitInterval) { clearInterval(hiitInterval); hiitInterval = null; }
-  renderHiitIdle();
-}
-function hiitTick() {
-  hiitTime--;
-  const dur = hiitPhase === 'work' ? hiitCfg.workSec : hiitCfg.restSec;
-  hiitRingFill.style.strokeDashoffset = String(CIRC * (1 - hiitTime / dur));
-  hiitClock.textContent = fmtHiitTime(hiitTime);
-  hiitClock.classList.toggle('urgent', hiitTime <= 3 && hiitTime > 0);
-  if (hiitTime <= 3 && hiitTime > 0) beepTick();
-  if (hiitTime > 0) return;
-  if (hiitPhase === 'work') {
-    const isLastEx = hiitExIdx >= hiitExList.length - 1;
-    const isLastRound = hiitRound >= hiitCfg.rounds;
-    if (isLastEx && isLastRound) { hiitDone(); return; }
-    hiitExIdx++;
-    if (hiitExIdx >= hiitExList.length) { hiitExIdx = 0; hiitRound++; }
-    hiitPhase = 'rest'; hiitTime = hiitCfg.restSec;
-    vib([60, 30, 60]); beepRest();
-    hiitClock.textContent = fmtHiitTime(hiitTime);
-    hiitClock.classList.remove('urgent');
-    hiitShowRest();
-  } else {
-    hiitPhase = 'work'; hiitTime = hiitCfg.workSec;
-    vib([60, 30, 60]); beepWork();
-    hiitClock.textContent = fmtHiitTime(hiitTime);
-    hiitClock.classList.remove('urgent');
-    hiitShowWork();
-  }
-}
-function hiitDone() {
-  clearInterval(hiitInterval); hiitInterval = null;
-  hiitPhase = 'done';
-  vib([80, 40, 80, 40, 160]); beepDone();
-  hiitPhaseBadge.textContent = 'Terminé !';
-  hiitPhaseBadge.className = 'hiit-phase-badge work';
-  hiitExName.textContent = '🏆 Circuit complet !';
-  hiitClock.textContent = '0:00';
-  hiitClock.classList.remove('urgent');
-  hiitRingFill.style.strokeDashoffset = String(CIRC);
-  hiitNext.innerHTML = '';
-  hiitStartBtn.textContent = 'Recommencer';
-  hiitStartBtn.classList.remove('stop-mode');
-  renderHiitChips();
+function tmHardStop() {
+  if (tmInterval) { clearInterval(tmInterval); tmInterval = null; }
+  tmRunning = false;
+  tmReleaseWake();
 }
 
-hiitBtn.addEventListener('click', openHiit);
-hiitBackBtn.addEventListener('click', closeHiit);
-hiitCfgBtn.addEventListener('click', () => openSheet('hiit'));
-hiitStartBtn.addEventListener('click', () => {
+/* — Pastilles de mode — */
+function tmRenderModes() {
+  tmModesEl.innerHTML = '';
+  TM_MODES.forEach(m => {
+    const b = document.createElement('button');
+    b.className = 'tm-mode' + (m.id === tmStore.mode ? ' sel' : '');
+    b.textContent = m.name;
+    b.addEventListener('click', () => {
+      if (tmState !== 'idle') return;
+      tmStore.mode = m.id; tmPersist();
+      tmRenderModes(); tmReset();
+    });
+    tmModesEl.appendChild(b);
+  });
+  tmModesEl.classList.toggle('locked', tmState !== 'idle');
+}
+
+/* — État repos (avant lancement) — */
+function tmReset() {
+  tmHardStop();
+  tmState = 'idle'; tmIdx = 0;
+  tmPhases = tmBuildPhases();
+  const c = tmCfg(), m = tmMode();
+  tmHdrTitle.textContent = 'Chrono · ' + m.name;
+  timerView.className = 'view ph-idle';
+  tmPhaseEl.textContent = 'Prêt';
+  tmPhaseEl.className = 'tm-phase';
+  tmRingFill.className = 'tm-ring-fill';
+  tmRingFill.style.strokeDashoffset = '0';
+  const first = tmPhases[0];
+  tmRemain = first ? first.dur : c.workSec;
+  tmClock.textContent = tmFmt(tmRemain);
+  tmClock.classList.remove('urgent');
+  const exs = tmExList();
+  tmExEl.textContent = exs.length ? exs[0] : m.name;
+  tmSub.textContent = c.rounds + ' ROUNDS' + (c.cycles > 1 ? ' × ' + c.cycles : '');
+  tmNext.innerHTML = 'Total <strong>' + tmFmtLong(tmTotalDur()) + '</strong> · ' +
+    c.workSec + 's effort' + (c.restSec > 0 ? ' / ' + c.restSec + 's repos' : '');
+  tmMainBtn.textContent = 'Lancer';
+  tmMainBtn.classList.remove('running');
+  tmSkipBtn.disabled = true;
+  tmTotalFill.style.width = '0%';
+  tmElapsedEl.textContent = '0:00';
+  tmRemainEl.textContent = tmFmt(tmTotalDur());
+  tmRenderChips();
+  tmRenderModes();
+}
+
+/* — Bandeau de progression (rounds / exercices) — */
+function tmRenderChips() {
+  tmChips.innerHTML = '';
+  const c = tmCfg(), exs = tmExList();
+  const cur = tmPhases[tmIdx];
+  const total = Math.max(1, c.rounds) * Math.max(1, c.cycles);
+  if (total > 60) return;
+  let n = 0;
+  for (let cy = 1; cy <= c.cycles; cy++) {
+    for (let r = 1; r <= c.rounds; r++) {
+      n++;
+      const chip = document.createElement('div');
+      chip.className = 'tm-chip';
+      const ex = exs.length ? tmExFor(r) : 'R' + r;
+      chip.textContent = c.cycles > 1 && exs.length ? ex : (exs.length ? ex : 'R' + r);
+      chip.title = 'Cycle ' + cy + ' · Round ' + r;
+      if (tmState !== 'idle' && cur) {
+        const curN = (cur.cycle - 1) * c.rounds + (cur.round || 0);
+        if (cur.type === 'prep') { /* rien d'actif */ }
+        else if (n < curN) chip.classList.add('c-off');
+        else if (n === curN) chip.classList.add(cur.type === 'work' ? 'c-on' : 'c-rest');
+      }
+      if (tmState === 'done') chip.classList.add('c-off');
+      tmChips.appendChild(chip);
+    }
+  }
+}
+
+/* — Entrée dans une phase — */
+function tmEnterPhase(i, silent) {
+  tmIdx = i;
+  const p = tmPhases[i];
+  if (!p) { tmDone(); return; }
+  tmRemain = p.dur;
+  tmEndAt = Date.now() + p.dur * 1000;
+  timerView.className = 'view ph-' + p.type;
+  tmPhaseEl.textContent = TM_LABELS[p.type] || p.type;
+  tmPhaseEl.className = 'tm-phase p-' + p.type;
+  tmRingFill.className = 'tm-ring-fill c-' + p.type;
+  tmRingFill.style.strokeDashoffset = '0';
+  tmClock.textContent = tmFmt(tmRemain);
+  tmClock.classList.remove('urgent');
+
+  const c = tmCfg(), exs = tmExList();
+  if (p.type === 'prep') {
+    tmExEl.textContent = 'Prépare-toi';
+    tmSub.textContent = 'DÉPART DANS';
+  } else if (p.type === 'cooldown') {
+    tmExEl.textContent = 'Récupération';
+    tmSub.textContent = 'FIN DE SÉANCE';
+  } else {
+    tmExEl.textContent = p.ex || (p.type === 'work' ? 'Effort' : 'Repos');
+    tmSub.textContent = 'ROUND ' + p.round + '/' + c.rounds + (c.cycles > 1 ? ' · CYCLE ' + p.cycle + '/' + c.cycles : '');
+  }
+
+  // Aperçu de la phase suivante
+  const nx = tmPhases[i + 1];
+  if (p.type === 'work' && nx && nx.ex) {
+    tmNext.innerHTML = 'Ensuite : <strong>' + esc(nx.ex) + '</strong>';
+  } else if ((p.type === 'rest' || p.type === 'cyclerest' || p.type === 'prep') && nx) {
+    tmNext.innerHTML = 'Prochain : <strong>' + esc(nx.ex || TM_LABELS[nx.type]) + '</strong>';
+  } else if (!nx) {
+    tmNext.innerHTML = 'Dernière phase 💪';
+  } else {
+    tmNext.innerHTML = '';
+  }
+
+  if (!silent) {
+    if (p.type === 'work')      { tmSnd(beepWork); tmVibrate([70, 30, 70]); }
+    else if (p.type === 'prep') { tmSnd(() => playTone(660, 0.16)); tmVibrate([40]); }
+    else                        { tmSnd(beepRest); tmVibrate([60, 30, 60]); }
+  }
+  tmRenderChips();
+  tmUpdateTotals();
+}
+
+function tmUpdateTotals() {
+  const total = tmTotalDur();
+  const p = tmPhases[tmIdx];
+  const done = tmElapsedBefore(tmIdx) + (p ? p.dur - tmRemain : 0);
+  const pct = total > 0 ? Math.min(100, (done / total) * 100) : 0;
+  tmTotalFill.style.width = pct + '%';
+  tmElapsedEl.textContent = tmFmt(done);
+  tmRemainEl.textContent = '-' + tmFmt(total - done);
+}
+
+/* — Boucle : basée sur l'horloge, increvable si l'app se met en veille — */
+function tmTick() {
+  const left = Math.max(0, Math.ceil((tmEndAt - Date.now()) / 1000));
+  const p = tmPhases[tmIdx];
+  if (!p) return;
+  if (left !== tmRemain) {
+    tmRemain = left;
+    tmClock.textContent = tmFmt(tmRemain);
+    tmClock.classList.toggle('urgent', tmRemain <= 3 && tmRemain > 0);
+    if (tmRemain <= 3 && tmRemain > 0) tmSnd(beepTick);
+    tmUpdateTotals();
+  }
+  tmRingFill.style.strokeDashoffset = String(CIRC * (1 - Math.max(0, (tmEndAt - Date.now()) / 1000) / p.dur));
+  if (Date.now() >= tmEndAt) {
+    if (tmIdx >= tmPhases.length - 1) { tmDone(); return; }
+    tmEnterPhase(tmIdx + 1);
+  }
+}
+
+function tmStart() {
   initAudio();
-  if (hiitPhase === 'work' || hiitPhase === 'rest') { hiitStopNow(); }
-  else { hiitStart(); }
+  tmPhases = tmBuildPhases();
+  if (!tmPhases.length) return;
+  tmState = 'run'; tmRunning = true;
+  tmMainBtn.textContent = 'Pause';
+  tmMainBtn.classList.add('running');
+  tmSkipBtn.disabled = false;
+  tmRenderModes();
+  tmAcquireWake();
+  tmEnterPhase(0);
+  if (tmInterval) clearInterval(tmInterval);
+  tmInterval = setInterval(tmTick, 100);
+}
+function tmPause() {
+  tmRunning = false; tmState = 'paused';
+  if (tmInterval) { clearInterval(tmInterval); tmInterval = null; }
+  tmRemain = Math.max(0, Math.ceil((tmEndAt - Date.now()) / 1000));
+  tmMainBtn.textContent = 'Reprendre';
+  tmMainBtn.classList.remove('running');
+  tmPhaseEl.textContent = 'En pause';
+  tmReleaseWake();
+}
+function tmResume() {
+  tmState = 'run'; tmRunning = true;
+  tmEndAt = Date.now() + tmRemain * 1000;
+  const p = tmPhases[tmIdx];
+  tmPhaseEl.textContent = TM_LABELS[p.type] || p.type;
+  tmMainBtn.textContent = 'Pause';
+  tmMainBtn.classList.add('running');
+  tmAcquireWake();
+  if (tmInterval) clearInterval(tmInterval);
+  tmInterval = setInterval(tmTick, 100);
+}
+function tmSkip() {
+  if (tmState === 'idle' || tmState === 'done') return;
+  if (tmIdx >= tmPhases.length - 1) { tmDone(); return; }
+  tmEnterPhase(tmIdx + 1);
+  if (tmState === 'paused') { tmRemain = tmPhases[tmIdx].dur; tmClock.textContent = tmFmt(tmRemain); }
+}
+function tmDone() {
+  tmHardStop();
+  tmState = 'done';
+  const c = tmCfg();
+  timerView.className = 'view ph-done';
+  tmPhaseEl.textContent = 'Terminé';
+  tmPhaseEl.className = 'tm-phase p-done';
+  tmRingFill.className = 'tm-ring-fill c-done';
+  tmRingFill.style.strokeDashoffset = String(CIRC);
+  tmExEl.textContent = '🏆 Séance bouclée !';
+  tmClock.textContent = '0:00';
+  tmClock.classList.remove('urgent');
+  tmSub.textContent = (c.rounds * c.cycles) + ' ROUNDS · ' + tmFmtLong(tmTotalDur());
+  tmNext.innerHTML = 'Beau travail 💪';
+  tmMainBtn.textContent = 'Recommencer';
+  tmMainBtn.classList.remove('running');
+  tmSkipBtn.disabled = true;
+  tmTotalFill.style.width = '100%';
+  tmElapsedEl.textContent = tmFmt(tmTotalDur());
+  tmRemainEl.textContent = '0:00';
+  tmSnd(beepDone); tmVibrate([80, 40, 80, 40, 160]);
+  tmRenderChips(); tmRenderModes();
+}
+
+hiitBtn.addEventListener('click', tmOpen);
+tmBackBtn.addEventListener('click', tmClose);
+tmCfgBtn.addEventListener('click', () => openSheet('timer'));
+tmResetBtn.addEventListener('click', tmReset);
+tmSkipBtn.addEventListener('click', tmSkip);
+tmMainBtn.addEventListener('click', () => {
+  initAudio();
+  if (tmState === 'idle' || tmState === 'done') tmStart();
+  else if (tmState === 'run') tmPause();
+  else tmResume();
 });
+
+/* — Réglages du chrono — */
+function tmFillSheet() {
+  const c = tmCfg(), m = tmMode();
+  sheetHdr.textContent = 'Chrono · ' + m.name;
+  fTmEx.value = (c.exercises || []).join(', ');
+  fTmWork.value = c.workSec; fTmRest.value = c.restSec;
+  fTmRounds.value = c.rounds; fTmCycles.value = c.cycles;
+  fTmPrep.value = c.prepSec; fTmCycleRest.value = c.cycleRestSec;
+  fTmCooldown.value = c.cooldownSec;
+  fTmSound.checked = !!tmStore.opts.sound;
+  fTmWake.checked = !!tmStore.opts.wake;
+  fTmVib.checked = !!tmStore.opts.vib;
+  tmExField.classList.toggle('tm-hide', !m.hasEx);
+  tmRestField.classList.toggle('tm-hide', m.id === 'emom');
+  tmRenderPresets();
+  tmUpdateCfgSummary();
+}
+function tmRenderPresets() {
+  tmPresetRow.innerHTML = '';
+  TM_PRESETS.forEach(p => {
+    const b = document.createElement('button');
+    b.className = 'tm-preset'; b.type = 'button'; b.textContent = p.label;
+    b.addEventListener('click', () => {
+      tmStore.mode = p.mode;
+      Object.assign(tmStore.cfgs[p.mode], p.cfg);
+      tmPersist(); tmFillSheet();
+    });
+    tmPresetRow.appendChild(b);
+  });
+}
+function tmReadSheet() {
+  const m = tmMode();
+  const c = tmCfg();
+  const iv = (el, def, min, max) => {
+    const n = parseInt(el.value, 10);
+    return isNaN(n) ? def : Math.min(max, Math.max(min, n));
+  };
+  c.workSec = iv(fTmWork, 20, 1, 900);
+  c.restSec = m.id === 'emom' ? 0 : iv(fTmRest, 10, 0, 900);
+  c.rounds = iv(fTmRounds, 8, 1, 99);
+  c.cycles = iv(fTmCycles, 1, 1, 30);
+  c.prepSec = iv(fTmPrep, 10, 0, 120);
+  c.cycleRestSec = iv(fTmCycleRest, 60, 0, 900);
+  c.cooldownSec = iv(fTmCooldown, 0, 0, 900);
+  if (m.hasEx) {
+    c.exercises = fTmEx.value.split(',').map(s => s.trim()).filter(s => s.length);
+  }
+  tmStore.opts.sound = fTmSound.checked;
+  tmStore.opts.wake = fTmWake.checked;
+  tmStore.opts.vib = fTmVib.checked;
+  return c;
+}
+function tmUpdateCfgSummary() {
+  const saved = JSON.parse(JSON.stringify(tmCfg()));
+  const c = tmReadSheet();
+  const phases = tmBuildPhases();
+  const total = phases.reduce((s, p) => s + p.dur, 0);
+  const n = c.rounds * c.cycles;
+  tmCfgSummary.innerHTML = '<strong>' + n + '</strong> round' + (n > 1 ? 's' : '') +
+    ' · dur&eacute;e totale <strong>' + tmFmtLong(total) + '</strong>';
+  Object.assign(tmStore.cfgs[tmStore.mode], saved);
+}
+[fTmWork, fTmRest, fTmRounds, fTmCycles, fTmPrep, fTmCycleRest, fTmCooldown, fTmEx]
+  .forEach(el => el.addEventListener('input', tmUpdateCfgSummary));
 
 /* — Session timer (auto-runs, never resets mid-session) — */
 function stStart() {
@@ -1626,28 +2046,21 @@ function renderHistory() {
 /* — Settings sheet — */
 function openSheet(mode, id) {
   sheetMode = mode; editId = id || null;
-  const isHiit = (mode === 'hiit');
-  ctrSheetSection.classList.toggle('off', isHiit);
-  hiitSheetSection.classList.toggle('on', isHiit);
-  if (mode === 'hiit') {
-    sheetHdr.textContent = 'Config Circuit HIIT';
-    fHiitExercises.value = hiitCfg.exercises.join(', ');
-    fHiitWork.value = hiitCfg.workSec;
-    fHiitRest.value = hiitCfg.restSec;
-    fHiitRounds.value = hiitCfg.rounds;
+  const isTimer = (mode === 'timer');
+  ctrSheetSection.classList.toggle('off', isTimer);
+  tmSheetSection.classList.toggle('on', isTimer);
+  if (isTimer) {
+    tmFillSheet();
     resetBtn.style.display = 'none'; deleteBtn.style.display = 'none';
     backdrop.classList.add('on'); sheet.classList.add('on');
-    setTimeout(() => fHiitExercises.focus(), 380);
     return;
   }
   if (mode === 'new') {
     sheetHdr.textContent = 'Nouveau compteur';
     fTitle.value = ''; fStart.value = '0'; fStep.value = '1'; fGoal.value = '';
-    fAmrap.checked = false; fAmrapDur.value = '60'; fAmrapReps.value = '5'; fAmrapReset.checked = false; fAmrapSingle.checked = false;
-    amrapFields.style.display = 'none';
-    fSeries.checked = false;
-    fPacing.checked = false; fPacingSets.value = '10,10,9,8,7,6'; fPacingRest.value = '12';
-    pacingFields.style.display = 'none';
+    fAmrapDur.value = '60'; fAmrapReps.value = '5'; fAmrapReset.checked = false; fAmrapSingle.checked = false;
+    fPacingSets.value = '10,10,9,8,7,6'; fPacingRest.value = '12';
+    setCtrMode('simple');
     pickColor(COLORS[0]); resetBtn.style.display = 'none'; deleteBtn.style.display = 'none';
   } else {
     const c = byId(id);
@@ -1655,15 +2068,12 @@ function openSheet(mode, id) {
     fTitle.value = c.title; fStart.value = c.start; fStep.value = c.step;
     fGoal.value = c.goal != null ? c.goal : '';
     const a = c.amrap || {};
-    fAmrap.checked = !!a.enabled; fAmrapDur.value = a.duration || 60;
+    fAmrapDur.value = a.duration || 60;
     fAmrapReps.value = a.targetReps || 5; fAmrapReset.checked = !!a.autoReset; fAmrapSingle.checked = !!a.singleRound;
-    amrapFields.style.display = a.enabled ? 'block' : 'none';
-    fSeries.checked = !!c.seriesMode;
     const p = c.pacing || {};
-    fPacing.checked = !!p.enabled;
     fPacingSets.value = p.sets ? p.sets.join(',') : '10,10,9,8,7,6';
     fPacingRest.value = p.rest || 12;
-    pacingFields.style.display = p.enabled ? 'block' : 'none';
+    setCtrMode(ctrModeOf(c));
     pickColor(c.color); resetBtn.style.display = 'block'; deleteBtn.style.display = 'block';
   }
   backdrop.classList.add('on'); sheet.classList.add('on');
@@ -1676,16 +2086,12 @@ addBtn.addEventListener('click', () => openSheet('new'));
 editBtn.addEventListener('click', () => activeId && openSheet('edit', activeId));
 
 saveBtn.addEventListener('click', () => {
-  if (sheetMode === 'hiit') {
-    hiitCfg.exercises = fHiitExercises.value.split(',').map(s => s.trim()).filter(s => s.length > 0);
-    if (!hiitCfg.exercises.length) hiitCfg.exercises = ['Exercice 1'];
-    hiitCfg.workSec = Math.max(5, parseInt(fHiitWork.value) || 40);
-    hiitCfg.restSec = Math.max(3, parseInt(fHiitRest.value) || 20);
-    hiitCfg.rounds = Math.max(1, parseInt(fHiitRounds.value) || 1);
-    localStorage.setItem('hiit_cfg', JSON.stringify(hiitCfg));
+  if (sheetMode === 'timer') {
+    tmReadSheet();
+    tmPersist();
     closeSheet();
-    loadHiitExList();
-    renderHiitIdle();
+    tmRenderModes();
+    tmReset();
     return;
   }
   const title = fTitle.value.trim() || 'Compteur';
@@ -1693,14 +2099,15 @@ saveBtn.addEventListener('click', () => {
   const step = Math.max(1, parseFloat(fStep.value) || 1);
   const goal = fGoal.value.trim() !== '' ? parseFloat(fGoal.value) : null;
   const amrap = {
-    enabled: fAmrap.checked,
+    enabled: ctrMode === 'amrap',
     duration: Math.max(5, parseInt(fAmrapDur.value) || 60),
     targetReps: Math.max(1, parseInt(fAmrapReps.value) || 5),
     autoReset: fAmrapReset.checked,
     singleRound: fAmrapSingle.checked
   };
-  const seriesMode = fSeries.checked;
-  const pacingEnabled = fPacing.checked;
+  // Pacing implique le bouton « enregistrer la serie » : on active seriesMode avec.
+  const seriesMode = (ctrMode === 'series' || ctrMode === 'pacing');
+  const pacingEnabled = ctrMode === 'pacing';
   const pacingRestSec = Math.max(3, parseInt(fPacingRest.value) || 12);
   const pacingSets = (fPacingSets.value.trim() || '10,10,9,8,7,6')
     .split(',').map(s => Math.max(1, parseInt(s.trim()) || 1));
