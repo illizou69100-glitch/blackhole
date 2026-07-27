@@ -527,14 +527,37 @@ function ac() {
 function tone(freq, dur, type, vol) {
   const c = ac(); if (!c) return;
   try {
-    const o = c.createOscillator(), g = c.createGain();
+    const o = c.createOscillator(), g = c.createGain(), t = c.currentTime;
     o.connect(g); g.connect(c.destination);
-    o.type = type || 'sine'; o.frequency.setValueAtTime(freq, c.currentTime);
-    const v = (vol == null ? 0.35 : vol) * (S().vol / 100);
-    g.gain.setValueAtTime(v, c.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + dur);
-    o.start(); o.stop(c.currentTime + dur);
+    o.type = type || 'sine'; o.frequency.setValueAtTime(freq, t);
+    const v = Math.max(0.0002, (vol == null ? 0.35 : vol) * (S().vol / 100));
+    // petite attaque : evite le clic et laisse la liaison BT suivre
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(v, t + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.start(t); o.stop(t + dur + 0.02);
   } catch (e) {}
+}
+
+/* Maintien du lien Bluetooth : les ecouteurs BT coupent la liaison apres
+   ~10-20s de silence et mettent 200-500ms a se reveiller, ce qui avalerait
+   l'alarme de fin de pomodoro. Souffle inaudible (-62 dBFS) pendant la session. */
+let keepAlive = null;
+function startKeepAlive() {
+  const c = ac(); if (!c || keepAlive) return;
+  try {
+    const buf = c.createBuffer(1, c.sampleRate, c.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * 0.0008;
+    const src = c.createBufferSource();
+    src.buffer = buf; src.loop = true; src.connect(c.destination); src.start();
+    keepAlive = src;
+  } catch (e) {}
+}
+function stopKeepAlive() {
+  if (!keepAlive) return;
+  try { keepAlive.stop(); } catch (e) {}
+  keepAlive = null;
 }
 function alarmFocusEnd() { if (!S().alarm) return; [0, 190, 380].forEach((d, i) => setTimeout(() => tone([660, 830, 990][i], 0.34), d)); }
 function alarmBreakEnd() { if (!S().alarm) return; [0, 190].forEach((d, i) => setTimeout(() => tone([520, 700][i], 0.3), d)); }
@@ -658,7 +681,7 @@ function startTimer() {
     running = true;
     endAt = Date.now() + remain * 1000;
     if (mode === 'focus' && !sessionStart) sessionStart = Date.now();
-    acquireWake();
+    acquireWake(); startKeepAlive();
     tInt = setInterval(tick, 200);
     renderTimer();
   }
@@ -667,10 +690,13 @@ function pauseTimer() {
   running = false;
   clearInterval(tInt); tInt = null;
   remain = Math.max(0, (endAt - Date.now()) / 1000);
-  releaseWake(); renderTimer();
+  releaseWake(); stopKeepAlive(); renderTimer();
 }
 function stopTimer() {
   running = false; clearInterval(tInt); tInt = null; releaseWake();
+  // Le souffle de maintien s'arrete toujours : si un son d'ambiance tourne,
+  // c'est lui qui garde la liaison Bluetooth ouverte.
+  stopKeepAlive();
 }
 function resetTimer() { stopTimer(); remain = modeDur(mode); sessionStart = 0; renderTimer(); }
 let lastTickSec = -1;
@@ -1126,6 +1152,7 @@ function renderSettings() {
   h += row('Vibrations', '', sw('sVib', s.vibrate));
   h += row('Volume', '', '<input type="range" id="sVol" min="0" max="100" value="' + s.vol + '">');
   h += row('Écran allumé', 'empêche la mise en veille', sw('sWake', s.wake));
+  h += '<button class="btn-w btn-n" id="sTestBtn">🔊 Tester le son (écouteurs)</button>';
 
   h += '<div class="sec-lbl">Apparence</div>';
   h += '<div class="srow"><div><div class="srow-l">Couleur d\'accent</div></div><div class="accent-row" id="accRow"></div></div>';
@@ -1154,6 +1181,18 @@ function renderSettings() {
   bindS('sAutoB', 'autoBreak'); bindS('sAutoF', 'autoFocus');
   bindS('sAlarm', 'alarm'); bindS('sTick', 'tick'); bindS('sVib', 'vibrate'); bindS('sWake', 'wake');
   $('sVol').addEventListener('input', e => { s.vol = +e.target.value; save(); });
+  $('sTestBtn').addEventListener('click', e => {
+    startKeepAlive();
+    const b = e.target, old = b.textContent;
+    b.disabled = true; b.textContent = '♪ Écoute…';
+    tickSound(); setTimeout(tickSound, 500);
+    setTimeout(alarmFocusEnd, 1200);
+    setTimeout(alarmBreakEnd, 2600);
+    setTimeout(() => {
+      b.textContent = old; b.disabled = false;
+      if (!running) stopKeepAlive();
+    }, 4000);
+  });
 
   const ar = $('accRow');
   PCOLORS.forEach(c => {
