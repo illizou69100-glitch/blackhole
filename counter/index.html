@@ -788,6 +788,7 @@
       <label class="toggle"><input type="checkbox" id="fTmVib" checked><span class="slider"></span></label>
     </div>
 
+    <button class="btn btn-reset" type="button" id="tmTestBtn" style="margin-top:10px">&#128266; Tester le son (&#233;couteurs)</button>
     <div class="tm-summary" id="tmCfgSummary"></div>
   </div>
 
@@ -884,23 +885,51 @@ function vib(p) { if (navigator.vibrate) navigator.vibrate(p); }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 
 function initAudio() {
-  if (audioCtx) return;
+  if (audioCtx) { if (audioCtx.state === 'suspended') audioCtx.resume(); return; }
   try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+}
+
+/* Maintien du lien Bluetooth.
+   Les ecouteurs BT coupent la liaison audio apres ~10-20s de silence et mettent
+   200-500ms a se reveiller : un bip court passerait a la trappe. On diffuse donc
+   un souffle a -62 dBFS (inaudible) pendant toute la seance pour garder le lien ouvert. */
+let keepAlive = null;
+function startKeepAlive() {
+  initAudio();
+  if (!audioCtx || keepAlive) return;
+  try {
+    const buf = audioCtx.createBuffer(1, audioCtx.sampleRate, audioCtx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * 0.0008;
+    const src = audioCtx.createBufferSource();
+    src.buffer = buf; src.loop = true;
+    src.connect(audioCtx.destination);
+    src.start();
+    keepAlive = src;
+  } catch(e) {}
+}
+function stopKeepAlive() {
+  if (!keepAlive) return;
+  try { keepAlive.stop(); } catch(e) {}
+  keepAlive = null;
 }
 function playTone(freq, dur, type, vol) {
   if (!audioCtx) return;
   try {
     const o = audioCtx.createOscillator(), g = audioCtx.createGain();
     o.connect(g); g.connect(audioCtx.destination);
-    o.type = type || 'sine'; o.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    g.gain.setValueAtTime(vol || 0.38, audioCtx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
-    o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime + dur);
+    const t = audioCtx.currentTime;
+    o.type = type || 'sine'; o.frequency.setValueAtTime(freq, t);
+    // petite attaque : evite le clic et laisse le temps a la liaison BT de suivre
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol || 0.38, t + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.start(t); o.stop(t + dur + 0.02);
   } catch(e) {}
 }
-function beepWork()  { playTone(880, 0.1); setTimeout(() => playTone(880, 0.12), 140); }
-function beepRest()  { playTone(440, 0.32); }
-function beepTick()  { playTone(1100, 0.07, 'square', 0.14); }
+function beepWork()  { playTone(880, 0.14); setTimeout(() => playTone(880, 0.16), 150); }
+function beepRest()  { playTone(440, 0.34); }
+function beepTick()  { playTone(1100, 0.09, 'square', 0.16); }
 function beepDone()  { playTone(523, 0.14); setTimeout(() => playTone(659, 0.14), 160); setTimeout(() => playTone(784, 0.28), 320); }
 function fmtSec(s) {
   if (s < 60) return s + 's';
@@ -1277,12 +1306,14 @@ decBtn.addEventListener('click', doDec);
 /* — Interval countdown timer (auto-loops, vibrates on each reset) — */
 function itStart() {
   if (itInterval) clearInterval(itInterval);
+  startKeepAlive();
   itRemaining = itDuration;
   updateItDisplay();
   itInterval = setInterval(tickIt, 1000);
 }
 function itStop() {
   clearInterval(itInterval); itInterval = null;
+  stopKeepAlive();
   itRemaining = itDuration;
   updateItDisplay();
 }
@@ -1374,7 +1405,7 @@ function logPacingSet() {
 }
 function pacingStartRest(c) {
   pacingResting = true;
-  beepRest();
+  startKeepAlive(); beepRest();
   const restSec = c.pacing.rest || 12;
   itDuration = restSec; itRemaining = restSec;
   updateItDisplay();
@@ -1487,7 +1518,7 @@ function tmClose() {
 function tmHardStop() {
   if (tmInterval) { clearInterval(tmInterval); tmInterval = null; }
   tmRunning = false;
-  tmReleaseWake();
+  tmReleaseWake(); stopKeepAlive();
 }
 
 /* — Pastilles de mode — */
@@ -1652,7 +1683,7 @@ function tmStart() {
   tmMainBtn.classList.add('running');
   tmSkipBtn.disabled = false;
   tmRenderModes();
-  tmAcquireWake();
+  tmAcquireWake(); startKeepAlive();
   tmEnterPhase(0);
   if (tmInterval) clearInterval(tmInterval);
   tmInterval = setInterval(tmTick, 100);
@@ -1664,7 +1695,7 @@ function tmPause() {
   tmMainBtn.textContent = 'Reprendre';
   tmMainBtn.classList.remove('running');
   tmPhaseEl.textContent = 'En pause';
-  tmReleaseWake();
+  tmReleaseWake(); stopKeepAlive();
 }
 function tmResume() {
   tmState = 'run'; tmRunning = true;
@@ -1673,7 +1704,7 @@ function tmResume() {
   tmPhaseEl.textContent = TM_LABELS[p.type] || p.type;
   tmMainBtn.textContent = 'Pause';
   tmMainBtn.classList.add('running');
-  tmAcquireWake();
+  tmAcquireWake(); startKeepAlive();
   if (tmInterval) clearInterval(tmInterval);
   tmInterval = setInterval(tmTick, 100);
 }
@@ -1784,6 +1815,20 @@ function tmUpdateCfgSummary() {
 [fTmWork, fTmRest, fTmRounds, fTmCycles, fTmPrep, fTmCycleRest, fTmCooldown, fTmEx]
   .forEach(el => el.addEventListener('input', tmUpdateCfgSummary));
 
+/* Test audio : rejoue la sequence reelle (tick x3 -> depart -> repos -> fin)
+   en gardant la liaison BT ouverte, pour verifier avec ses ecouteurs. */
+tmTestBtn.addEventListener('click', () => {
+  startKeepAlive();
+  const btn = tmTestBtn, old = btn.innerHTML;
+  btn.disabled = true;
+  [0, 700, 1400].forEach(d => setTimeout(beepTick, d));
+  setTimeout(beepWork, 2100);
+  setTimeout(beepRest, 3100);
+  setTimeout(beepDone, 4100);
+  setTimeout(() => { btn.innerHTML = old; btn.disabled = false; stopKeepAlive(); }, 5400);
+  btn.innerHTML = '&#9834; Écoute…';
+});
+
 /* — Session timer (auto-runs, never resets mid-session) — */
 function stStart() {
   if (stRunning) return;
@@ -1888,6 +1933,7 @@ function stopTimer() {
   timerRunning = false;
   amrapRingWrap.classList.remove('running');
   clearInterval(timerInterval); timerInterval = null;
+  stopKeepAlive();
   timerRound = 1; timerRemaining = timerDuration; timerEndAt = 0;
 }
 

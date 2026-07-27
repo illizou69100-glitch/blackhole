@@ -1,7 +1,7 @@
 /* Service worker — Compteur / Chrono
    Stale-while-revalidate : l'app s'ouvre instantanément depuis le cache,
    et la version réseau est récupérée en arrière-plan pour la fois suivante. */
-const CACHE = 'counter-v1';
+const CACHE = 'counter-v2';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-counter.svg'];
 
 self.addEventListener('install', e => {
