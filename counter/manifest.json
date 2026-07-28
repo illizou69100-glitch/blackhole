@@ -1,15 +1,32 @@
 {
-  "name": "Counter",
-  "short_name": "Counter",
-  "description": "Compteur tally multi-usages",
-  "start_url": "/blackhole/counter/",
-  "scope": "/blackhole/counter/",
+  "name": "Compteur & Chrono",
+  "short_name": "Compteur",
+  "description": "Compteurs de repetitions et chrono Tabata / Circuit / EMOM.",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0d0d0d",
   "theme_color": "#0d0d0d",
+  "lang": "fr",
   "icons": [
-    {"src": "icon-counter.svg", "sizes": "any", "type": "image/svg+xml"},
-    {"src": "../icon-192.png", "sizes": "192x192", "type": "image/png"},
-    {"src": "../icon-512.png", "sizes": "512x512", "type": "image/png"}
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
