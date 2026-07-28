@@ -8,7 +8,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Compteur">
   <link rel="apple-touch-icon" href="icon-180.png">
-  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root { --bg: #0d0d0d; --text: #f0f0f0; --text-dim: #777; }
@@ -514,6 +515,81 @@
     #tmSheetSection.on { display: block; }
     #ctrSheetSection.off { display: none; }
     .tm-hide { display: none !important; }
+    /* ── Bibliothèque de séances ───────── */
+    #hiitListView {
+      background: var(--bg);
+      padding-top: max(env(safe-area-inset-top), 52px);
+      padding-bottom: max(env(safe-area-inset-bottom), 16px);
+    }
+    .wk-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 14px 90px; }
+    .wk-card {
+      background: #161616; border: 1px solid rgba(255,255,255,0.07); border-radius: 18px;
+      padding: 15px 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 13px;
+      transition: background 0.15s;
+    }
+    .wk-card:active { background: #1e1e1e; }
+    .wk-emoji { font-size: 27px; flex-shrink: 0; width: 34px; text-align: center; }
+    .wk-body { flex: 1; min-width: 0; }
+    .wk-name { font-size: 16.5px; font-weight: 700; letter-spacing: -0.01em; }
+    .wk-meta { font-size: 12px; color: var(--text-dim); margin-top: 4px; font-variant-numeric: tabular-nums; }
+    .wk-tags { display: flex; gap: 5px; margin-top: 7px; flex-wrap: wrap; }
+    .wk-tag {
+      font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 7px;
+      background: rgba(255,255,255,0.07); color: var(--text-dim);
+    }
+    .wk-edit {
+      background: none; border: none; color: var(--text-dim); padding: 8px; flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .wk-edit svg { width: 19px; height: 19px; display: block; }
+    .wk-add {
+      width: 100%; padding: 15px; border-radius: 16px; border: 1.5px dashed rgba(255,255,255,0.16);
+      background: none; color: var(--text-dim); font-size: 15px; font-weight: 700;
+      font-family: inherit; margin-top: 4px; -webkit-tap-highlight-color: transparent;
+    }
+    .wk-add:active { background: rgba(255,255,255,0.04); }
+    /* ── Éditeur : blocs d'exercices ───── */
+    .blk {
+      display: flex; align-items: center; gap: 8px; background: #1c1c1e;
+      border-radius: 12px; padding: 9px 10px; margin-bottom: 7px;
+    }
+    .blk-n { font-size: 11px; font-weight: 800; color: var(--text-dim); width: 17px; flex-shrink: 0; text-align: center; }
+    .blk input[type=text] {
+      flex: 1; min-width: 0; background: none; border: none; color: var(--text);
+      font-size: 14.5px; font-family: inherit; padding: 4px 0;
+    }
+    .blk input[type=number] {
+      width: 50px; flex-shrink: 0; background: #2c2c2e; border: none; color: var(--text);
+      font-size: 13.5px; font-family: inherit; padding: 7px 4px; border-radius: 8px;
+      text-align: center; font-variant-numeric: tabular-nums; -moz-appearance: textfield;
+    }
+    .blk input[type=number]::-webkit-outer-spin-button,
+    .blk input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .blk-u { font-size: 10px; color: var(--text-dim); flex-shrink: 0; margin-left: -4px; }
+    .blk-btns { display: flex; flex-direction: column; gap: 1px; flex-shrink: 0; }
+    .blk-mv {
+      background: none; border: none; color: var(--text-dim); font-size: 11px;
+      line-height: 1; padding: 2px 3px; -webkit-tap-highlight-color: transparent;
+    }
+    .blk-mv:disabled { opacity: 0.22; }
+    .blk-x { background: none; border: none; color: #f87171; font-size: 19px; line-height: 1; padding: 0 3px; flex-shrink: 0; }
+    .blk-hdr { display: flex; gap: 8px; font-size: 10px; color: var(--text-dim); font-weight: 700;
+      letter-spacing: 0.06em; padding: 0 34px 5px 27px; text-transform: uppercase; }
+    .blk-hdr span:first-child { flex: 1; }
+    .blk-hdr span { width: 50px; text-align: center; flex-shrink: 0; }
+    /* ── Historique des séances ────────── */
+    .hs-row {
+      display: flex; align-items: center; gap: 12px; background: #161616;
+      border-radius: 14px; padding: 13px 15px; margin-bottom: 8px;
+    }
+    .hs-body { flex: 1; min-width: 0; }
+    .hs-name { font-size: 15px; font-weight: 700; }
+    .hs-sub { font-size: 11.5px; color: var(--text-dim); margin-top: 3px; font-variant-numeric: tabular-nums; }
+    .hs-badge {
+      font-size: 11px; font-weight: 800; padding: 5px 10px; border-radius: 8px; flex-shrink: 0;
+      background: rgba(52,199,89,0.16); color: #34c759;
+    }
+    .hs-badge.partial { background: rgba(255,159,10,0.16); color: #ff9f0a; }
     /* ── Sélecteur de mode du compteur ── */
     .seg {
       display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
@@ -647,6 +723,32 @@
   <div class="hist-scroll" id="histScroll"></div>
 </div>
 
+<div class="view gone" id="hiitListView">
+  <div class="tm-hdr">
+    <button class="hdr-btn" id="wkBackBtn" aria-label="Retour">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    </button>
+    <span class="tm-hdr-title">Cardio &amp; HIIT</span>
+    <button class="hdr-btn" id="wkHistBtn" aria-label="Historique">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+      </svg>
+    </button>
+  </div>
+  <div class="wk-scroll" id="wkScroll"></div>
+</div>
+
+<div class="view gone" id="hiitHistView">
+  <div class="tm-hdr">
+    <button class="hdr-btn" id="hsBackBtn" aria-label="Retour">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    </button>
+    <span class="tm-hdr-title">Mes s&#233;ances</span>
+    <span style="width:36px"></span>
+  </div>
+  <div class="wk-scroll" id="hsScroll"></div>
+</div>
+
 <div class="view gone" id="timerView">
   <div class="tm-hdr">
     <button class="hdr-btn" id="tmBackBtn" aria-label="Retour">
@@ -744,52 +846,46 @@
   </div><!-- end ctrSheetSection -->
 
   <div id="tmSheetSection">
-    <div class="field">
-      <label>Pr&#233;r&#233;glages</label>
-      <div class="tm-preset-row" id="tmPresetRow"></div>
-    </div>
-
-    <div class="field" id="tmExField">
-      <label>Exercices (s&#233;par&#233;s par des virgules)</label>
-      <input type="text" id="fTmEx" placeholder="Burpees, Squat, Pompes, Gainage" maxlength="240">
-    </div>
-
-    <div class="fields-row">
-      <div class="field"><label>Travail (sec)</label><input type="number" id="fTmWork" value="20" min="1" max="900"></div>
-      <div class="field" id="tmRestField"><label>Repos (sec)</label><input type="number" id="fTmRest" value="10" min="0" max="900"></div>
-    </div>
-
-    <div class="fields-row">
-      <div class="field"><label>Rounds par cycle</label><input type="number" id="fTmRounds" value="8" min="1" max="99"></div>
-      <div class="field"><label>Cycles</label><input type="number" id="fTmCycles" value="1" min="1" max="30"></div>
-    </div>
-
-    <div class="fields-row">
-      <div class="field"><label>Pr&#233;paration (sec)</label><input type="number" id="fTmPrep" value="10" min="0" max="120"></div>
-      <div class="field"><label>Repos entre cycles (sec)</label><input type="number" id="fTmCycleRest" value="60" min="0" max="900"></div>
-    </div>
-
-    <div class="field">
-      <label>R&#233;cup&#233;ration finale (sec)</label>
-      <input type="number" id="fTmCooldown" value="0" min="0" max="900">
-    </div>
+    <div class="field"><label>Nom de la s&#233;ance</label>
+      <input type="text" id="fWkName" placeholder="ex : HIIT full body" maxlength="40"></div>
+    <div class="field"><label>Ic&#244;ne</label><div class="tm-preset-row" id="wkEmojiRow"></div></div>
 
     <div class="section-sep"></div>
-    <div class="toggle-row">
-      <span>&#128266; Sons &amp; bips</span>
-      <label class="toggle"><input type="checkbox" id="fTmSound" checked><span class="slider"></span></label>
-    </div>
-    <div class="toggle-row">
-      <span>&#128241; Garder l'&#233;cran allum&#233;</span>
-      <label class="toggle"><input type="checkbox" id="fTmWake" checked><span class="slider"></span></label>
-    </div>
-    <div class="toggle-row">
-      <span>&#128243; Vibrations</span>
-      <label class="toggle"><input type="checkbox" id="fTmVib" checked><span class="slider"></span></label>
-    </div>
+    <div class="section-label">Exercices</div>
+    <div class="blk-hdr"><span>Exercice</span><span>Effort</span><span>Repos</span></div>
+    <div id="wkBlocks"></div>
+    <button class="btn btn-reset" type="button" id="wkAddBlk" style="margin-top:4px;padding:11px;font-size:14px">+ Ajouter un exercice</button>
 
+    <div class="section-sep"></div>
+    <div class="section-label">Structure</div>
+    <div class="fields-row">
+      <div class="field"><label>Rounds (tours de la liste)</label><input type="number" id="fWkRounds" value="3" min="1" max="99"></div>
+      <div class="field"><label>Repos entre rounds (sec)</label><input type="number" id="fWkRoundRest" value="60" min="0" max="900"></div>
+    </div>
+    <div class="fields-row">
+      <div class="field"><label>Pr&#233;paration (sec)</label><input type="number" id="fWkPrep" value="10" min="0" max="120"></div>
+      <div class="field"><label>&#201;chauffement (sec)</label><input type="number" id="fWkWarm" value="0" min="0" max="1800"></div>
+    </div>
+    <div class="field"><label>R&#233;cup&#233;ration finale (sec)</label>
+      <input type="number" id="fWkCool" value="0" min="0" max="1800"></div>
+    <div class="tm-summary" id="wkTotalLbl"></div>
+
+    <div class="section-sep"></div>
+    <div class="section-label">Repères pendant la s&#233;ance</div>
+    <div class="toggle-row"><span>&#128266; Bips</span>
+      <label class="toggle"><input type="checkbox" id="fWkSound" checked><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>&#128483;&#65039; Annonce vocale des exercices</span>
+      <label class="toggle"><input type="checkbox" id="fWkVoice" checked><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>&#9202; Signal &#224; mi-effort</span>
+      <label class="toggle"><input type="checkbox" id="fWkHalf" checked><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>&#128243; Vibrations</span>
+      <label class="toggle"><input type="checkbox" id="fWkVib" checked><span class="slider"></span></label></div>
+    <div class="toggle-row"><span>&#128241; Garder l'&#233;cran allum&#233;</span>
+      <label class="toggle"><input type="checkbox" id="fWkWake" checked><span class="slider"></span></label></div>
     <button class="btn btn-reset" type="button" id="tmTestBtn" style="margin-top:10px">&#128266; Tester le son (&#233;couteurs)</button>
-    <div class="tm-summary" id="tmCfgSummary"></div>
+    <div class="tm-summary" id="tmSoundNote" style="text-align:left">Aucun son&#160;? V&#233;rifie l'<strong>interrupteur silence</strong> sur la tranche de l'iPhone.</div>
+    <button class="btn btn-reset" type="button" id="wkDupBtn" style="margin-top:8px">&#128203; Dupliquer cette s&#233;ance</button>
+    <button class="btn btn-del" type="button" id="wkDelBtn" style="margin-top:8px">Supprimer la s&#233;ance</button>
   </div>
 
   <div class="actions">
@@ -824,54 +920,196 @@ let stInterval = null, stRunning = false, stStartAt = 0;
 let sessionSets = [], lastLogVal = 0;
 let histFrom = 'list', histFocusId = null;
 let pacingIndex = 0, pacingResults = [], pacingResting = false;
-let audioCtx = null;
 
-/* — Chrono multi-modes (Tabata / Circuit / EMOM / Perso) — */
-const TM_MODES = [
-  { id:'tabata',  name:'Tabata',  hasEx:false, hint:'20s effort / 10s repos × 8' },
-  { id:'circuit', name:'Circuit', hasEx:true,  hint:'Encha&#238;ne des exercices nomm&#233;s' },
-  { id:'emom',    name:'EMOM',    hasEx:true,  hint:'Every Minute On the Minute' },
-  { id:'custom',  name:'Perso',   hasEx:true,  hint:'Tout est r&#233;glable' }
-];
-const TM_DEFAULTS = {
-  tabata:  { workSec:20, restSec:10, rounds:8,  cycles:1, prepSec:10, cycleRestSec:60, cooldownSec:0,  exercises:[] },
-  circuit: { workSec:40, restSec:20, rounds:5,  cycles:1, prepSec:10, cycleRestSec:60, cooldownSec:0,  exercises:['Burpees','Squat','Mountain climbers','Pompes','Gainage'] },
-  emom:    { workSec:60, restSec:0,  rounds:10, cycles:1, prepSec:10, cycleRestSec:0,  cooldownSec:0,  exercises:['Effort'] },
-  custom:  { workSec:45, restSec:15, rounds:6,  cycles:2, prepSec:10, cycleRestSec:90, cooldownSec:60, exercises:['Effort'] }
-};
-const TM_PRESETS = [
-  { label:'Tabata 20/10 ×8',  mode:'tabata',  cfg:{workSec:20, restSec:10, rounds:8,  cycles:1, prepSec:10, cycleRestSec:60, cooldownSec:0} },
-  { label:'Tabata ×4 cycles', mode:'tabata',  cfg:{workSec:20, restSec:10, rounds:8,  cycles:4, prepSec:10, cycleRestSec:60, cooldownSec:0} },
-  { label:'HIIT 40/20 ×5',    mode:'circuit', cfg:{workSec:40, restSec:20, rounds:5,  cycles:1, prepSec:10, cycleRestSec:60, cooldownSec:0} },
-  { label:'HIIT 30/30 ×8',    mode:'circuit', cfg:{workSec:30, restSec:30, rounds:8,  cycles:1, prepSec:10, cycleRestSec:60, cooldownSec:0} },
-  { label:'EMOM 10 min',      mode:'emom',    cfg:{workSec:60, restSec:0,  rounds:10, cycles:1, prepSec:10, cycleRestSec:0,  cooldownSec:0} },
-  { label:'EMOM 20 min',      mode:'emom',    cfg:{workSec:60, restSec:0,  rounds:20, cycles:1, prepSec:10, cycleRestSec:0,  cooldownSec:0} }
-];
-const TM_OPTS_DEFAULT = { sound:true, wake:true, vib:true };
 
-let tmStore = JSON.parse(localStorage.getItem('tm_cfg_v2') || 'null');
-if (!tmStore) {
-  tmStore = { mode:'tabata', opts:{...TM_OPTS_DEFAULT}, cfgs:{} };
-  TM_MODES.forEach(m => { tmStore.cfgs[m.id] = {...TM_DEFAULTS[m.id]}; });
-  // migration depuis l'ancien mode HIIT
-  const old = JSON.parse(localStorage.getItem('hiit_cfg') || 'null');
-  if (old) {
-    tmStore.mode = 'circuit';
-    tmStore.cfgs.circuit = { ...TM_DEFAULTS.circuit,
-      workSec: old.workSec || 40, restSec: old.restSec || 20,
-      exercises: old.exercises || TM_DEFAULTS.circuit.exercises,
-      rounds: (old.exercises || []).length || 5, cycles: old.rounds || 1 };
+/* ══════════ Cardio & HIIT ══════════
+   Une seance = une liste de blocs, chacun avec son propre temps d'effort et
+   de repos. Les phases sont pre-calculees a l'avance, ce qui donne le total
+   exact, le saut de phase et l'apercu de la suite. */
+
+const WK_STARTERS = [
+  { name: 'Tabata classique', emoji: '🔥', prepSec: 10, warmupSec: 0, rounds: 8, roundRestSec: 0, cooldownSec: 0,
+    blocks: [{ name: 'Effort max', work: 20, rest: 10 }] },
+  { name: 'HIIT full body', emoji: '💪', prepSec: 10, warmupSec: 60, rounds: 3, roundRestSec: 60, cooldownSec: 60,
+    blocks: [
+      { name: 'Burpees', work: 40, rest: 20 },
+      { name: 'Squats sautés', work: 40, rest: 20 },
+      { name: 'Mountain climbers', work: 40, rest: 20 },
+      { name: 'Pompes', work: 40, rest: 20 },
+      { name: 'Gainage', work: 40, rest: 20 }] },
+  { name: 'Cardio brûle-graisse', emoji: '⚡', prepSec: 10, warmupSec: 90, rounds: 4, roundRestSec: 45, cooldownSec: 90,
+    blocks: [
+      { name: 'Jumping jacks', work: 45, rest: 15 },
+      { name: 'Talons-fesses', work: 45, rest: 15 },
+      { name: 'Fentes sautées', work: 30, rest: 30 },
+      { name: 'Genoux hauts', work: 45, rest: 15 }] },
+  { name: 'EMOM 10 min', emoji: '⏱', prepSec: 10, warmupSec: 0, rounds: 10, roundRestSec: 0, cooldownSec: 0,
+    blocks: [{ name: 'Série du jour', work: 60, rest: 0 }] },
+  { name: 'Abdos express', emoji: '🎯', prepSec: 10, warmupSec: 0, rounds: 3, roundRestSec: 30, cooldownSec: 0,
+    blocks: [
+      { name: 'Crunchs', work: 30, rest: 10 },
+      { name: 'Gainage latéral D', work: 30, rest: 10 },
+      { name: 'Gainage latéral G', work: 30, rest: 10 },
+      { name: 'Relevés de jambes', work: 30, rest: 10 }] }
+];
+const WK_OPTS_DEF = { sound: true, voice: true, vib: true, wake: true, halfway: true };
+
+let wkStore = JSON.parse(localStorage.getItem('hiit_v3') || 'null');
+if (!wkStore) {
+  wkStore = { workouts: WK_STARTERS.map(w => ({ ...w, id: uid(), createdAt: Date.now() })),
+              opts: { ...WK_OPTS_DEF }, history: [] };
+  // Reprise d'une configuration issue de l'ancien chrono
+  const old = JSON.parse(localStorage.getItem('tm_cfg_v2') || 'null');
+  if (old && old.cfgs && old.cfgs.circuit && (old.cfgs.circuit.exercises || []).length) {
+    const c = old.cfgs.circuit;
+    wkStore.workouts.unshift({
+      id: uid(), name: 'Mon circuit', emoji: '⭐', createdAt: Date.now(),
+      prepSec: c.prepSec || 10, warmupSec: 0, rounds: c.cycles || 1,
+      roundRestSec: c.cycleRestSec || 60, cooldownSec: c.cooldownSec || 0,
+      blocks: c.exercises.map(e => ({ name: e, work: c.workSec || 40, rest: c.restSec || 20 }))
+    });
   }
 }
-TM_MODES.forEach(m => { if (!tmStore.cfgs[m.id]) tmStore.cfgs[m.id] = {...TM_DEFAULTS[m.id]}; });
-if (!tmStore.opts) tmStore.opts = {...TM_OPTS_DEFAULT};
+if (!wkStore.opts) wkStore.opts = { ...WK_OPTS_DEF };
+wkStore.opts = { ...WK_OPTS_DEF, ...wkStore.opts };
+if (!wkStore.history) wkStore.history = [];
+function wkPersist() { localStorage.setItem('hiit_v3', JSON.stringify(wkStore)); }
+function wkById(id) { return wkStore.workouts.find(w => w.id === id) || null; }
 
-let tmPhases = [], tmIdx = 0, tmRemain = 0, tmEndAt = 0;
-let tmRunning = false, tmInterval = null, tmState = 'idle', tmWakeLock = null;
+/* — Construction des phases — */
+function wkBuild(w) {
+  const ph = [];
+  if (!w || !w.blocks || !w.blocks.length) return ph;
+  if (w.prepSec > 0) ph.push({ type: 'prep', dur: w.prepSec, ex: 'Prépare-toi', round: 0 });
+  if (w.warmupSec > 0) ph.push({ type: 'warmup', dur: w.warmupSec, ex: 'Échauffement', round: 0 });
+  const R = Math.max(1, w.rounds);
+  for (let r = 1; r <= R; r++) {
+    w.blocks.forEach((bl, i) => {
+      ph.push({ type: 'work', dur: Math.max(1, bl.work), ex: bl.name || 'Effort', round: r, idx: i });
+      const last = i === w.blocks.length - 1;
+      if (!last && bl.rest > 0) ph.push({ type: 'rest', dur: bl.rest, ex: w.blocks[i + 1].name, round: r, idx: i });
+      else if (last && r < R && bl.rest > 0 && !w.roundRestSec)
+        ph.push({ type: 'rest', dur: bl.rest, ex: w.blocks[0].name, round: r, idx: i });
+    });
+    if (r < R && w.roundRestSec > 0)
+      ph.push({ type: 'roundrest', dur: w.roundRestSec, ex: w.blocks[0].name, round: r });
+  }
+  if (w.cooldownSec > 0) ph.push({ type: 'cooldown', dur: w.cooldownSec, ex: 'Récupération', round: 0 });
+  return ph;
+}
+function wkTotal(w) { return wkBuild(w).reduce((s, p) => s + p.dur, 0); }
+function wkWorkTime(w) { return wkBuild(w).filter(p => p.type === 'work').reduce((s, p) => s + p.dur, 0); }
 
-function tmCfg() { return tmStore.cfgs[tmStore.mode]; }
-function tmMode() { return TM_MODES.find(m => m.id === tmStore.mode) || TM_MODES[0]; }
-function tmPersist() { localStorage.setItem('tm_cfg_v2', JSON.stringify(tmStore)); }
+/* — Voix : annonce les exercices, fonctionne hors ligne — */
+function say(txt) {
+  if (!wkStore.opts.voice || !('speechSynthesis' in window)) return;
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(txt);
+    u.lang = 'fr-FR'; u.rate = 1.08; u.pitch = 1; u.volume = 1;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+function wkSnd(fn) { if (wkStore.opts.sound) fn(); }
+function wkVib(p) { if (wkStore.opts.vib) vib(p); }
+
+/* — Bibliothèque — */
+function wkOpenList() {
+  lv.classList.add('gone');
+  hiitListView.classList.remove('gone');
+  renderWkList();
+}
+function wkCloseList() { hiitListView.classList.add('gone'); lv.classList.remove('gone'); }
+function fmtMin(s) {
+  s = Math.round(s);
+  const m = Math.floor(s / 60), r = s % 60;
+  if (m === 0) return r + 's';
+  return r === 0 ? m + ' min' : m + ' min ' + r + 's';
+}
+function renderWkList() {
+  wkScroll.innerHTML = '';
+  wkStore.workouts.forEach(w => {
+    const card = document.createElement('div');
+    card.className = 'wk-card';
+    const nEx = w.blocks.length, total = wkTotal(w);
+    const tags = [];
+    if (w.warmupSec > 0) tags.push('Échauffement');
+    tags.push(w.rounds + ' round' + (w.rounds > 1 ? 's' : ''));
+    if (w.roundRestSec > 0) tags.push(fmtMin(w.roundRestSec) + ' entre rounds');
+    if (w.cooldownSec > 0) tags.push('Récup');
+    card.innerHTML =
+      '<div class="wk-emoji">' + (w.emoji || '🔥') + '</div>' +
+      '<div class="wk-body"><div class="wk-name">' + esc(w.name) + '</div>' +
+      '<div class="wk-meta">' + nEx + ' exercice' + (nEx > 1 ? 's' : '') + ' · ' + fmtMin(total) +
+      ' · effort ' + fmtMin(wkWorkTime(w)) + '</div>' +
+      '<div class="wk-tags">' + tags.map(t => '<span class="wk-tag">' + t + '</span>').join('') + '</div></div>';
+    const ed = document.createElement('button');
+    ed.className = 'wk-edit'; ed.setAttribute('aria-label', 'Modifier');
+    ed.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>';
+    ed.addEventListener('click', e => { e.stopPropagation(); openSheet('workout', w.id); });
+    card.appendChild(ed);
+    card.addEventListener('click', () => wkRun(w.id));
+    wkScroll.appendChild(card);
+  });
+  const add = document.createElement('button');
+  add.className = 'wk-add'; add.textContent = '+ Nouvelle séance';
+  add.addEventListener('click', () => openSheet('workout', null));
+  wkScroll.appendChild(add);
+}
+
+/* — Historique — */
+function wkOpenHist() {
+  hiitListView.classList.add('gone');
+  hiitHistView.classList.remove('gone');
+  renderWkHist();
+}
+function renderWkHist() {
+  hsScroll.innerHTML = '';
+  if (!wkStore.history.length) {
+    hsScroll.innerHTML = '<div class="empty">Aucune séance terminée pour l\'instant.<br>Lance un circuit et il apparaîtra ici.</div>';
+    return;
+  }
+  const byDay = {};
+  wkStore.history.slice().reverse().forEach(h => {
+    const d = new Date(h.at); d.setHours(0, 0, 0, 0);
+    (byDay[d.getTime()] = byDay[d.getTime()] || []).push(h);
+  });
+  Object.keys(byDay).sort((a, b) => b - a).forEach(k => {
+    const lbl = document.createElement('div');
+    lbl.className = 'tgroup-lbl';
+    lbl.style.cssText = 'font-size:11px;font-weight:800;letter-spacing:0.1em;color:var(--text-dim);text-transform:uppercase;padding:14px 4px 8px';
+    const d = new Date(+k), td = new Date(); td.setHours(0, 0, 0, 0);
+    const diff = Math.round((td - d) / 86400000);
+    lbl.textContent = diff === 0 ? "Aujourd'hui" : diff === 1 ? 'Hier'
+      : d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+    hsScroll.appendChild(lbl);
+    byDay[k].forEach(h => {
+      const row = document.createElement('div');
+      row.className = 'hs-row';
+      const t = new Date(h.at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      row.innerHTML =
+        '<div class="wk-emoji">' + (h.emoji || '🔥') + '</div>' +
+        '<div class="hs-body"><div class="hs-name">' + esc(h.name) + '</div>' +
+        '<div class="hs-sub">' + t + ' · ' + fmtMin(h.durSec) + ' · ' + h.roundsDone + '/' + h.rounds + ' rounds</div></div>' +
+        '<div class="hs-badge' + (h.completed ? '' : ' partial') + '">' + (h.completed ? 'Terminée' : 'Arrêtée') + '</div>';
+      hsScroll.appendChild(row);
+    });
+  });
+}
+function wkLogSession(completed) {
+  if (!tmWk || !tmStartedAt) return;
+  const done = tmPhases.slice(0, tmIdx + 1).filter(p => p.type === 'work').length;
+  const perRound = tmWk.blocks.length;
+  wkStore.history.push({
+    id: uid(), workoutId: tmWk.id, name: tmWk.name, emoji: tmWk.emoji,
+    at: tmStartedAt, durSec: Math.round((Date.now() - tmStartedAt) / 1000),
+    rounds: tmWk.rounds, roundsDone: Math.min(tmWk.rounds, Math.ceil(done / perRound)),
+    completed: !!completed
+  });
+  if (wkStore.history.length > 400) wkStore.history = wkStore.history.slice(-400);
+  wkPersist();
+  tmStartedAt = 0;
+}
 
 function mkCounter(t, c) {
   return { id: uid(), title: t, value: 0, start: 0, step: 1, goal: null, color: c,
@@ -884,53 +1122,124 @@ function byId(id) { return data.find(c => c.id === id); }
 function vib(p) { if (navigator.vibrate) navigator.vibrate(p); }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 
-function initAudio() {
-  if (audioCtx) { if (audioCtx.state === 'suspended') audioCtx.resume(); return; }
-  try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+/* ══════════ Moteur audio ══════════
+   Sur iOS, l'API Web Audio est routee vers la session audio « ambiante » :
+   le bouton silence physique la coupe entierement. Les elements <audio>
+   passent eux par la session « lecture media », qui sonne malgre le
+   silencieux (comme une video). On pre-genere donc les bips en WAV et on
+   les joue via des elements <audio>.
+   Bonus : un element <audio> qui tourne maintient la liaison Bluetooth
+   ouverte, donc plus de premier bip avale par le reveil des ecouteurs. */
+
+function encodeWav(samples, rate) {
+  const n = samples.length, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true);
+  v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true);
+  let o = 44;
+  for (let i = 0; i < n; i++) {
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    v.setInt16(o, s < 0 ? s * 0x8000 : s * 0x7FFF, true); o += 2;
+  }
+  let bin = ''; const b = new Uint8Array(buf);
+  for (let i = 0; i < b.length; i += 8192) bin += String.fromCharCode.apply(null, b.subarray(i, i + 8192));
+  return 'data:audio/wav;base64,' + btoa(bin);
 }
 
-/* Maintien du lien Bluetooth.
-   Les ecouteurs BT coupent la liaison audio apres ~10-20s de silence et mettent
-   200-500ms a se reveiller : un bip court passerait a la trappe. On diffuse donc
-   un souffle a -62 dBFS (inaudible) pendant toute la seance pour garder le lien ouvert. */
-let keepAlive = null;
+/* notes : [{ f: frequence, d: duree, at: debut, v: volume, type: 'sine'|'square' }] */
+function synthWav(notes, rate) {
+  rate = rate || 22050;
+  const total = Math.max.apply(null, notes.map(n => n.at + n.d)) + 0.06;
+  const N = Math.ceil(total * rate), s = new Float32Array(N);
+  notes.forEach(n => {
+    const st = Math.floor(n.at * rate), len = Math.floor(n.d * rate), vol = n.v == null ? 0.55 : n.v;
+    for (let i = 0; i < len && st + i < N; i++) {
+      const t = i / rate;
+      const env = Math.min(1, t / 0.006) * Math.min(1, (len - i) / (0.010 * rate)) * Math.exp(-t * (2.2 / n.d));
+      const w = n.type === 'square' ? (Math.sin(2 * Math.PI * n.f * t) >= 0 ? 1 : -1) : Math.sin(2 * Math.PI * n.f * t);
+      s[st + i] += w * env * vol;
+    }
+  });
+  let mx = 0; for (let i = 0; i < N; i++) mx = Math.max(mx, Math.abs(s[i]));
+  if (mx > 0.95) { const k = 0.95 / mx; for (let i = 0; i < N; i++) s[i] *= k; }
+  return encodeWav(s, rate);
+}
+
+const SND_DEFS = {
+  tick: [{ f: 1180, d: 0.085, at: 0, v: 0.42, type: 'square' }],
+  go:   [{ f: 784, d: 0.13, at: 0 }, { f: 1175, d: 0.22, at: 0.13 }],
+  rest: [{ f: 587, d: 0.14, at: 0 }, { f: 392, d: 0.3, at: 0.14 }],
+  half: [{ f: 988, d: 0.1, at: 0 }, { f: 988, d: 0.1, at: 0.14 }],
+  done: [{ f: 523, d: 0.15, at: 0 }, { f: 659, d: 0.15, at: 0.16 },
+         { f: 784, d: 0.15, at: 0.32 }, { f: 1046, d: 0.42, at: 0.48 }]
+};
+
+const SND = {};
+let audioReady = false, audioBlocked = false;
+
+function buildSounds() {
+  if (SND.tick) return;
+  Object.keys(SND_DEFS).forEach(k => {
+    const uri = synthWav(SND_DEFS[k]);
+    // deux exemplaires : permet deux declenchements rapproches sans se couper
+    SND[k] = [new Audio(uri), new Audio(uri)];
+    SND[k].forEach(a => { a.preload = 'auto'; a.load(); });
+    SND[k].i = 0;
+  });
+  // souffle quasi inaudible en boucle : garde la session media et la liaison BT ouvertes
+  const n = 22050, s = new Float32Array(n);
+  for (let i = 0; i < n; i++) s[i] = (Math.random() * 2 - 1) * 0.0006;
+  keepEl = new Audio(encodeWav(s, 22050));
+  keepEl.loop = true; keepEl.preload = 'auto'; keepEl.load();
+}
+
+/* iOS exige que la premiere lecture parte d'un geste utilisateur.
+   On amorce donc tous les sons au premier contact. */
+function initAudio() {
+  buildSounds();
+  if (audioReady) return;
+  const all = Object.keys(SND).map(k => SND[k]).reduce((a, v) => a.concat(v), []).concat([keepEl]);
+  let ok = 0, tried = 0;
+  all.forEach(a => {
+    const p = a.play();
+    if (p && p.then) p.then(() => {
+      a.pause(); a.currentTime = 0; ok++; tried++;
+      if (tried === all.length) { audioReady = ok > 0; audioBlocked = ok === 0; }
+    }).catch(() => {
+      tried++;
+      if (tried === all.length) { audioReady = ok > 0; audioBlocked = ok === 0; }
+    });
+    else { a.pause(); a.currentTime = 0; ok++; }
+  });
+  audioReady = true;
+}
+
+function play(name) {
+  const pool = SND[name];
+  if (!pool) return;
+  const a = pool[pool.i % pool.length]; pool.i++;
+  try { a.currentTime = 0; const p = a.play(); if (p && p.catch) p.catch(() => { audioBlocked = true; }); } catch (e) {}
+}
+
+let keepEl = null;
 function startKeepAlive() {
-  initAudio();
-  if (!audioCtx || keepAlive) return;
-  try {
-    const buf = audioCtx.createBuffer(1, audioCtx.sampleRate, audioCtx.sampleRate);
-    const d = buf.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * 0.0008;
-    const src = audioCtx.createBufferSource();
-    src.buffer = buf; src.loop = true;
-    src.connect(audioCtx.destination);
-    src.start();
-    keepAlive = src;
-  } catch(e) {}
+  buildSounds();
+  if (!keepEl) return;
+  try { const p = keepEl.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
 }
 function stopKeepAlive() {
-  if (!keepAlive) return;
-  try { keepAlive.stop(); } catch(e) {}
-  keepAlive = null;
+  if (!keepEl) return;
+  try { keepEl.pause(); keepEl.currentTime = 0; } catch (e) {}
 }
-function playTone(freq, dur, type, vol) {
-  if (!audioCtx) return;
-  try {
-    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-    o.connect(g); g.connect(audioCtx.destination);
-    const t = audioCtx.currentTime;
-    o.type = type || 'sine'; o.frequency.setValueAtTime(freq, t);
-    // petite attaque : evite le clic et laisse le temps a la liaison BT de suivre
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(vol || 0.38, t + 0.012);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.start(t); o.stop(t + dur + 0.02);
-  } catch(e) {}
-}
-function beepWork()  { playTone(880, 0.14); setTimeout(() => playTone(880, 0.16), 150); }
-function beepRest()  { playTone(440, 0.34); }
-function beepTick()  { playTone(1100, 0.09, 'square', 0.16); }
-function beepDone()  { playTone(523, 0.14); setTimeout(() => playTone(659, 0.14), 160); setTimeout(() => playTone(784, 0.28), 320); }
+
+function beepWork() { play('go'); }
+function beepRest() { play('rest'); }
+function beepTick() { play('tick'); }
+function beepHalf() { play('half'); }
+function beepDone() { play('done'); }
+
 function fmtSec(s) {
   if (s < 60) return s + 's';
   return Math.floor(s / 60) + 'min' + (s % 60 ? (s % 60) + 's' : '');
@@ -1012,10 +1321,16 @@ const lv = document.getElementById('listView'),
   fPacingRest = document.getElementById('fPacingRest'),
   pacingFields = document.getElementById('pacingFields'),
   timerView = document.getElementById('timerView'),
+  hiitListView = document.getElementById('hiitListView'),
+  hiitHistView = document.getElementById('hiitHistView'),
+  wkScroll = document.getElementById('wkScroll'),
+  hsScroll = document.getElementById('hsScroll'),
+  wkBackBtn = document.getElementById('wkBackBtn'),
+  wkHistBtn = document.getElementById('wkHistBtn'),
+  hsBackBtn = document.getElementById('hsBackBtn'),
   tmBackBtn = document.getElementById('tmBackBtn'),
   tmCfgBtn = document.getElementById('tmCfgBtn'),
   tmHdrTitle = document.getElementById('tmHdrTitle'),
-  tmModesEl = document.getElementById('tmModes'),
   tmPhaseEl = document.getElementById('tmPhase'),
   tmExEl = document.getElementById('tmEx'),
   tmRingFill = document.getElementById('tmRingFill'),
@@ -1029,24 +1344,28 @@ const lv = document.getElementById('listView'),
   tmMainBtn = document.getElementById('tmMainBtn'),
   tmResetBtn = document.getElementById('tmResetBtn'),
   tmSkipBtn = document.getElementById('tmSkipBtn'),
+  tmTestBtn = document.getElementById('tmTestBtn'),
+  tmSoundNote = document.getElementById('tmSoundNote'),
   hiitBtn = document.getElementById('hiitBtn'),
   ctrSheetSection = document.getElementById('ctrSheetSection'),
   tmSheetSection = document.getElementById('tmSheetSection'),
-  tmPresetRow = document.getElementById('tmPresetRow'),
-  tmExField = document.getElementById('tmExField'),
-  tmRestField = document.getElementById('tmRestField'),
-  tmCfgSummary = document.getElementById('tmCfgSummary'),
-  fTmEx = document.getElementById('fTmEx'),
-  fTmWork = document.getElementById('fTmWork'),
-  fTmRest = document.getElementById('fTmRest'),
-  fTmRounds = document.getElementById('fTmRounds'),
-  fTmCycles = document.getElementById('fTmCycles'),
-  fTmPrep = document.getElementById('fTmPrep'),
-  fTmCycleRest = document.getElementById('fTmCycleRest'),
-  fTmCooldown = document.getElementById('fTmCooldown'),
-  fTmSound = document.getElementById('fTmSound'),
-  fTmWake = document.getElementById('fTmWake'),
-  fTmVib = document.getElementById('fTmVib');
+  wkBlocks = document.getElementById('wkBlocks'),
+  wkAddBlk = document.getElementById('wkAddBlk'),
+  wkEmojiRow = document.getElementById('wkEmojiRow'),
+  wkTotalLbl = document.getElementById('wkTotalLbl'),
+  wkDupBtn = document.getElementById('wkDupBtn'),
+  wkDelBtn = document.getElementById('wkDelBtn'),
+  fWkName = document.getElementById('fWkName'),
+  fWkRounds = document.getElementById('fWkRounds'),
+  fWkRoundRest = document.getElementById('fWkRoundRest'),
+  fWkPrep = document.getElementById('fWkPrep'),
+  fWkWarm = document.getElementById('fWkWarm'),
+  fWkCool = document.getElementById('fWkCool'),
+  fWkSound = document.getElementById('fWkSound'),
+  fWkVoice = document.getElementById('fWkVoice'),
+  fWkVib = document.getElementById('fWkVib'),
+  fWkWake = document.getElementById('fWkWake'),
+  fWkHalf = document.getElementById('fWkHalf');
 
 COLORS.forEach(c => {
   const d = document.createElement('div');
@@ -1438,234 +1757,139 @@ function pacingDone(c) {
   logBtn.style.opacity = '0.45';
 }
 
-/* — Chrono multi-modes : moteur — */
-function tmFmt(s) {
-  s = Math.max(0, Math.round(s));
-  const m = Math.floor(s / 60);
-  return m + ':' + String(s % 60).padStart(2, '0');
-}
-function tmFmtLong(s) {
-  s = Math.max(0, Math.round(s));
-  const m = Math.floor(s / 60), r = s % 60;
-  if (m === 0) return r + 's';
-  return r === 0 ? m + 'min' : m + 'min' + String(r).padStart(2, '0');
-}
-function tmExList() {
-  const c = tmCfg();
-  const l = (c.exercises || []).map(e => String(e).trim()).filter(e => e.length);
-  return l;
-}
-function tmExFor(round) {
-  const l = tmExList();
-  if (!l.length) return null;
-  return l[(round - 1) % l.length];
-}
+/* — Exécution d'une séance — */
+const PH_LABEL = { prep: 'Préparation', warmup: 'Échauffement', work: 'Effort',
+                   rest: 'Repos', roundrest: 'Repos de round', cooldown: 'Récupération', done: 'Terminé' };
+let tmWk = null, tmPhases = [], tmIdx = 0, tmRemain = 0, tmEndAt = 0;
+let tmRunning = false, tmInterval = null, tmState = 'idle', tmWakeLock = null;
+let tmStartedAt = 0, tmHalfDone = false;
 
-/* Construit la liste complète des phases à l'avance : permet skip, retour, total exact. */
-function tmBuildPhases() {
-  const c = tmCfg();
-  const ph = [];
-  const rounds = Math.max(1, c.rounds), cycles = Math.max(1, c.cycles);
-  if (c.prepSec > 0) ph.push({ type: 'prep', dur: c.prepSec, ex: null, round: 0, cycle: 1 });
-  for (let cy = 1; cy <= cycles; cy++) {
-    for (let r = 1; r <= rounds; r++) {
-      ph.push({ type: 'work', dur: c.workSec, ex: tmExFor(r), round: r, cycle: cy });
-      const lastRound = r === rounds, lastCycle = cy === cycles;
-      if (!lastRound) {
-        if (c.restSec > 0) ph.push({ type: 'rest', dur: c.restSec, ex: tmExFor(r + 1), round: r, cycle: cy });
-      } else if (!lastCycle) {
-        if (c.cycleRestSec > 0) ph.push({ type: 'cyclerest', dur: c.cycleRestSec, ex: tmExFor(1), round: r, cycle: cy });
-        else if (c.restSec > 0) ph.push({ type: 'rest', dur: c.restSec, ex: tmExFor(1), round: r, cycle: cy });
-      }
-    }
-  }
-  if (c.cooldownSec > 0) ph.push({ type: 'cooldown', dur: c.cooldownSec, ex: null, round: 0, cycle: cycles });
-  return ph;
-}
-function tmTotalDur() { return tmPhases.reduce((s, p) => s + p.dur, 0); }
-function tmElapsedBefore(i) { let s = 0; for (let k = 0; k < i; k++) s += tmPhases[k].dur; return s; }
-
-const TM_LABELS = { prep: 'Préparation', work: 'Travail', rest: 'Repos', cyclerest: 'Repos de cycle', cooldown: 'Récupération', done: 'Terminé' };
-
-/* — Sons & retours (respectent les réglages) — */
-function tmSnd(fn) { if (tmStore.opts.sound) fn(); }
-function tmVibrate(p) { if (tmStore.opts.vib) vib(p); }
-
-/* — Wake lock : l'écran ne s'éteint pas pendant la séance — */
 async function tmAcquireWake() {
-  if (!tmStore.opts.wake) return;
+  if (!wkStore.opts.wake) return;
   try { if ('wakeLock' in navigator && !tmWakeLock) tmWakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
 }
-function tmReleaseWake() {
-  try { if (tmWakeLock) { tmWakeLock.release(); tmWakeLock = null; } } catch (e) {}
-}
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && tmRunning) tmAcquireWake();
-});
+function tmReleaseWake() { try { if (tmWakeLock) { tmWakeLock.release(); tmWakeLock = null; } } catch (e) {} }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && tmRunning) tmAcquireWake(); });
 
-/* — Ouverture / fermeture — */
-function tmOpen() {
-  lv.classList.add('gone');
+function tmFmt(s) { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+
+function wkRun(id) {
+  tmWk = wkById(id); if (!tmWk) return;
+  hiitListView.classList.add('gone');
   timerView.classList.remove('gone');
-  tmRenderModes();
   tmReset();
 }
-function tmClose() {
+function tmCloseRun() {
+  if (tmState === 'run' || tmState === 'paused') wkLogSession(false);
   tmHardStop();
   timerView.classList.add('gone');
-  lv.classList.remove('gone');
+  hiitListView.classList.remove('gone');
+  renderWkList();
 }
 function tmHardStop() {
   if (tmInterval) { clearInterval(tmInterval); tmInterval = null; }
-  tmRunning = false;
-  tmReleaseWake(); stopKeepAlive();
+  tmRunning = false; tmReleaseWake(); stopKeepAlive();
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
 }
 
-/* — Pastilles de mode — */
-function tmRenderModes() {
-  tmModesEl.innerHTML = '';
-  TM_MODES.forEach(m => {
-    const b = document.createElement('button');
-    b.className = 'tm-mode' + (m.id === tmStore.mode ? ' sel' : '');
-    b.textContent = m.name;
-    b.addEventListener('click', () => {
-      if (tmState !== 'idle') return;
-      tmStore.mode = m.id; tmPersist();
-      tmRenderModes(); tmReset();
-    });
-    tmModesEl.appendChild(b);
-  });
-  tmModesEl.classList.toggle('locked', tmState !== 'idle');
-}
-
-/* — État repos (avant lancement) — */
 function tmReset() {
+  if (tmState === 'run' || tmState === 'paused') wkLogSession(false);
   tmHardStop();
-  tmState = 'idle'; tmIdx = 0;
-  tmPhases = tmBuildPhases();
-  const c = tmCfg(), m = tmMode();
-  tmHdrTitle.textContent = 'Chrono · ' + m.name;
-  timerView.className = 'view ph-idle';
-  tmPhaseEl.textContent = 'Prêt';
-  tmPhaseEl.className = 'tm-phase';
-  tmRingFill.className = 'tm-ring-fill';
-  tmRingFill.style.strokeDashoffset = '0';
-  const first = tmPhases[0];
-  tmRemain = first ? first.dur : c.workSec;
-  tmClock.textContent = tmFmt(tmRemain);
-  tmClock.classList.remove('urgent');
-  const exs = tmExList();
-  tmExEl.textContent = exs.length ? exs[0] : m.name;
-  tmSub.textContent = c.rounds + ' ROUNDS' + (c.cycles > 1 ? ' × ' + c.cycles : '');
-  tmNext.innerHTML = 'Total <strong>' + tmFmtLong(tmTotalDur()) + '</strong> · ' +
-    c.workSec + 's effort' + (c.restSec > 0 ? ' / ' + c.restSec + 's repos' : '');
-  tmMainBtn.textContent = 'Lancer';
-  tmMainBtn.classList.remove('running');
+  tmState = 'idle'; tmIdx = 0; tmStartedAt = 0; tmHalfDone = false;
+  tmPhases = wkBuild(tmWk);
+  tmHdrTitle.textContent = tmWk.name;
+  timerView.className = 'view';
+  tmPhaseEl.textContent = 'Prêt'; tmPhaseEl.className = 'tm-phase';
+  tmRingFill.className = 'tm-ring-fill'; tmRingFill.style.strokeDashoffset = '0';
+  tmRemain = tmPhases.length ? tmPhases[0].dur : 0;
+  tmClock.textContent = tmFmt(tmRemain); tmClock.classList.remove('urgent');
+  tmExEl.textContent = tmWk.blocks[0] ? tmWk.blocks[0].name : '—';
+  tmSub.textContent = tmWk.rounds + ' ROUND' + (tmWk.rounds > 1 ? 'S' : '') + ' · ' + tmWk.blocks.length + ' EXO' + (tmWk.blocks.length > 1 ? 'S' : '');
+  tmNext.innerHTML = 'Total <strong>' + fmtMin(wkTotal(tmWk)) + '</strong> · effort <strong>' + fmtMin(wkWorkTime(tmWk)) + '</strong>';
+  tmMainBtn.textContent = 'Lancer'; tmMainBtn.classList.remove('running');
   tmSkipBtn.disabled = true;
   tmTotalFill.style.width = '0%';
   tmElapsedEl.textContent = '0:00';
-  tmRemainEl.textContent = tmFmt(tmTotalDur());
+  tmRemainEl.textContent = tmFmt(wkTotal(tmWk));
   tmRenderChips();
-  tmRenderModes();
 }
 
-/* — Bandeau de progression (rounds / exercices) — */
 function tmRenderChips() {
   tmChips.innerHTML = '';
-  const c = tmCfg(), exs = tmExList();
+  if (!tmWk) return;
   const cur = tmPhases[tmIdx];
-  const total = Math.max(1, c.rounds) * Math.max(1, c.cycles);
-  if (total > 60) return;
-  let n = 0;
-  for (let cy = 1; cy <= c.cycles; cy++) {
-    for (let r = 1; r <= c.rounds; r++) {
-      n++;
-      const chip = document.createElement('div');
-      chip.className = 'tm-chip';
-      const ex = exs.length ? tmExFor(r) : 'R' + r;
-      chip.textContent = c.cycles > 1 && exs.length ? ex : (exs.length ? ex : 'R' + r);
-      chip.title = 'Cycle ' + cy + ' · Round ' + r;
-      if (tmState !== 'idle' && cur) {
-        const curN = (cur.cycle - 1) * c.rounds + (cur.round || 0);
-        if (cur.type === 'prep') { /* rien d'actif */ }
-        else if (n < curN) chip.classList.add('c-off');
-        else if (n === curN) chip.classList.add(cur.type === 'work' ? 'c-on' : 'c-rest');
+  tmWk.blocks.forEach((bl, i) => {
+    const c = document.createElement('div');
+    c.className = 'tm-chip';
+    c.textContent = bl.name;
+    if (tmState === 'run' || tmState === 'paused') {
+      if (cur && cur.idx != null) {
+        if (i < cur.idx) c.classList.add('c-off');
+        else if (i === cur.idx) c.classList.add(cur.type === 'work' ? 'c-on' : 'c-rest');
       }
-      if (tmState === 'done') chip.classList.add('c-off');
-      tmChips.appendChild(chip);
-    }
-  }
+    } else if (tmState === 'done') c.classList.add('c-off');
+    tmChips.appendChild(c);
+  });
 }
 
-/* — Entrée dans une phase — */
 function tmEnterPhase(i, silent) {
-  tmIdx = i;
+  tmIdx = i; tmHalfDone = false;
   const p = tmPhases[i];
   if (!p) { tmDone(); return; }
-  tmRemain = p.dur;
-  tmEndAt = Date.now() + p.dur * 1000;
-  timerView.className = 'view ph-' + p.type;
-  tmPhaseEl.textContent = TM_LABELS[p.type] || p.type;
-  tmPhaseEl.className = 'tm-phase p-' + p.type;
-  tmRingFill.className = 'tm-ring-fill c-' + p.type;
+  tmRemain = p.dur; tmEndAt = Date.now() + p.dur * 1000;
+  timerView.className = 'view ph-' + (p.type === 'roundrest' ? 'cyclerest' : p.type === 'warmup' ? 'prep' : p.type);
+  tmPhaseEl.textContent = PH_LABEL[p.type];
+  tmPhaseEl.className = 'tm-phase p-' + (p.type === 'roundrest' ? 'cyclerest' : p.type === 'warmup' ? 'prep' : p.type);
+  tmRingFill.className = 'tm-ring-fill c-' + (p.type === 'roundrest' ? 'cyclerest' : p.type === 'warmup' ? 'prep' : p.type);
   tmRingFill.style.strokeDashoffset = '0';
-  tmClock.textContent = tmFmt(tmRemain);
-  tmClock.classList.remove('urgent');
+  tmClock.textContent = tmFmt(tmRemain); tmClock.classList.remove('urgent');
+  tmExEl.textContent = p.ex;
+  tmSub.textContent = (p.round > 0)
+    ? 'ROUND ' + p.round + '/' + tmWk.rounds + (p.idx != null ? ' · EXO ' + (p.idx + 1) + '/' + tmWk.blocks.length : '')
+    : PH_LABEL[p.type].toUpperCase();
 
-  const c = tmCfg(), exs = tmExList();
-  if (p.type === 'prep') {
-    tmExEl.textContent = 'Prépare-toi';
-    tmSub.textContent = 'DÉPART DANS';
-  } else if (p.type === 'cooldown') {
-    tmExEl.textContent = 'Récupération';
-    tmSub.textContent = 'FIN DE SÉANCE';
-  } else {
-    tmExEl.textContent = p.ex || (p.type === 'work' ? 'Effort' : 'Repos');
-    tmSub.textContent = 'ROUND ' + p.round + '/' + c.rounds + (c.cycles > 1 ? ' · CYCLE ' + p.cycle + '/' + c.cycles : '');
-  }
-
-  // Aperçu de la phase suivante
-  const nx = tmPhases[i + 1];
-  if (p.type === 'work' && nx && nx.ex) {
-    tmNext.innerHTML = 'Ensuite : <strong>' + esc(nx.ex) + '</strong>';
-  } else if ((p.type === 'rest' || p.type === 'cyclerest' || p.type === 'prep') && nx) {
-    tmNext.innerHTML = 'Prochain : <strong>' + esc(nx.ex || TM_LABELS[nx.type]) + '</strong>';
-  } else if (!nx) {
-    tmNext.innerHTML = 'Dernière phase 💪';
-  } else {
-    tmNext.innerHTML = '';
-  }
+  // On annonce le prochain EFFORT, pas la phase de repos qui le precede :
+  // c'est ce qu'on a besoin de savoir pour se preparer.
+  let nw = null;
+  for (let k = i + 1; k < tmPhases.length; k++) if (tmPhases[k].type === 'work') { nw = tmPhases[k]; break; }
+  if (nw) tmNext.innerHTML = 'Ensuite : <strong>' + esc(nw.ex) + '</strong>';
+  else if (tmPhases[i + 1]) tmNext.innerHTML = 'Ensuite : <strong>' + esc(PH_LABEL[tmPhases[i + 1].type]) + '</strong>';
+  else tmNext.innerHTML = 'Dernière ligne droite 💪';
 
   if (!silent) {
-    if (p.type === 'work')      { tmSnd(beepWork); tmVibrate([70, 30, 70]); }
-    else if (p.type === 'prep') { tmSnd(() => playTone(660, 0.16)); tmVibrate([40]); }
-    else                        { tmSnd(beepRest); tmVibrate([60, 30, 60]); }
+    if (p.type === 'work') { wkSnd(beepWork); wkVib([70, 30, 70]); say(p.ex); }
+    else if (p.type === 'prep') { wkSnd(beepHalf); wkVib([40]); say('Prépare-toi'); }
+    else if (p.type === 'warmup') { wkSnd(beepHalf); wkVib([40]); say('Échauffement'); }
+    else if (p.type === 'cooldown') { wkSnd(beepRest); wkVib([60]); say('Récupération'); }
+    else { wkSnd(beepRest); wkVib([60, 30, 60]); say('Repos'); }
   }
-  tmRenderChips();
-  tmUpdateTotals();
+  tmRenderChips(); tmUpdateTotals();
 }
 
 function tmUpdateTotals() {
-  const total = tmTotalDur();
+  const total = tmPhases.reduce((s, p) => s + p.dur, 0);
+  let before = 0; for (let k = 0; k < tmIdx; k++) before += tmPhases[k].dur;
   const p = tmPhases[tmIdx];
-  const done = tmElapsedBefore(tmIdx) + (p ? p.dur - tmRemain : 0);
-  const pct = total > 0 ? Math.min(100, (done / total) * 100) : 0;
-  tmTotalFill.style.width = pct + '%';
+  const done = before + (p ? p.dur - tmRemain : 0);
+  tmTotalFill.style.width = (total ? Math.min(100, done / total * 100) : 0) + '%';
   tmElapsedEl.textContent = tmFmt(done);
   tmRemainEl.textContent = '-' + tmFmt(total - done);
 }
 
-/* — Boucle : basée sur l'horloge, increvable si l'app se met en veille — */
 function tmTick() {
+  const p = tmPhases[tmIdx]; if (!p) return;
   const left = Math.max(0, Math.ceil((tmEndAt - Date.now()) / 1000));
-  const p = tmPhases[tmIdx];
-  if (!p) return;
   if (left !== tmRemain) {
     tmRemain = left;
     tmClock.textContent = tmFmt(tmRemain);
     tmClock.classList.toggle('urgent', tmRemain <= 3 && tmRemain > 0);
-    if (tmRemain <= 3 && tmRemain > 0) tmSnd(beepTick);
+    if (tmRemain <= 3 && tmRemain > 0) wkSnd(beepTick);
     tmUpdateTotals();
+  }
+  // repere a mi-parcours sur les efforts d'au moins 20 s
+  if (wkStore.opts.halfway && !tmHalfDone && p.type === 'work' && p.dur >= 20) {
+    const el = p.dur - (tmEndAt - Date.now()) / 1000;
+    if (el >= p.dur / 2) { tmHalfDone = true; wkSnd(beepHalf); say('Moitié'); }
   }
   tmRingFill.style.strokeDashoffset = String(CIRC * (1 - Math.max(0, (tmEndAt - Date.now()) / 1000) / p.dur));
   if (Date.now() >= tmEndAt) {
@@ -1676,13 +1900,11 @@ function tmTick() {
 
 function tmStart() {
   initAudio();
-  tmPhases = tmBuildPhases();
+  tmPhases = wkBuild(tmWk);
   if (!tmPhases.length) return;
-  tmState = 'run'; tmRunning = true;
-  tmMainBtn.textContent = 'Pause';
-  tmMainBtn.classList.add('running');
+  tmState = 'run'; tmRunning = true; tmStartedAt = Date.now();
+  tmMainBtn.textContent = 'Pause'; tmMainBtn.classList.add('running');
   tmSkipBtn.disabled = false;
-  tmRenderModes();
   tmAcquireWake(); startKeepAlive();
   tmEnterPhase(0);
   if (tmInterval) clearInterval(tmInterval);
@@ -1692,18 +1914,16 @@ function tmPause() {
   tmRunning = false; tmState = 'paused';
   if (tmInterval) { clearInterval(tmInterval); tmInterval = null; }
   tmRemain = Math.max(0, Math.ceil((tmEndAt - Date.now()) / 1000));
-  tmMainBtn.textContent = 'Reprendre';
-  tmMainBtn.classList.remove('running');
+  tmMainBtn.textContent = 'Reprendre'; tmMainBtn.classList.remove('running');
   tmPhaseEl.textContent = 'En pause';
   tmReleaseWake(); stopKeepAlive();
+  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
 }
 function tmResume() {
   tmState = 'run'; tmRunning = true;
   tmEndAt = Date.now() + tmRemain * 1000;
-  const p = tmPhases[tmIdx];
-  tmPhaseEl.textContent = TM_LABELS[p.type] || p.type;
-  tmMainBtn.textContent = 'Pause';
-  tmMainBtn.classList.add('running');
+  tmPhaseEl.textContent = PH_LABEL[tmPhases[tmIdx].type];
+  tmMainBtn.textContent = 'Pause'; tmMainBtn.classList.add('running');
   tmAcquireWake(); startKeepAlive();
   if (tmInterval) clearInterval(tmInterval);
   tmInterval = setInterval(tmTick, 100);
@@ -1715,32 +1935,32 @@ function tmSkip() {
   if (tmState === 'paused') { tmRemain = tmPhases[tmIdx].dur; tmClock.textContent = tmFmt(tmRemain); }
 }
 function tmDone() {
+  wkLogSession(true);
   tmHardStop();
   tmState = 'done';
-  const c = tmCfg();
   timerView.className = 'view ph-done';
-  tmPhaseEl.textContent = 'Terminé';
-  tmPhaseEl.className = 'tm-phase p-done';
+  tmPhaseEl.textContent = 'Terminé'; tmPhaseEl.className = 'tm-phase p-done';
   tmRingFill.className = 'tm-ring-fill c-done';
   tmRingFill.style.strokeDashoffset = String(CIRC);
   tmExEl.textContent = '🏆 Séance bouclée !';
-  tmClock.textContent = '0:00';
-  tmClock.classList.remove('urgent');
-  tmSub.textContent = (c.rounds * c.cycles) + ' ROUNDS · ' + tmFmtLong(tmTotalDur());
-  tmNext.innerHTML = 'Beau travail 💪';
-  tmMainBtn.textContent = 'Recommencer';
-  tmMainBtn.classList.remove('running');
+  tmClock.textContent = '0:00'; tmClock.classList.remove('urgent');
+  const tot = tmPhases.reduce((s, p) => s + p.dur, 0);
+  tmSub.textContent = tmWk.rounds + ' ROUNDS · ' + fmtMin(tot);
+  tmNext.innerHTML = 'Effort réel <strong>' + fmtMin(wkWorkTime(tmWk)) + '</strong>';
+  tmMainBtn.textContent = 'Recommencer'; tmMainBtn.classList.remove('running');
   tmSkipBtn.disabled = true;
   tmTotalFill.style.width = '100%';
-  tmElapsedEl.textContent = tmFmt(tmTotalDur());
-  tmRemainEl.textContent = '0:00';
-  tmSnd(beepDone); tmVibrate([80, 40, 80, 40, 160]);
-  tmRenderChips(); tmRenderModes();
+  tmElapsedEl.textContent = tmFmt(tot); tmRemainEl.textContent = '0:00';
+  wkSnd(beepDone); wkVib([80, 40, 80, 40, 160]); say('Séance terminée, bravo');
+  tmRenderChips();
 }
 
-hiitBtn.addEventListener('click', tmOpen);
-tmBackBtn.addEventListener('click', tmClose);
-tmCfgBtn.addEventListener('click', () => openSheet('timer'));
+hiitBtn.addEventListener('click', wkOpenList);
+wkBackBtn.addEventListener('click', wkCloseList);
+wkHistBtn.addEventListener('click', wkOpenHist);
+hsBackBtn.addEventListener('click', () => { hiitHistView.classList.add('gone'); hiitListView.classList.remove('gone'); });
+tmBackBtn.addEventListener('click', tmCloseRun);
+tmCfgBtn.addEventListener('click', () => tmWk && openSheet('workout', tmWk.id));
 tmResetBtn.addEventListener('click', tmReset);
 tmSkipBtn.addEventListener('click', tmSkip);
 tmMainBtn.addEventListener('click', () => {
@@ -1750,84 +1970,104 @@ tmMainBtn.addEventListener('click', () => {
   else tmResume();
 });
 
-/* — Réglages du chrono — */
-function tmFillSheet() {
-  const c = tmCfg(), m = tmMode();
-  sheetHdr.textContent = 'Chrono · ' + m.name;
-  fTmEx.value = (c.exercises || []).join(', ');
-  fTmWork.value = c.workSec; fTmRest.value = c.restSec;
-  fTmRounds.value = c.rounds; fTmCycles.value = c.cycles;
-  fTmPrep.value = c.prepSec; fTmCycleRest.value = c.cycleRestSec;
-  fTmCooldown.value = c.cooldownSec;
-  fTmSound.checked = !!tmStore.opts.sound;
-  fTmWake.checked = !!tmStore.opts.wake;
-  fTmVib.checked = !!tmStore.opts.vib;
-  tmExField.classList.toggle('tm-hide', !m.hasEx);
-  tmRestField.classList.toggle('tm-hide', m.id === 'emom');
-  tmRenderPresets();
-  tmUpdateCfgSummary();
+/* — Éditeur de séance — */
+let edId = null, edBlocks = [], edEmoji = '🔥';
+const EMOJIS = ['🔥', '💪', '⚡', '🎯', '🏃', '🥊', '🧗', '⏱', '🌊', '⭐'];
+
+function edRenderBlocks() {
+  wkBlocks.innerHTML = '';
+  edBlocks.forEach((bl, i) => {
+    const row = document.createElement('div');
+    row.className = 'blk';
+    row.innerHTML = '<span class="blk-n">' + (i + 1) + '</span>';
+    const nm = document.createElement('input');
+    nm.type = 'text'; nm.value = bl.name; nm.placeholder = 'Exercice'; nm.maxLength = 40;
+    nm.addEventListener('input', () => { bl.name = nm.value; edUpdateTotal(); });
+    const wk = document.createElement('input');
+    wk.type = 'number'; wk.value = bl.work; wk.min = 1; wk.max = 900;
+    wk.addEventListener('input', () => { bl.work = Math.max(1, parseInt(wk.value) || 1); edUpdateTotal(); });
+    const rs = document.createElement('input');
+    rs.type = 'number'; rs.value = bl.rest; rs.min = 0; rs.max = 900;
+    rs.addEventListener('input', () => { bl.rest = Math.max(0, parseInt(rs.value) || 0); edUpdateTotal(); });
+    const btns = document.createElement('div');
+    btns.className = 'blk-btns';
+    const up = document.createElement('button');
+    up.className = 'blk-mv'; up.type = 'button'; up.innerHTML = '▲'; up.disabled = i === 0;
+    up.addEventListener('click', () => { edBlocks.splice(i - 1, 0, edBlocks.splice(i, 1)[0]); edRenderBlocks(); });
+    const dn = document.createElement('button');
+    dn.className = 'blk-mv'; dn.type = 'button'; dn.innerHTML = '▼'; dn.disabled = i === edBlocks.length - 1;
+    dn.addEventListener('click', () => { edBlocks.splice(i + 1, 0, edBlocks.splice(i, 1)[0]); edRenderBlocks(); });
+    btns.appendChild(up); btns.appendChild(dn);
+    const x = document.createElement('button');
+    x.className = 'blk-x'; x.type = 'button'; x.innerHTML = '&times;';
+    x.addEventListener('click', () => { edBlocks.splice(i, 1); edRenderBlocks(); });
+    row.appendChild(nm); row.appendChild(wk); row.appendChild(rs); row.appendChild(btns); row.appendChild(x);
+    wkBlocks.appendChild(row);
+  });
+  edUpdateTotal();
 }
-function tmRenderPresets() {
-  tmPresetRow.innerHTML = '';
-  TM_PRESETS.forEach(p => {
+function edDraft() {
+  return { id: edId || uid(), name: fWkName.value.trim() || 'Séance', emoji: edEmoji,
+    prepSec: +fWkPrep.value || 0, warmupSec: +fWkWarm.value || 0,
+    rounds: Math.max(1, +fWkRounds.value || 1), roundRestSec: +fWkRoundRest.value || 0,
+    cooldownSec: +fWkCool.value || 0,
+    blocks: edBlocks.filter(b => b.name.trim()).map(b => ({ name: b.name.trim(), work: b.work, rest: b.rest })),
+    createdAt: Date.now() };
+}
+function edUpdateTotal() {
+  const w = edDraft();
+  if (!w.blocks.length) { wkTotalLbl.innerHTML = 'Ajoute au moins un exercice.'; return; }
+  wkTotalLbl.innerHTML = '<strong>' + w.blocks.length + '</strong> exercice' + (w.blocks.length > 1 ? 's' : '') +
+    ' × <strong>' + w.rounds + '</strong> round' + (w.rounds > 1 ? 's' : '') +
+    ' · total <strong>' + fmtMin(wkTotal(w)) + '</strong> dont <strong>' + fmtMin(wkWorkTime(w)) + '</strong> d\'effort';
+}
+function edRenderEmojis() {
+  wkEmojiRow.innerHTML = '';
+  EMOJIS.forEach(e => {
     const b = document.createElement('button');
-    b.className = 'tm-preset'; b.type = 'button'; b.textContent = p.label;
-    b.addEventListener('click', () => {
-      tmStore.mode = p.mode;
-      Object.assign(tmStore.cfgs[p.mode], p.cfg);
-      tmPersist(); tmFillSheet();
-    });
-    tmPresetRow.appendChild(b);
+    b.className = 'tm-preset' + (e === edEmoji ? ' sel' : ''); b.type = 'button';
+    b.textContent = e; b.style.fontSize = '19px';
+    b.style.background = e === edEmoji ? 'var(--text)' : '#1c1c1e';
+    b.addEventListener('click', () => { edEmoji = e; edRenderEmojis(); });
+    wkEmojiRow.appendChild(b);
   });
 }
-function tmReadSheet() {
-  const m = tmMode();
-  const c = tmCfg();
-  const iv = (el, def, min, max) => {
-    const n = parseInt(el.value, 10);
-    return isNaN(n) ? def : Math.min(max, Math.max(min, n));
-  };
-  c.workSec = iv(fTmWork, 20, 1, 900);
-  c.restSec = m.id === 'emom' ? 0 : iv(fTmRest, 10, 0, 900);
-  c.rounds = iv(fTmRounds, 8, 1, 99);
-  c.cycles = iv(fTmCycles, 1, 1, 30);
-  c.prepSec = iv(fTmPrep, 10, 0, 120);
-  c.cycleRestSec = iv(fTmCycleRest, 60, 0, 900);
-  c.cooldownSec = iv(fTmCooldown, 0, 0, 900);
-  if (m.hasEx) {
-    c.exercises = fTmEx.value.split(',').map(s => s.trim()).filter(s => s.length);
-  }
-  tmStore.opts.sound = fTmSound.checked;
-  tmStore.opts.wake = fTmWake.checked;
-  tmStore.opts.vib = fTmVib.checked;
-  return c;
+function openWorkoutSheet(id) {
+  edId = id;
+  const w = id ? wkById(id) : null;
+  sheetHdr.textContent = w ? 'Modifier la séance' : 'Nouvelle séance';
+  fWkName.value = w ? w.name : '';
+  edEmoji = w ? (w.emoji || '🔥') : '🔥';
+  fWkPrep.value = w ? w.prepSec : 10;
+  fWkWarm.value = w ? w.warmupSec : 0;
+  fWkRounds.value = w ? w.rounds : 3;
+  fWkRoundRest.value = w ? w.roundRestSec : 60;
+  fWkCool.value = w ? w.cooldownSec : 0;
+  edBlocks = w ? w.blocks.map(b => ({ ...b })) : [{ name: '', work: 40, rest: 20 }];
+  fWkSound.checked = !!wkStore.opts.sound;
+  fWkVoice.checked = !!wkStore.opts.voice;
+  fWkVib.checked = !!wkStore.opts.vib;
+  fWkWake.checked = !!wkStore.opts.wake;
+  fWkHalf.checked = !!wkStore.opts.halfway;
+  edRenderEmojis(); edRenderBlocks();
+  wkDelBtn.style.display = w ? 'block' : 'none';
+  wkDupBtn.style.display = w ? 'block' : 'none';
 }
-function tmUpdateCfgSummary() {
-  const saved = JSON.parse(JSON.stringify(tmCfg()));
-  const c = tmReadSheet();
-  const phases = tmBuildPhases();
-  const total = phases.reduce((s, p) => s + p.dur, 0);
-  const n = c.rounds * c.cycles;
-  tmCfgSummary.innerHTML = '<strong>' + n + '</strong> round' + (n > 1 ? 's' : '') +
-    ' · dur&eacute;e totale <strong>' + tmFmtLong(total) + '</strong>';
-  Object.assign(tmStore.cfgs[tmStore.mode], saved);
+function saveWorkout() {
+  const w = edDraft();
+  if (!w.blocks.length) { alert('Ajoute au moins un exercice avec un nom.'); return false; }
+  wkStore.opts.sound = fWkSound.checked; wkStore.opts.voice = fWkVoice.checked;
+  wkStore.opts.vib = fWkVib.checked; wkStore.opts.wake = fWkWake.checked;
+  wkStore.opts.halfway = fWkHalf.checked;
+  if (edId) {
+    const i = wkStore.workouts.findIndex(x => x.id === edId);
+    w.createdAt = wkStore.workouts[i].createdAt;
+    wkStore.workouts[i] = w;
+    if (tmWk && tmWk.id === edId) { tmWk = w; if (tmState === 'idle') tmReset(); }
+  } else wkStore.workouts.push(w);
+  wkPersist(); renderWkList();
+  return true;
 }
-[fTmWork, fTmRest, fTmRounds, fTmCycles, fTmPrep, fTmCycleRest, fTmCooldown, fTmEx]
-  .forEach(el => el.addEventListener('input', tmUpdateCfgSummary));
-
-/* Test audio : rejoue la sequence reelle (tick x3 -> depart -> repos -> fin)
-   en gardant la liaison BT ouverte, pour verifier avec ses ecouteurs. */
-tmTestBtn.addEventListener('click', () => {
-  startKeepAlive();
-  const btn = tmTestBtn, old = btn.innerHTML;
-  btn.disabled = true;
-  [0, 700, 1400].forEach(d => setTimeout(beepTick, d));
-  setTimeout(beepWork, 2100);
-  setTimeout(beepRest, 3100);
-  setTimeout(beepDone, 4100);
-  setTimeout(() => { btn.innerHTML = old; btn.disabled = false; stopKeepAlive(); }, 5400);
-  btn.innerHTML = '&#9834; Écoute…';
-});
 
 /* — Session timer (auto-runs, never resets mid-session) — */
 function stStart() {
@@ -2092,11 +2332,11 @@ function renderHistory() {
 /* — Settings sheet — */
 function openSheet(mode, id) {
   sheetMode = mode; editId = id || null;
-  const isTimer = (mode === 'timer');
-  ctrSheetSection.classList.toggle('off', isTimer);
-  tmSheetSection.classList.toggle('on', isTimer);
-  if (isTimer) {
-    tmFillSheet();
+  const isWk = (mode === 'workout');
+  ctrSheetSection.classList.toggle('off', isWk);
+  tmSheetSection.classList.toggle('on', isWk);
+  if (isWk) {
+    openWorkoutSheet(id);
     resetBtn.style.display = 'none'; deleteBtn.style.display = 'none';
     backdrop.classList.add('on'); sheet.classList.add('on');
     return;
@@ -2132,12 +2372,8 @@ addBtn.addEventListener('click', () => openSheet('new'));
 editBtn.addEventListener('click', () => activeId && openSheet('edit', activeId));
 
 saveBtn.addEventListener('click', () => {
-  if (sheetMode === 'timer') {
-    tmReadSheet();
-    tmPersist();
-    closeSheet();
-    tmRenderModes();
-    tmReset();
+  if (sheetMode === 'workout') {
+    if (saveWorkout()) closeSheet();
     return;
   }
   const title = fTitle.value.trim() || 'Compteur';
@@ -2207,6 +2443,42 @@ document.addEventListener('touchstart', e => {
     openCard = null;
   }
 }, { passive: true });
+
+wkAddBlk.addEventListener('click', () => {
+  const last = edBlocks[edBlocks.length - 1];
+  edBlocks.push({ name: '', work: last ? last.work : 40, rest: last ? last.rest : 20 });
+  edRenderBlocks();
+});
+[fWkName, fWkRounds, fWkRoundRest, fWkPrep, fWkWarm, fWkCool]
+  .forEach(el => el.addEventListener('input', edUpdateTotal));
+wkDupBtn.addEventListener('click', () => {
+  const w = edDraft(); w.id = uid(); w.name = w.name + ' (copie)'; w.createdAt = Date.now();
+  wkStore.workouts.push(w); wkPersist(); renderWkList(); closeSheet();
+});
+wkDelBtn.addEventListener('click', () => {
+  if (!edId) return;
+  if (!confirm('Supprimer cette séance ?')) return;
+  wkStore.workouts = wkStore.workouts.filter(w => w.id !== edId);
+  wkPersist(); closeSheet(); renderWkList();
+  if (tmWk && tmWk.id === edId) { tmWk = null; timerView.classList.add('gone'); hiitListView.classList.remove('gone'); }
+});
+tmTestBtn.addEventListener('click', () => {
+  initAudio(); startKeepAlive();
+  const btn = tmTestBtn, old = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '&#9834; Écoute…';
+  audioBlocked = false;
+  [0, 650, 1300].forEach(d => setTimeout(beepTick, d));
+  setTimeout(beepWork, 2000);
+  setTimeout(() => say('Burpees'), 2300);
+  setTimeout(beepRest, 3600);
+  setTimeout(beepDone, 4600);
+  setTimeout(() => {
+    btn.innerHTML = old; btn.disabled = false; stopKeepAlive();
+    tmSoundNote.innerHTML = audioBlocked
+      ? '&#9888;&#65039; Lecture bloqu&#233;e par le navigateur. Rouvre l\'app et retente.'
+      : '&#9989; Son &#233;mis. Rien entendu&#160;? V&#233;rifie l\'interrupteur silence et le volume.';
+  }, 5600);
+});
 
 renderList();
 
