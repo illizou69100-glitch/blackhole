@@ -789,6 +789,7 @@
     </div>
 
     <button class="btn btn-reset" type="button" id="tmTestBtn" style="margin-top:10px">&#128266; Tester le son (&#233;couteurs)</button>
+    <div class="tm-summary" id="tmSoundNote" style="text-align:left">Aucun son&#160;? V&#233;rifie l'<strong>interrupteur silence</strong> sur la tranche de l'iPhone&#160;: sur silencieux, iOS coupe les sons des apps web.</div>
     <div class="tm-summary" id="tmCfgSummary"></div>
   </div>
 
@@ -824,7 +825,7 @@ let stInterval = null, stRunning = false, stStartAt = 0;
 let sessionSets = [], lastLogVal = 0;
 let histFrom = 'list', histFocusId = null;
 let pacingIndex = 0, pacingResults = [], pacingResting = false;
-let audioCtx = null;
+
 
 /* — Chrono multi-modes (Tabata / Circuit / EMOM / Perso) — */
 const TM_MODES = [
@@ -884,53 +885,124 @@ function byId(id) { return data.find(c => c.id === id); }
 function vib(p) { if (navigator.vibrate) navigator.vibrate(p); }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 
-function initAudio() {
-  if (audioCtx) { if (audioCtx.state === 'suspended') audioCtx.resume(); return; }
-  try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+/* ══════════ Moteur audio ══════════
+   Sur iOS, l'API Web Audio est routee vers la session audio « ambiante » :
+   le bouton silence physique la coupe entierement. Les elements <audio>
+   passent eux par la session « lecture media », qui sonne malgre le
+   silencieux (comme une video). On pre-genere donc les bips en WAV et on
+   les joue via des elements <audio>.
+   Bonus : un element <audio> qui tourne maintient la liaison Bluetooth
+   ouverte, donc plus de premier bip avale par le reveil des ecouteurs. */
+
+function encodeWav(samples, rate) {
+  const n = samples.length, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true);
+  v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true);
+  let o = 44;
+  for (let i = 0; i < n; i++) {
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    v.setInt16(o, s < 0 ? s * 0x8000 : s * 0x7FFF, true); o += 2;
+  }
+  let bin = ''; const b = new Uint8Array(buf);
+  for (let i = 0; i < b.length; i += 8192) bin += String.fromCharCode.apply(null, b.subarray(i, i + 8192));
+  return 'data:audio/wav;base64,' + btoa(bin);
 }
 
-/* Maintien du lien Bluetooth.
-   Les ecouteurs BT coupent la liaison audio apres ~10-20s de silence et mettent
-   200-500ms a se reveiller : un bip court passerait a la trappe. On diffuse donc
-   un souffle a -62 dBFS (inaudible) pendant toute la seance pour garder le lien ouvert. */
-let keepAlive = null;
+/* notes : [{ f: frequence, d: duree, at: debut, v: volume, type: 'sine'|'square' }] */
+function synthWav(notes, rate) {
+  rate = rate || 22050;
+  const total = Math.max.apply(null, notes.map(n => n.at + n.d)) + 0.06;
+  const N = Math.ceil(total * rate), s = new Float32Array(N);
+  notes.forEach(n => {
+    const st = Math.floor(n.at * rate), len = Math.floor(n.d * rate), vol = n.v == null ? 0.55 : n.v;
+    for (let i = 0; i < len && st + i < N; i++) {
+      const t = i / rate;
+      const env = Math.min(1, t / 0.006) * Math.min(1, (len - i) / (0.010 * rate)) * Math.exp(-t * (2.2 / n.d));
+      const w = n.type === 'square' ? (Math.sin(2 * Math.PI * n.f * t) >= 0 ? 1 : -1) : Math.sin(2 * Math.PI * n.f * t);
+      s[st + i] += w * env * vol;
+    }
+  });
+  let mx = 0; for (let i = 0; i < N; i++) mx = Math.max(mx, Math.abs(s[i]));
+  if (mx > 0.95) { const k = 0.95 / mx; for (let i = 0; i < N; i++) s[i] *= k; }
+  return encodeWav(s, rate);
+}
+
+const SND_DEFS = {
+  tick: [{ f: 1180, d: 0.085, at: 0, v: 0.42, type: 'square' }],
+  go:   [{ f: 784, d: 0.13, at: 0 }, { f: 1175, d: 0.22, at: 0.13 }],
+  rest: [{ f: 587, d: 0.14, at: 0 }, { f: 392, d: 0.3, at: 0.14 }],
+  half: [{ f: 988, d: 0.1, at: 0 }, { f: 988, d: 0.1, at: 0.14 }],
+  done: [{ f: 523, d: 0.15, at: 0 }, { f: 659, d: 0.15, at: 0.16 },
+         { f: 784, d: 0.15, at: 0.32 }, { f: 1046, d: 0.42, at: 0.48 }]
+};
+
+const SND = {};
+let audioReady = false, audioBlocked = false;
+
+function buildSounds() {
+  if (SND.tick) return;
+  Object.keys(SND_DEFS).forEach(k => {
+    const uri = synthWav(SND_DEFS[k]);
+    // deux exemplaires : permet deux declenchements rapproches sans se couper
+    SND[k] = [new Audio(uri), new Audio(uri)];
+    SND[k].forEach(a => { a.preload = 'auto'; a.load(); });
+    SND[k].i = 0;
+  });
+  // souffle quasi inaudible en boucle : garde la session media et la liaison BT ouvertes
+  const n = 22050, s = new Float32Array(n);
+  for (let i = 0; i < n; i++) s[i] = (Math.random() * 2 - 1) * 0.0006;
+  keepEl = new Audio(encodeWav(s, 22050));
+  keepEl.loop = true; keepEl.preload = 'auto'; keepEl.load();
+}
+
+/* iOS exige que la premiere lecture parte d'un geste utilisateur.
+   On amorce donc tous les sons au premier contact. */
+function initAudio() {
+  buildSounds();
+  if (audioReady) return;
+  const all = Object.keys(SND).map(k => SND[k]).reduce((a, v) => a.concat(v), []).concat([keepEl]);
+  let ok = 0, tried = 0;
+  all.forEach(a => {
+    const p = a.play();
+    if (p && p.then) p.then(() => {
+      a.pause(); a.currentTime = 0; ok++; tried++;
+      if (tried === all.length) { audioReady = ok > 0; audioBlocked = ok === 0; }
+    }).catch(() => {
+      tried++;
+      if (tried === all.length) { audioReady = ok > 0; audioBlocked = ok === 0; }
+    });
+    else { a.pause(); a.currentTime = 0; ok++; }
+  });
+  audioReady = true;
+}
+
+function play(name) {
+  const pool = SND[name];
+  if (!pool) return;
+  const a = pool[pool.i % pool.length]; pool.i++;
+  try { a.currentTime = 0; const p = a.play(); if (p && p.catch) p.catch(() => { audioBlocked = true; }); } catch (e) {}
+}
+
+let keepEl = null;
 function startKeepAlive() {
-  initAudio();
-  if (!audioCtx || keepAlive) return;
-  try {
-    const buf = audioCtx.createBuffer(1, audioCtx.sampleRate, audioCtx.sampleRate);
-    const d = buf.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * 0.0008;
-    const src = audioCtx.createBufferSource();
-    src.buffer = buf; src.loop = true;
-    src.connect(audioCtx.destination);
-    src.start();
-    keepAlive = src;
-  } catch(e) {}
+  buildSounds();
+  if (!keepEl) return;
+  try { const p = keepEl.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
 }
 function stopKeepAlive() {
-  if (!keepAlive) return;
-  try { keepAlive.stop(); } catch(e) {}
-  keepAlive = null;
+  if (!keepEl) return;
+  try { keepEl.pause(); keepEl.currentTime = 0; } catch (e) {}
 }
-function playTone(freq, dur, type, vol) {
-  if (!audioCtx) return;
-  try {
-    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-    o.connect(g); g.connect(audioCtx.destination);
-    const t = audioCtx.currentTime;
-    o.type = type || 'sine'; o.frequency.setValueAtTime(freq, t);
-    // petite attaque : evite le clic et laisse le temps a la liaison BT de suivre
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(vol || 0.38, t + 0.012);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.start(t); o.stop(t + dur + 0.02);
-  } catch(e) {}
-}
-function beepWork()  { playTone(880, 0.14); setTimeout(() => playTone(880, 0.16), 150); }
-function beepRest()  { playTone(440, 0.34); }
-function beepTick()  { playTone(1100, 0.09, 'square', 0.16); }
-function beepDone()  { playTone(523, 0.14); setTimeout(() => playTone(659, 0.14), 160); setTimeout(() => playTone(784, 0.28), 320); }
+
+function beepWork() { play('go'); }
+function beepRest() { play('rest'); }
+function beepTick() { play('tick'); }
+function beepHalf() { play('half'); }
+function beepDone() { play('done'); }
+
 function fmtSec(s) {
   if (s < 60) return s + 's';
   return Math.floor(s / 60) + 'min' + (s % 60 ? (s % 60) + 's' : '');
@@ -1036,6 +1108,7 @@ const lv = document.getElementById('listView'),
   tmExField = document.getElementById('tmExField'),
   tmRestField = document.getElementById('tmRestField'),
   tmCfgSummary = document.getElementById('tmCfgSummary'),
+  tmSoundNote = document.getElementById('tmSoundNote'),
   fTmEx = document.getElementById('fTmEx'),
   fTmWork = document.getElementById('fTmWork'),
   fTmRest = document.getElementById('fTmRest'),
@@ -1638,7 +1711,7 @@ function tmEnterPhase(i, silent) {
 
   if (!silent) {
     if (p.type === 'work')      { tmSnd(beepWork); tmVibrate([70, 30, 70]); }
-    else if (p.type === 'prep') { tmSnd(() => playTone(660, 0.16)); tmVibrate([40]); }
+    else if (p.type === 'prep') { tmSnd(beepHalf); tmVibrate([40]); }
     else                        { tmSnd(beepRest); tmVibrate([60, 30, 60]); }
   }
   tmRenderChips();
@@ -1818,16 +1891,21 @@ function tmUpdateCfgSummary() {
 /* Test audio : rejoue la sequence reelle (tick x3 -> depart -> repos -> fin)
    en gardant la liaison BT ouverte, pour verifier avec ses ecouteurs. */
 tmTestBtn.addEventListener('click', () => {
-  startKeepAlive();
+  initAudio(); startKeepAlive();
   const btn = tmTestBtn, old = btn.innerHTML;
-  btn.disabled = true;
-  [0, 700, 1400].forEach(d => setTimeout(beepTick, d));
-  setTimeout(beepWork, 2100);
-  setTimeout(beepRest, 3100);
-  setTimeout(beepDone, 4100);
-  setTimeout(() => { btn.innerHTML = old; btn.disabled = false; stopKeepAlive(); }, 5400);
-  btn.innerHTML = '&#9834; Écoute…';
-});
+  btn.disabled = true; btn.innerHTML = '&#9834; Écoute…';
+  audioBlocked = false;
+  [0, 650, 1300].forEach(d => setTimeout(beepTick, d));
+  setTimeout(beepWork, 2000);
+  setTimeout(beepRest, 3000);
+  setTimeout(beepDone, 4000);
+  setTimeout(() => {
+    btn.innerHTML = old; btn.disabled = false; stopKeepAlive();
+    tmSoundNote.innerHTML = audioBlocked
+      ? '&#9888;&#65039; Le son semble bloqu&#233; par le navigateur. Rouvre l\'app et retente.'
+      : '&#9989; Son &#233;mis. Si tu n\'as rien entendu : v&#233;rifie l\'interrupteur silence sur la tranche de l\'iPhone et le volume.';
+  }, 5200);
+});;
 
 /* — Session timer (auto-runs, never resets mid-session) — */
 function stStart() {

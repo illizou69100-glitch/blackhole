@@ -1,7 +1,7 @@
 /* Service worker — Focus — Pomodoro & Tâches
    Stale-while-revalidate : l'app s'ouvre instantanément depuis le cache,
    et la version réseau est récupérée en arrière-plan pour la fois suivante. */
-const CACHE = 'focus-v2';
+const CACHE = 'focus-v3';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-180.png', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
