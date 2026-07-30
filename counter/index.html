@@ -84,7 +84,7 @@
     }
     .empty { grid-column: span 2; text-align: center; color: var(--text-dim); padding: 80px 30px 40px; font-size: 15px; line-height: 1.6; }
     .fab {
-      position: fixed; bottom: max(env(safe-area-inset-bottom), 20px); right: 20px;
+      position: fixed; bottom: calc(70px + max(env(safe-area-inset-bottom), 8px)); right: 20px;
       width: 58px; height: 58px; border-radius: 50%;
       background: var(--text); color: var(--bg);
       border: none; font-size: 30px; cursor: pointer;
@@ -359,12 +359,12 @@
     .hist-day-total {
       font-size: 11px; color: var(--text-dim); padding: 0 2px; font-weight: 500; margin-top: 2px;
     }
-    #backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 50; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+    #backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 90; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
     #backdrop.on { opacity: 1; pointer-events: all; }
     #sheet {
       position: fixed; bottom: 0; left: 0; right: 0; background: #1c1c1e;
       border-radius: 22px 22px 0 0; padding: 10px 18px max(env(safe-area-inset-bottom), 24px);
-      z-index: 51; transform: translateY(100%);
+      z-index: 100; transform: translateY(100%);
       transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
       max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
     }
@@ -515,6 +515,34 @@
     #tmSheetSection.on { display: block; }
     #ctrSheetSection.off { display: none; }
     .tm-hide { display: none !important; }
+    /* ── Barre d'onglets ───────────────── */
+    .tabbar {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      background: rgba(13,13,13,0.94);
+      -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding-bottom: max(env(safe-area-inset-bottom), 8px);
+    }
+    .tabbtn {
+      background: none; border: none; color: var(--text-dim);
+      padding: 9px 0 5px; display: flex; flex-direction: column; align-items: center; gap: 3px;
+      font-size: 10px; font-weight: 700; font-family: inherit;
+      -webkit-tap-highlight-color: transparent; transition: color 0.18s;
+    }
+    .tabbtn svg { width: 22px; height: 22px; }
+    .tabbtn.on { color: var(--text); }
+    .has-tabs { padding-bottom: calc(58px + max(env(safe-area-inset-bottom), 8px)) !important; }
+    .hist-seg {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+      background: #1c1c1e; padding: 4px; border-radius: 13px; margin: 0 16px 12px;
+    }
+    .hist-seg button {
+      padding: 9px 4px; border: none; border-radius: 10px; background: transparent;
+      color: var(--text-dim); font-size: 13px; font-weight: 700; font-family: inherit;
+      -webkit-tap-highlight-color: transparent; transition: all 0.18s;
+    }
+    .hist-seg button.sel { background: var(--text); color: var(--bg); }
     /* ── Bibliothèque de séances ───────── */
     #hiitListView {
       background: var(--bg);
@@ -610,18 +638,6 @@
 <div class="view" id="listView">
   <div class="list-hdr">
     <h1>Compteurs</h1>
-    <div style="display:flex;gap:8px;align-items:center">
-      <button class="list-icon-btn" id="hiitBtn" aria-label="Circuit HIIT">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-        </svg>
-      </button>
-      <button class="list-icon-btn" id="histBtn" aria-label="Historique">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
-        </svg>
-      </button>
-    </div>
   </div>
   <div class="grid" id="grid"></div>
   <button class="fab" id="addBtn" aria-label="Ajouter">+</button>
@@ -714,39 +730,20 @@
 </div>
 
 <div class="view gone" id="histView">
-  <div class="hist-top">
-    <button class="hdr-btn" id="histBackBtn" aria-label="Retour" style="background:#1e1e1e;color:var(--text)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-    </button>
-    <span class="hist-title">Historique</span>
+  <div class="list-hdr"><h1>Historique</h1></div>
+  <div class="hist-seg" id="histSeg">
+    <button type="button" data-h="sets" class="sel">S&#233;ries</button>
+    <button type="button" data-h="wk">S&#233;ances cardio</button>
   </div>
   <div class="hist-scroll" id="histScroll"></div>
+  <div class="wk-scroll" id="hsScroll" style="display:none"></div>
 </div>
 
 <div class="view gone" id="hiitListView">
-  <div class="tm-hdr">
-    <button class="hdr-btn" id="wkBackBtn" aria-label="Retour">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-    </button>
-    <span class="tm-hdr-title">Cardio &amp; HIIT</span>
-    <button class="hdr-btn" id="wkHistBtn" aria-label="Historique">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
-      </svg>
-    </button>
-  </div>
+  <div class="list-hdr"><h1>Cardio &amp; HIIT</h1></div>
   <div class="wk-scroll" id="wkScroll"></div>
 </div>
 
-<div class="view gone" id="hiitHistView">
-  <div class="tm-hdr">
-    <button class="hdr-btn" id="hsBackBtn" aria-label="Retour">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-    </button>
-    <span class="tm-hdr-title">Mes s&#233;ances</span>
-    <span style="width:36px"></span>
-  </div>
-  <div class="wk-scroll" id="hsScroll"></div>
 </div>
 
 <div class="view gone" id="timerView">
@@ -785,6 +782,22 @@
     <button class="tm-btn tm-btn-side" id="tmSkipBtn" aria-label="Phase suivante">&#9197;</button>
   </div>
 </div>
+
+
+<nav class="tabbar" id="tabbar">
+  <button class="tabbtn on" data-v="listView">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+    <span>Compteurs</span>
+  </button>
+  <button class="tabbtn" data-v="hiitListView">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    <span>Cardio</span>
+  </button>
+  <button class="tabbtn" data-v="histView">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    <span>Historique</span>
+  </button>
+</nav>
 
 <div id="backdrop"></div>
 <div id="sheet">
@@ -1058,11 +1071,6 @@ function renderWkList() {
 }
 
 /* — Historique — */
-function wkOpenHist() {
-  hiitListView.classList.add('gone');
-  hiitHistView.classList.remove('gone');
-  renderWkHist();
-}
 function renderWkHist() {
   hsScroll.innerHTML = '';
   if (!wkStore.history.length) {
@@ -1263,11 +1271,9 @@ const lv = document.getElementById('listView'),
   hv = document.getElementById('histView'),
   grid = document.getElementById('grid'),
   addBtn = document.getElementById('addBtn'),
-  histBtn = document.getElementById('histBtn'),
   backBtn = document.getElementById('backBtn'),
   editBtn = document.getElementById('editBtn'),
   cvHistBtn = document.getElementById('cvHistBtn'),
-  histBackBtn = document.getElementById('histBackBtn'),
   histScroll = document.getElementById('histScroll'),
   cvTitle = document.getElementById('cvTitle'),
   bigNum = document.getElementById('bigNum'),
@@ -1322,12 +1328,8 @@ const lv = document.getElementById('listView'),
   pacingFields = document.getElementById('pacingFields'),
   timerView = document.getElementById('timerView'),
   hiitListView = document.getElementById('hiitListView'),
-  hiitHistView = document.getElementById('hiitHistView'),
   wkScroll = document.getElementById('wkScroll'),
   hsScroll = document.getElementById('hsScroll'),
-  wkBackBtn = document.getElementById('wkBackBtn'),
-  wkHistBtn = document.getElementById('wkHistBtn'),
-  hsBackBtn = document.getElementById('hsBackBtn'),
   tmBackBtn = document.getElementById('tmBackBtn'),
   tmCfgBtn = document.getElementById('tmCfgBtn'),
   tmHdrTitle = document.getElementById('tmHdrTitle'),
@@ -1346,7 +1348,8 @@ const lv = document.getElementById('listView'),
   tmSkipBtn = document.getElementById('tmSkipBtn'),
   tmTestBtn = document.getElementById('tmTestBtn'),
   tmSoundNote = document.getElementById('tmSoundNote'),
-  hiitBtn = document.getElementById('hiitBtn'),
+  tabbar = document.getElementById('tabbar'),
+  histSeg = document.getElementById('histSeg'),
   ctrSheetSection = document.getElementById('ctrSheetSection'),
   tmSheetSection = document.getElementById('tmSheetSection'),
   wkBlocks = document.getElementById('wkBlocks'),
@@ -1955,10 +1958,6 @@ function tmDone() {
   tmRenderChips();
 }
 
-hiitBtn.addEventListener('click', wkOpenList);
-wkBackBtn.addEventListener('click', wkCloseList);
-wkHistBtn.addEventListener('click', wkOpenHist);
-hsBackBtn.addEventListener('click', () => { hiitHistView.classList.add('gone'); hiitListView.classList.remove('gone'); });
 tmBackBtn.addEventListener('click', tmCloseRun);
 tmCfgBtn.addEventListener('click', () => tmWk && openSheet('workout', tmWk.id));
 tmResetBtn.addEventListener('click', tmReset);
@@ -2253,9 +2252,7 @@ function closeHistory() {
   else cv.classList.remove('gone');
 }
 
-histBtn.addEventListener('click', () => openHistory('list'));
 cvHistBtn.addEventListener('click', () => openHistory('counter', activeId));
-histBackBtn.addEventListener('click', closeHistory);
 
 function renderHistory() {
   histScroll.innerHTML = '';
@@ -2480,7 +2477,50 @@ tmTestBtn.addEventListener('click', () => {
   }, 5600);
 });
 
+/* ══════════ Navigation par onglets ══════════
+   Les trois ecrans racine sont accessibles en permanence par la barre du bas.
+   Les ecrans « empiles » (detail d'un compteur, seance en cours) la masquent. */
+const ROOT_VIEWS = ['listView', 'hiitListView', 'histView'];
+const PUSHED_VIEWS = ['counterView', 'timerView'];
+let histTab = 'sets';
+
+function goTab(id) {
+  PUSHED_VIEWS.forEach(v => { const e = document.getElementById(v); if (e) e.classList.add('gone'); });
+  ROOT_VIEWS.forEach(v => document.getElementById(v).classList.toggle('gone', v !== id));
+  if (id === 'hiitListView') renderWkList();
+  if (id === 'histView') { histFrom = 'list'; histFocusId = null; renderHistTab(); }
+  syncTabbar();
+}
+function syncTabbar() {
+  const pushed = PUSHED_VIEWS.some(v => { const e = document.getElementById(v); return e && !e.classList.contains('gone'); });
+  const root = ROOT_VIEWS.find(v => !document.getElementById(v).classList.contains('gone'));
+  tabbar.style.display = (root && !pushed) ? 'grid' : 'none';
+  ROOT_VIEWS.forEach(v => {
+    const el = document.getElementById(v);
+    el.classList.toggle('has-tabs', !pushed && v === root);
+  });
+  document.querySelectorAll('.tabbtn').forEach(b => b.classList.toggle('on', b.dataset.v === root));
+}
+document.querySelectorAll('.tabbtn').forEach(b => b.addEventListener('click', () => goTab(b.dataset.v)));
+// Les vues changent de classe depuis de nombreux endroits : on observe plutot que de tout brancher.
+const _viewObs = new MutationObserver(syncTabbar);
+document.querySelectorAll('.view').forEach(v => _viewObs.observe(v, { attributes: true, attributeFilter: ['class'] }));
+
+/* Historique : series de compteurs ou seances cardio */
+function renderHistTab() {
+  const wk = histTab === 'wk';
+  histScroll.style.display = wk ? 'none' : '';
+  hsScroll.style.display = wk ? '' : 'none';
+  if (wk) renderWkHist(); else renderHistory();
+}
+histSeg.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+  histTab = b.dataset.h;
+  histSeg.querySelectorAll('button').forEach(x => x.classList.toggle('sel', x === b));
+  renderHistTab();
+}));
+
 renderList();
+syncTabbar();
 
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
