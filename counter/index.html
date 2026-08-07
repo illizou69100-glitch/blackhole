@@ -173,6 +173,12 @@
       color: rgba(255,255,255,0.95); line-height: 1; letter-spacing: -4px;
       will-change: transform; transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1);
     }
+    .slice-sub {
+      display: none; margin-top: 6px; font-size: 15px; font-weight: 700;
+      color: rgba(255,255,255,0.62); font-variant-numeric: tabular-nums; letter-spacing: 0.01em;
+    }
+    .slice-sub.on { display: block; }
+    .slice-sub.hit { color: #86efac; }
     .big-num.up   { transform: scale(1.13); }
     .big-num.down { transform: scale(0.87); }
     .goal-banner {
@@ -707,6 +713,7 @@
 
   <div class="num-zone" id="numZone">
     <span class="big-num" id="bigNum">0</span>
+    <span class="slice-sub" id="sliceSub"></span>
     <div class="goal-banner" id="goalBanner">&#127919; Objectif atteint !</div>
   </div>
   <div class="btn-row">
@@ -1343,6 +1350,7 @@ const lv = document.getElementById('listView'),
   pacingFields = document.getElementById('pacingFields'),
   slicesFields = document.getElementById('slicesFields'),
   itPresets = document.getElementById('itPresets'),
+  sliceSub = document.getElementById('sliceSub'),
   fSlMin = document.getElementById('fSlMin'),
   fSlSec = document.getElementById('fSlSec'),
   fSlCount = document.getElementById('fSlCount'),
@@ -1674,9 +1682,11 @@ function refreshLogBtn() {
 function doInc() {
   const c = byId(activeId); if (!c) return;
   c.value += c.step; persist(); refreshNum(c); bumpNum(1); refreshProg(c); vib(10);
+  const inSlices = !!(c.slices && c.slices.enabled);
+  if (inSlices) refreshSlicesUI(c);
   if (c.seriesMode || (c.pacing && c.pacing.enabled)) refreshLogBtn();
   if (c.goal != null && c.value >= c.goal) {
-    if (c.seriesMode) {
+    if (c.seriesMode && !inSlices) {
       flashBanner('&#127919; Objectif atteint !', [40,25,40,25,80]);
       setTimeout(logSet, 350);
     } else {
@@ -1687,6 +1697,7 @@ function doInc() {
 function doDec() {
   const c = byId(activeId); if (!c) return;
   c.value -= c.step; persist(); refreshNum(c); bumpNum(-1); refreshProg(c); vib([8,20,8]);
+  if (c.slices && c.slices.enabled) refreshSlicesUI(c);
   if (c.seriesMode || (c.pacing && c.pacing.enabled)) refreshLogBtn();
 }
 function flashBanner(msg, vibPat) {
@@ -2150,6 +2161,9 @@ function saveWorkout() {
 
 let slIdx = 0, slResults = [], slInterval = null;
 let slStartAt = 0, slNextAt = 0, slLastSec = -1, slRunning = false;
+/* Valeur du compteur au debut de la tranche : le total affiche ne redescend
+   jamais, on en deduit le compte de la tranche par difference. */
+let slSliceStart = 0;
 
 function slCfg(c) { return c && c.slices ? c.slices : null; }
 function slIv(c) { const s = slCfg(c); return s ? s.totalSec / Math.max(1, s.count) : 30; }
@@ -2173,26 +2187,37 @@ function slTotalReps(c) { return slTargets(c).reduce((a, b) => a + b, 0); }
 function refreshSlicesUI(c) {
   const s = slCfg(c); if (!s) return;
   const tg = slTargets(c);
-  const doneIdx = Math.min(slIdx, tg.length - 1);
-  pacingSetLabel.textContent = 'TRANCHE ' + Math.min(slIdx + 1, tg.length) + '/' + tg.length;
-  pacingTarget.textContent = slRunning ? 'Objectif · ' + tg[doneIdx] : 'Prêt · ' + fmtTime(s.totalSec);
+  const i = Math.min(slIdx, tg.length - 1);
+  const inSlice = Math.max(0, c.value - slSliceStart);
+  const cumul = Math.max(0, c.value - c.start);
+
+  pacingSetLabel.textContent = slRunning ? 'TRANCHE ' + (i + 1) + '/' + tg.length
+                                         : 'TRANCHE 1/' + tg.length;
+  pacingTarget.textContent = slRunning ? 'Cette tranche · ' + inSlice + '/' + tg[i]
+                                       : 'Prêt · ' + fmtTime(s.totalSec);
+  sliceSub.classList.toggle('on', slRunning);
+  sliceSub.classList.toggle('hit', slRunning && inSlice >= tg[i]);
+  sliceSub.textContent = slRunning
+    ? inSlice + ' / ' + tg[i] + ' sur cette tranche' + (inSlice >= tg[i] ? '  ✓' : '')
+    : '';
+
   pacingChips.innerHTML = '';
-  tg.forEach((t, i) => {
+  tg.forEach((t, k) => {
     const chip = document.createElement('span');
     chip.className = 'pacing-chip';
-    if (i < slResults.length) {
-      const r = slResults[i];
+    if (k < slResults.length) {
+      const r = slResults[k];
       chip.textContent = r.actual;
       chip.classList.add(r.actual >= r.target ? 'ok' : 'miss');
     } else {
       chip.textContent = t;
-      if (slRunning && i === slIdx) chip.classList.add('active');
+      if (slRunning && k === slIdx) chip.classList.add('active');
     }
     pacingChips.appendChild(chip);
   });
-  const done = slResults.reduce((a, r) => a + r.actual, 0) + (slRunning ? (c.value - c.start) : 0);
+
   const el = slRunning ? Math.min(s.totalSec, (Date.now() - slStartAt) / 1000) : 0;
-  pacingTotal.textContent = done + ' / ' + slTotalReps(c) + ' reps · ' + fmtTime(el) + ' / ' + fmtTime(s.totalSec);
+  pacingTotal.textContent = cumul + ' / ' + slTotalReps(c) + ' reps · ' + fmtTime(el) + ' / ' + fmtTime(s.totalSec);
 }
 function fmtTime(sec) {
   sec = Math.max(0, Math.round(sec));
@@ -2205,7 +2230,8 @@ function slStart() {
   slIdx = 0; slResults = []; slRunning = true; slLastSec = -1;
   slStartAt = Date.now();
   slNextAt = slStartAt + slIv(c) * 1000;
-  c.value = c.start; persist(); refreshNum(c); refreshProg(c);
+  c.value = c.start; slSliceStart = c.start;
+  persist(); refreshNum(c); refreshProg(c);
   itDuration = slIv(c); itRemaining = Math.round(itDuration);
   itZone.classList.add('on'); updateItDisplay();
   beepWork(); vib([70, 30, 70]);
@@ -2233,14 +2259,15 @@ function slTick() {
 function slAdvance() {
   const c = byId(activeId); const s = slCfg(c); if (!c || !s) return;
   const tg = slTargets(c);
-  const actual = c.value - c.start;
+  const actual = Math.max(0, c.value - slSliceStart);
   const target = tg[slIdx] != null ? tg[slIdx] : 0;
   slResults.push({ actual, target });
   if (!histData[c.id]) histData[c.id] = [];
   histData[c.id].push({ ts: Date.now(), reps: actual, target });
   persistHist();
   slIdx++;
-  c.value = c.start; persist(); refreshNum(c); refreshProg(c);
+  // Le total reste a l'ecran : on ne deplace que la borne de la tranche.
+  slSliceStart = c.value;
   if (slIdx >= tg.length) { slDone(c); return; }
   // Echeancier fixe : on ajoute l'intervalle au lieu de repartir de maintenant.
   slNextAt += slIv(c) * 1000;
@@ -2254,9 +2281,10 @@ function slDone(c) {
   slRunning = false; stopKeepAlive();
   itZone.classList.remove('on');
   beepDone(); vib([80, 40, 80, 40, 160]);
-  const done = slResults.reduce((a, r) => a + r.actual, 0);
+  const done = Math.max(0, c.value - c.start);
   const goal = slTotalReps(c);
   const hit = slResults.filter(r => r.actual >= r.target).length;
+  sliceSub.classList.remove('on', 'hit');
   flashBanner(done >= goal ? '🏆 ' + done + '/' + goal + ' reps !' : '✓ ' + done + '/' + goal + ' reps', null);
   // Les pastilles d'abord, le bilan ensuite : refreshSlicesUI reecrit les libelles.
   refreshSlicesUI(c);
@@ -2278,7 +2306,7 @@ function slToggle() {
   const c = byId(activeId); if (!c || !c.slices) return;
   if (slRunning) {
     slStop(true);
-    const done = slResults.reduce((a, r) => a + r.actual, 0);
+    const done = Math.max(0, c.value - c.start);
     flashBanner('Séance arrêtée · ' + done + ' reps', null);
     refreshSlicesUI(c); refreshLogBtn();
   } else {
@@ -2288,7 +2316,8 @@ function slToggle() {
 }
 function slReset() {
   slStop(false);
-  slIdx = 0; slResults = []; slStartAt = 0; slNextAt = 0;
+  slIdx = 0; slResults = []; slStartAt = 0; slNextAt = 0; slSliceStart = 0;
+  sliceSub.classList.remove('on', 'hit'); sliceSub.textContent = '';
 }
 
 /* — Session timer (auto-runs, never resets mid-session) — */
