@@ -225,7 +225,14 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; cursor:
 .btn-d { background: rgba(255,92,92,0.14); color: var(--p1); }
 .accent-row { display: flex; gap: 9px; flex-wrap: wrap; }
 .acc { width: 34px; height: 34px; border-radius: 50%; border: 2.5px solid transparent; }
-.acc.on { border-color: var(--text); }
+    .acc.on { border-color: var(--text); }
+    .audio-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; background: var(--surf); padding: 5px; border-radius: 14px; }
+    .audio-seg button {
+      padding: 12px 6px; border: none; border-radius: 10px; background: transparent;
+      color: var(--dim); font-size: 12.5px; font-weight: 700; font-family: inherit;
+      transition: background 0.18s, color 0.18s;
+    }
+    .audio-seg button.sel { background: var(--accent); color: #0b0d11; }
 
 /* ── Sheets ───────────────────────────── */
 #backdrop {
@@ -520,49 +527,16 @@ function hexRgb(h) {
 
 /* ══════════════ Audio ══════════════ */
 /* ══════════ Moteur audio ══════════
-   Sur iOS, l'API Web Audio est routee vers la session audio « ambiante » :
-   le bouton silence physique la coupe entierement. Les elements <audio>
-   passent eux par la session « lecture media », qui sonne malgre le
-   silencieux (comme une video). On pre-genere donc les bips en WAV et on
-   les joue via des elements <audio>.
-   Bonus : un element <audio> qui tourne maintient la liaison Bluetooth
-   ouverte, donc plus de premier bip avale par le reveil des ecouteurs. */
+   iOS impose un arbitrage entre deux sessions audio, et aucune ne fait tout :
 
-function encodeWav(samples, rate) {
-  const n = samples.length, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
-  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
-  w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
-  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
-  v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true);
-  v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true);
-  let o = 44;
-  for (let i = 0; i < n; i++) {
-    const s = Math.max(-1, Math.min(1, samples[i]));
-    v.setInt16(o, s < 0 ? s * 0x8000 : s * 0x7FFF, true); o += 2;
-  }
-  let bin = ''; const b = new Uint8Array(buf);
-  for (let i = 0; i < b.length; i += 8192) bin += String.fromCharCode.apply(null, b.subarray(i, i + 8192));
-  return 'data:audio/wav;base64,' + btoa(bin);
-}
+   • Web Audio (oscillateurs) → session « ambiante » : se MELANGE a la musique
+     d'une autre app, mais l'interrupteur silence la coupe entierement.
+   • Element <audio>          → session « lecture media » : sonne malgre le
+     silencieux, mais INTERROMPT la musique des autres apps.
 
-/* notes : [{ f: frequence, d: duree, at: debut, v: volume, type: 'sine'|'square' }] */
-function synthWav(notes, rate) {
-  rate = rate || 22050;
-  const total = Math.max.apply(null, notes.map(n => n.at + n.d)) + 0.06;
-  const N = Math.ceil(total * rate), s = new Float32Array(N);
-  notes.forEach(n => {
-    const st = Math.floor(n.at * rate), len = Math.floor(n.d * rate), vol = n.v == null ? 0.55 : n.v;
-    for (let i = 0; i < len && st + i < N; i++) {
-      const t = i / rate;
-      const env = Math.min(1, t / 0.006) * Math.min(1, (len - i) / (0.010 * rate)) * Math.exp(-t * (2.2 / n.d));
-      const w = n.type === 'square' ? (Math.sin(2 * Math.PI * n.f * t) >= 0 ? 1 : -1) : Math.sin(2 * Math.PI * n.f * t);
-      s[st + i] += w * env * vol;
-    }
-  });
-  let mx = 0; for (let i = 0; i < N; i++) mx = Math.max(mx, Math.abs(s[i]));
-  if (mx > 0.95) { const k = 0.95 / mx; for (let i = 0; i < N; i++) s[i] *= k; }
-  return encodeWav(s, rate);
-}
+   On expose donc les deux et on laisse le choix. Par defaut on melange, pour
+   pouvoir s'entrainer en musique. Les deux moteurs jouent exactement les
+   memes motifs, definis une seule fois dans SND_DEFS. */
 
 const SND_DEFS = {
   tick: [{ f: 1180, d: 0.085, at: 0, v: 0.42, type: 'square' }],
@@ -573,68 +547,150 @@ const SND_DEFS = {
          { f: 784, d: 0.15, at: 0.32 }, { f: 1046, d: 0.42, at: 0.48 }]
 };
 
-const SND = {};
-let audioReady = false, audioBlocked = false;
+let audioMode = localStorage.getItem('audio_mode') || 'mix';   // 'mix' | 'solo'
+let audioBlocked = false;
+function setAudioMode(m) {
+  if (m === audioMode) return;
+  stopKeepAlive();
+  audioMode = m;
+  localStorage.setItem('audio_mode', m);
+  initAudio();
+}
 
+/* ── Moteur « mix » : Web Audio, se superpose a la musique ── */
+let AC = null;
+function ctx() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } }
+  if (AC.state === 'suspended') AC.resume();
+  return AC;
+}
+function playCtx(name) {
+  const c = ctx(); if (!c) return;
+  const notes = SND_DEFS[name]; if (!notes) return;
+  const t0 = c.currentTime + 0.012;
+  notes.forEach(n => {
+    try {
+      const o = c.createOscillator(), g = c.createGain();
+      o.connect(g); g.connect(c.destination);
+      o.type = n.type || 'sine';
+      o.frequency.setValueAtTime(n.f, t0 + n.at);
+      const v = n.v == null ? 0.55 : n.v;
+      g.gain.setValueAtTime(0.0001, t0 + n.at);
+      g.gain.exponentialRampToValueAtTime(v, t0 + n.at + 0.008);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + n.at + n.d);
+      o.start(t0 + n.at); o.stop(t0 + n.at + n.d + 0.03);
+    } catch (e) {}
+  });
+}
+
+/* ── Moteur « solo » : WAV via <audio>, passe le silencieux ── */
+function encodeWav(samples, rate) {
+  const n = samples.length, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true);
+  v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true);
+  let o = 44;
+  for (let i = 0; i < n; i++) {
+    const x = Math.max(-1, Math.min(1, samples[i]));
+    v.setInt16(o, x < 0 ? x * 0x8000 : x * 0x7FFF, true); o += 2;
+  }
+  let bin = ''; const b = new Uint8Array(buf);
+  for (let i = 0; i < b.length; i += 8192) bin += String.fromCharCode.apply(null, b.subarray(i, i + 8192));
+  return 'data:audio/wav;base64,' + btoa(bin);
+}
+function synthWav(notes, rate) {
+  rate = rate || 22050;
+  const total = Math.max.apply(null, notes.map(n => n.at + n.d)) + 0.06;
+  const N = Math.ceil(total * rate), s = new Float32Array(N);
+  notes.forEach(n => {
+    const st = Math.floor(n.at * rate), len = Math.floor(n.d * rate), vol = n.v == null ? 0.55 : n.v;
+    for (let i = 0; i < len && st + i < N; i++) {
+      const t = i / rate;
+      const env = Math.min(1, t / 0.006) * Math.min(1, (len - i) / (0.01 * rate)) * Math.exp(-t * (2.2 / n.d));
+      const w = n.type === 'square' ? (Math.sin(2 * Math.PI * n.f * t) >= 0 ? 1 : -1) : Math.sin(2 * Math.PI * n.f * t);
+      s[st + i] += w * env * vol;
+    }
+  });
+  let mx = 0; for (let i = 0; i < N; i++) mx = Math.max(mx, Math.abs(s[i]));
+  if (mx > 0.95) { const k = 0.95 / mx; for (let i = 0; i < N; i++) s[i] *= k; }
+  return encodeWav(s, rate);
+}
+const SND = {};
+let keepEl = null, elementsReady = false;
 function buildSounds() {
   if (SND.tick) return;
   Object.keys(SND_DEFS).forEach(k => {
     const uri = synthWav(SND_DEFS[k]);
-    // deux exemplaires : permet deux declenchements rapproches sans se couper
     SND[k] = [new Audio(uri), new Audio(uri)];
     SND[k].forEach(a => { a.preload = 'auto'; a.load(); });
     SND[k].i = 0;
   });
-  // souffle quasi inaudible en boucle : garde la session media et la liaison BT ouvertes
   const n = 22050, s = new Float32Array(n);
   for (let i = 0; i < n; i++) s[i] = (Math.random() * 2 - 1) * 0.0006;
   keepEl = new Audio(encodeWav(s, 22050));
   keepEl.loop = true; keepEl.preload = 'auto'; keepEl.load();
 }
-
-/* iOS exige que la premiere lecture parte d'un geste utilisateur.
-   On amorce donc tous les sons au premier contact. */
-function initAudio() {
+function playEl(name) {
   buildSounds();
-  if (audioReady) return;
-  const all = Object.keys(SND).map(k => SND[k]).reduce((a, v) => a.concat(v), []).concat([keepEl]);
-  let ok = 0, tried = 0;
+  const pool = SND[name]; if (!pool) return;
+  const a = pool[pool.i % pool.length]; pool.i++;
+  try { a.currentTime = 0; const p = a.play(); if (p && p.catch) p.catch(() => { audioBlocked = true; }); } catch (e) {}
+}
+
+/* iOS exige un geste utilisateur avant la premiere lecture. */
+function initAudio() {
+  if (audioMode === 'mix') { ctx(); return; }
+  buildSounds();
+  if (elementsReady) return;
+  elementsReady = true;
+  const all = Object.keys(SND).reduce((a, k) => a.concat(SND[k]), []).concat([keepEl]);
   all.forEach(a => {
-    const p = a.play();
-    if (p && p.then) p.then(() => {
-      a.pause(); a.currentTime = 0; ok++; tried++;
-      if (tried === all.length) { audioReady = ok > 0; audioBlocked = ok === 0; }
-    }).catch(() => {
-      tried++;
-      if (tried === all.length) { audioReady = ok > 0; audioBlocked = ok === 0; }
-    });
-    else { a.pause(); a.currentTime = 0; ok++; }
+    try {
+      const p = a.play();
+      if (p && p.then) p.then(() => { a.pause(); a.currentTime = 0; }).catch(() => {});
+      else { a.pause(); a.currentTime = 0; }
+    } catch (e) {}
   });
-  audioReady = true;
+}
+
+/* Maintien du lien Bluetooth : les ecouteurs coupent la liaison apres
+   ~10-20 s de silence et mettent 200-500 ms a se reveiller. En mode mix on
+   diffuse un souffle Web Audio (qui ne vole pas la session media). */
+let keepNode = null;
+function startKeepAlive() {
+  if (audioMode === 'mix') {
+    const c = ctx(); if (!c || keepNode) return;
+    try {
+      const buf = c.createBuffer(1, c.sampleRate, c.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * 0.0008;
+      const src = c.createBufferSource();
+      src.buffer = buf; src.loop = true; src.connect(c.destination); src.start();
+      keepNode = src;
+    } catch (e) {}
+    return;
+  }
+  buildSounds();
+  if (keepEl) { try { const p = keepEl.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {} }
+}
+function stopKeepAlive() {
+  if (keepNode) { try { keepNode.stop(); } catch (e) {} keepNode = null; }
+  if (keepEl) { try { keepEl.pause(); keepEl.currentTime = 0; } catch (e) {} }
 }
 
 function play(name) {
-  const pool = SND[name];
-  if (!pool) return;
-  const a = pool[pool.i % pool.length]; pool.i++;
-  try {
-    a.volume = Math.max(0, Math.min(1, S().vol / 100));
-    a.currentTime = 0;
-    const p = a.play(); if (p && p.catch) p.catch(() => { audioBlocked = true; });
-  } catch (e) {}
+  audioBlocked = false;
+  if (audioMode === 'mix') playCtx(name);
+  else {
+    buildSounds();
+    const pool = SND[name]; if (!pool) return;
+    const a = pool[pool.i % pool.length]; pool.i++;
+    try { a.volume = Math.max(0, Math.min(1, S().vol / 100)); } catch (e) {}
+    playEl(name);
+  }
 }
-
-let keepEl = null;
-function startKeepAlive() {
-  buildSounds();
-  if (!keepEl) return;
-  try { const p = keepEl.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
-}
-function stopKeepAlive() {
-  if (!keepEl) return;
-  try { keepEl.pause(); keepEl.currentTime = 0; } catch (e) {}
-}
-
 function alarmFocusEnd() { if (S().alarm) play('done'); }
 function alarmBreakEnd()  { if (S().alarm) play('go'); }
 function tickSound()      { if (S().tick)  play('tick'); }
@@ -690,6 +746,8 @@ function stopNoise() {
 function startNoise(kind) {
   stopNoise();
   if (!kind || kind === 'none') return;
+  // Un souffle continu vole la session media : incompatible avec le mode mix.
+  if (audioMode === 'mix') { toast('Passe en « Priorité aux sons » pour les ambiances'); return; }
   if (!noiseCache[kind]) noiseCache[kind] = makeNoise(kind);
   noiseEl = new Audio(noiseCache[kind]);
   noiseEl.loop = true;
@@ -1227,6 +1285,8 @@ function renderSettings() {
   h += row('Vibrations', '', sw('sVib', s.vibrate));
   h += row('Volume', '', '<input type="range" id="sVol" min="0" max="100" value="' + s.vol + '">');
   h += row('Écran allumé', 'empêche la mise en veille', sw('sWake', s.wake));
+  h += '<div class="sec-lbl">Son &amp; musique</div>';
+  h += '<div class="audio-seg" id="audioSeg"></div><div class="srow-sub" id="audioHint" style="padding:9px 4px 0"></div>';
   h += '<button class="btn-w btn-n" id="sTestBtn">🔊 Tester le son (écouteurs)</button>';
 
   h += '<div class="sec-lbl">Apparence</div>';
@@ -1256,6 +1316,7 @@ function renderSettings() {
   bindS('sAutoB', 'autoBreak'); bindS('sAutoF', 'autoFocus');
   bindS('sAlarm', 'alarm'); bindS('sTick', 'tick'); bindS('sVib', 'vibrate'); bindS('sWake', 'wake');
   $('sVol').addEventListener('input', e => { s.vol = +e.target.value; save(); });
+  renderAudioSeg();
   $('sTestBtn').addEventListener('click', e => {
     startKeepAlive();
     const b = e.target, old = b.textContent;
@@ -1304,6 +1365,31 @@ function renderSettings() {
     if (!confirm('Effacer toutes les tâches, projets et statistiques ? Action irréversible.')) return;
     localStorage.removeItem(K); location.reload();
   });
+}
+
+/* Choix du mode audio : mélanger avec la musique, ou prendre la main. */
+const AUDIO_CHOICES = [
+  { id: 'mix',  name: '🎵 Avec ma musique',
+    hint: "Les sons se superposent à ta musique sans la couper. Nécessite que l'interrupteur silence de l'iPhone soit désactivé. Les sons d'ambiance restent indisponibles dans ce mode." },
+  { id: 'solo', name: '🔔 Priorité aux sons',
+    hint: "Sons toujours audibles, même iPhone en silencieux, et sons d'ambiance disponibles — mais ta musique se met en pause." }
+];
+function renderAudioSeg() {
+  const seg = $('audioSeg'), hint = $('audioHint');
+  if (!seg) return;
+  seg.innerHTML = '';
+  AUDIO_CHOICES.forEach(ch => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = ch.name;
+    b.classList.toggle('sel', audioMode === ch.id);
+    b.addEventListener('click', () => {
+      if (ch.id === 'mix') { stopNoise(); S().noise = 'none'; save(); }
+      setAudioMode(ch.id); renderAudioSeg();
+    });
+    seg.appendChild(b);
+  });
+  const cur = AUDIO_CHOICES.find(c => c.id === audioMode);
+  if (hint) hint.textContent = cur ? cur.hint : '';
 }
 
 /* ══════════════ Sons d'ambiance ══════════════ */

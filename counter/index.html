@@ -34,15 +34,6 @@
     }
     .list-hdr { display: flex; align-items: center; justify-content: space-between; padding: 4px 20px 18px; }
     .list-hdr h1 { font-size: 28px; font-weight: 800; }
-    .list-icon-btn {
-      background: #1e1e1e; border: none; color: var(--text-dim);
-      width: 38px; height: 38px; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; -webkit-tap-highlight-color: transparent;
-      transition: background 0.15s; flex-shrink: 0;
-    }
-    .list-icon-btn:active { background: #2c2c2e; }
-    .list-icon-btn svg { width: 20px; height: 20px; }
     .grid {
       flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
       padding: 0 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-content: start;
@@ -325,11 +316,6 @@
       background: var(--bg);
       padding-top: max(env(safe-area-inset-top), 52px);
     }
-    .hist-top {
-      display: flex; align-items: center; gap: 12px;
-      padding: 4px 16px 14px; flex-shrink: 0;
-    }
-    .hist-title { font-size: 20px; font-weight: 800; flex: 1; }
     .hist-scroll {
       flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
       padding: 0 16px max(env(safe-area-inset-bottom), 24px);
@@ -421,19 +407,6 @@
     #timerView.ph-done      { background: #2b2405; }
     .tm-hdr { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 4px 16px 10px; }
     .tm-hdr-title { font-size: 15px; font-weight: 700; }
-    .tm-modes {
-      display: flex; gap: 6px; padding: 0 14px 10px; width: 100%;
-      overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
-    }
-    .tm-modes::-webkit-scrollbar { display: none; }
-    .tm-mode {
-      flex: 1 0 auto; padding: 8px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.11);
-      background: rgba(255,255,255,0.04); color: var(--text-dim);
-      font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer;
-      -webkit-tap-highlight-color: transparent; white-space: nowrap; transition: all 0.2s;
-    }
-    .tm-mode.sel { background: var(--text); color: var(--bg); border-color: var(--text); }
-    .tm-modes.locked { opacity: 0.32; pointer-events: none; }
     .tm-phase {
       margin-top: auto;
       font-size: 12px; font-weight: 800; letter-spacing: 0.12em; padding: 5px 18px;
@@ -520,7 +493,35 @@
     #tmSheetSection { display: none; }
     #tmSheetSection.on { display: block; }
     #ctrSheetSection.off { display: none; }
-    .tm-hide { display: none !important; }
+
+    /* ── Animations ─────────────────────
+       Toutes neutralisees si l'utilisateur a demande moins de mouvement. */
+    @keyframes chipPop   { 0%{transform:scale(1)} 45%{transform:scale(1.28)} 100%{transform:scale(1)} }
+    @keyframes ringPulse { 0%{transform:scale(1);opacity:1} 45%{transform:scale(1.06);opacity:.82} 100%{transform:scale(1);opacity:1} }
+    @keyframes badgeIn   { from{opacity:0;transform:translateY(6px) scale(.92)} to{opacity:1;transform:none} }
+    @keyframes exIn      { from{opacity:0;transform:translateY(9px)} to{opacity:1;transform:none} }
+    @keyframes cardIn    { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
+    @keyframes subPop    { 0%{transform:scale(1)} 40%{transform:scale(1.16)} 100%{transform:scale(1)} }
+    @keyframes goalGlow  { 0%,100%{box-shadow:0 0 0 0 rgba(134,239,172,0)} 50%{box-shadow:0 0 0 9px rgba(134,239,172,.16)} }
+    .pacing-chip.pop   { animation: chipPop .42s cubic-bezier(.34,1.56,.64,1); }
+    .tm-chip.pop       { animation: chipPop .42s cubic-bezier(.34,1.56,.64,1); }
+    .tm-ring-wrap.beat { animation: ringPulse .5s ease-out; }
+    .it-ring-wrap.beat { animation: ringPulse .5s ease-out; }
+    .tm-phase.in       { animation: badgeIn .34s cubic-bezier(.34,1.4,.64,1); }
+    .tm-ex.in          { animation: exIn .38s cubic-bezier(.22,1,.36,1); }
+    .wk-card           { animation: cardIn .34s cubic-bezier(.22,1,.36,1) backwards; }
+    .slice-sub.pop     { animation: subPop .4s cubic-bezier(.34,1.56,.64,1); }
+    .slice-sub.hit     { animation: goalGlow 1.6s ease-in-out infinite; border-radius: 12px; }
+    .cv-btn:active     { transform: scale(0.87); }
+    .tabbtn:active     { opacity: .55; }
+    .wk-card:active    { transform: scale(0.985); }
+    .tm-btn:active     { transform: scale(0.97); }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important; animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
     /* ── Barre d'onglets ───────────────── */
     .tabbar {
       position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
@@ -599,7 +600,6 @@
     }
     .blk input[type=number]::-webkit-outer-spin-button,
     .blk input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-    .blk-u { font-size: 10px; color: var(--text-dim); flex-shrink: 0; margin-left: -4px; }
     .blk-btns { display: flex; flex-direction: column; gap: 1px; flex-shrink: 0; }
     .blk-mv {
       background: none; border: none; color: var(--text-dim); font-size: 11px;
@@ -636,6 +636,13 @@
       -webkit-tap-highlight-color: transparent; transition: background 0.18s, color 0.18s;
     }
     .seg button.sel { background: var(--text); color: var(--bg); }
+    .audio-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: #1c1c1e; padding: 4px; border-radius: 13px; }
+    .audio-seg button {
+      padding: 11px 6px; border: none; border-radius: 10px; background: transparent;
+      color: var(--text-dim); font-size: 12.5px; font-weight: 700; font-family: inherit;
+      -webkit-tap-highlight-color: transparent; transition: background 0.18s, color 0.18s;
+    }
+    .audio-seg button.sel { background: var(--text); color: var(--bg); }
     .seg-hint { font-size: 12px; color: var(--text-dim); line-height: 1.45; padding: 8px 2px 0; }
   </style>
 </head>
@@ -763,7 +770,6 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
   </div>
-  <div class="tm-modes" id="tmModes"></div>
   <div class="tm-phase" id="tmPhase">Pr&#234;t</div>
   <div class="tm-ex" id="tmEx">&#8212;</div>
   <div class="tm-ring-wrap">
@@ -854,6 +860,12 @@
     </div>
   </div>
 
+  <div id="soundPrefBox" style="display:none">
+    <div class="section-sep"></div>
+    <div class="section-label">Son &amp; musique</div>
+    <div class="audio-seg" id="audioSegCtr"></div>
+    <div class="seg-hint" id="audioHintCtr"></div>
+  </div>
   <div id="slicesFields" style="display:none">
     <div class="fields-row">
       <div class="field"><label>Temps cible &#8212; minutes</label><input type="number" id="fSlMin" value="3" min="0" max="60"></div>
@@ -906,6 +918,9 @@
 
     <div class="section-sep"></div>
     <div class="section-label">Repères pendant la s&#233;ance</div>
+    <div class="section-label" style="padding-top:4px">Son &amp; musique</div>
+    <div class="audio-seg" id="audioSegWk"></div>
+    <div class="seg-hint" id="audioHintWk"></div>
     <div class="toggle-row"><span>&#128266; Bips</span>
       <label class="toggle"><input type="checkbox" id="fWkSound" checked><span class="slider"></span></label></div>
     <div class="toggle-row"><span>&#128483;&#65039; Annonce vocale des exercices</span>
@@ -1049,12 +1064,6 @@ function wkSnd(fn) { if (wkStore.opts.sound) fn(); }
 function wkVib(p) { if (wkStore.opts.vib) vib(p); }
 
 /* — Bibliothèque — */
-function wkOpenList() {
-  lv.classList.add('gone');
-  hiitListView.classList.remove('gone');
-  renderWkList();
-}
-function wkCloseList() { hiitListView.classList.add('gone'); lv.classList.remove('gone'); }
 function fmtMin(s) {
   s = Math.round(s);
   const m = Math.floor(s / 60), r = s % 60;
@@ -1083,6 +1092,7 @@ function renderWkList() {
     ed.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>';
     ed.addEventListener('click', e => { e.stopPropagation(); openSheet('workout', w.id); });
     card.appendChild(ed);
+    card.style.animationDelay = Math.min(240, wkScroll.children.length * 40) + 'ms';
     card.addEventListener('click', () => wkRun(w.id));
     wkScroll.appendChild(card);
   });
@@ -1153,49 +1163,16 @@ function vib(p) { if (navigator.vibrate) navigator.vibrate(p); }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 
 /* ══════════ Moteur audio ══════════
-   Sur iOS, l'API Web Audio est routee vers la session audio « ambiante » :
-   le bouton silence physique la coupe entierement. Les elements <audio>
-   passent eux par la session « lecture media », qui sonne malgre le
-   silencieux (comme une video). On pre-genere donc les bips en WAV et on
-   les joue via des elements <audio>.
-   Bonus : un element <audio> qui tourne maintient la liaison Bluetooth
-   ouverte, donc plus de premier bip avale par le reveil des ecouteurs. */
+   iOS impose un arbitrage entre deux sessions audio, et aucune ne fait tout :
 
-function encodeWav(samples, rate) {
-  const n = samples.length, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
-  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
-  w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
-  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
-  v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true);
-  v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true);
-  let o = 44;
-  for (let i = 0; i < n; i++) {
-    const s = Math.max(-1, Math.min(1, samples[i]));
-    v.setInt16(o, s < 0 ? s * 0x8000 : s * 0x7FFF, true); o += 2;
-  }
-  let bin = ''; const b = new Uint8Array(buf);
-  for (let i = 0; i < b.length; i += 8192) bin += String.fromCharCode.apply(null, b.subarray(i, i + 8192));
-  return 'data:audio/wav;base64,' + btoa(bin);
-}
+   • Web Audio (oscillateurs) → session « ambiante » : se MELANGE a la musique
+     d'une autre app, mais l'interrupteur silence la coupe entierement.
+   • Element <audio>          → session « lecture media » : sonne malgre le
+     silencieux, mais INTERROMPT la musique des autres apps.
 
-/* notes : [{ f: frequence, d: duree, at: debut, v: volume, type: 'sine'|'square' }] */
-function synthWav(notes, rate) {
-  rate = rate || 22050;
-  const total = Math.max.apply(null, notes.map(n => n.at + n.d)) + 0.06;
-  const N = Math.ceil(total * rate), s = new Float32Array(N);
-  notes.forEach(n => {
-    const st = Math.floor(n.at * rate), len = Math.floor(n.d * rate), vol = n.v == null ? 0.55 : n.v;
-    for (let i = 0; i < len && st + i < N; i++) {
-      const t = i / rate;
-      const env = Math.min(1, t / 0.006) * Math.min(1, (len - i) / (0.010 * rate)) * Math.exp(-t * (2.2 / n.d));
-      const w = n.type === 'square' ? (Math.sin(2 * Math.PI * n.f * t) >= 0 ? 1 : -1) : Math.sin(2 * Math.PI * n.f * t);
-      s[st + i] += w * env * vol;
-    }
-  });
-  let mx = 0; for (let i = 0; i < N; i++) mx = Math.max(mx, Math.abs(s[i]));
-  if (mx > 0.95) { const k = 0.95 / mx; for (let i = 0; i < N; i++) s[i] *= k; }
-  return encodeWav(s, rate);
-}
+   On expose donc les deux et on laisse le choix. Par defaut on melange, pour
+   pouvoir s'entrainer en musique. Les deux moteurs jouent exactement les
+   memes motifs, definis une seule fois dans SND_DEFS. */
 
 const SND_DEFS = {
   tick: [{ f: 1180, d: 0.085, at: 0, v: 0.42, type: 'square' }],
@@ -1206,64 +1183,140 @@ const SND_DEFS = {
          { f: 784, d: 0.15, at: 0.32 }, { f: 1046, d: 0.42, at: 0.48 }]
 };
 
-const SND = {};
-let audioReady = false, audioBlocked = false;
+let audioMode = localStorage.getItem('audio_mode') || 'mix';   // 'mix' | 'solo'
+let audioBlocked = false;
+function setAudioMode(m) {
+  if (m === audioMode) return;
+  stopKeepAlive();
+  audioMode = m;
+  localStorage.setItem('audio_mode', m);
+  initAudio();
+}
 
+/* ── Moteur « mix » : Web Audio, se superpose a la musique ── */
+let AC = null;
+function ctx() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } }
+  if (AC.state === 'suspended') AC.resume();
+  return AC;
+}
+function playCtx(name) {
+  const c = ctx(); if (!c) return;
+  const notes = SND_DEFS[name]; if (!notes) return;
+  const t0 = c.currentTime + 0.012;
+  notes.forEach(n => {
+    try {
+      const o = c.createOscillator(), g = c.createGain();
+      o.connect(g); g.connect(c.destination);
+      o.type = n.type || 'sine';
+      o.frequency.setValueAtTime(n.f, t0 + n.at);
+      const v = n.v == null ? 0.55 : n.v;
+      g.gain.setValueAtTime(0.0001, t0 + n.at);
+      g.gain.exponentialRampToValueAtTime(v, t0 + n.at + 0.008);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + n.at + n.d);
+      o.start(t0 + n.at); o.stop(t0 + n.at + n.d + 0.03);
+    } catch (e) {}
+  });
+}
+
+/* ── Moteur « solo » : WAV via <audio>, passe le silencieux ── */
+function encodeWav(samples, rate) {
+  const n = samples.length, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true);
+  v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true);
+  let o = 44;
+  for (let i = 0; i < n; i++) {
+    const x = Math.max(-1, Math.min(1, samples[i]));
+    v.setInt16(o, x < 0 ? x * 0x8000 : x * 0x7FFF, true); o += 2;
+  }
+  let bin = ''; const b = new Uint8Array(buf);
+  for (let i = 0; i < b.length; i += 8192) bin += String.fromCharCode.apply(null, b.subarray(i, i + 8192));
+  return 'data:audio/wav;base64,' + btoa(bin);
+}
+function synthWav(notes, rate) {
+  rate = rate || 22050;
+  const total = Math.max.apply(null, notes.map(n => n.at + n.d)) + 0.06;
+  const N = Math.ceil(total * rate), s = new Float32Array(N);
+  notes.forEach(n => {
+    const st = Math.floor(n.at * rate), len = Math.floor(n.d * rate), vol = n.v == null ? 0.55 : n.v;
+    for (let i = 0; i < len && st + i < N; i++) {
+      const t = i / rate;
+      const env = Math.min(1, t / 0.006) * Math.min(1, (len - i) / (0.01 * rate)) * Math.exp(-t * (2.2 / n.d));
+      const w = n.type === 'square' ? (Math.sin(2 * Math.PI * n.f * t) >= 0 ? 1 : -1) : Math.sin(2 * Math.PI * n.f * t);
+      s[st + i] += w * env * vol;
+    }
+  });
+  let mx = 0; for (let i = 0; i < N; i++) mx = Math.max(mx, Math.abs(s[i]));
+  if (mx > 0.95) { const k = 0.95 / mx; for (let i = 0; i < N; i++) s[i] *= k; }
+  return encodeWav(s, rate);
+}
+const SND = {};
+let keepEl = null, elementsReady = false;
 function buildSounds() {
   if (SND.tick) return;
   Object.keys(SND_DEFS).forEach(k => {
     const uri = synthWav(SND_DEFS[k]);
-    // deux exemplaires : permet deux declenchements rapproches sans se couper
     SND[k] = [new Audio(uri), new Audio(uri)];
     SND[k].forEach(a => { a.preload = 'auto'; a.load(); });
     SND[k].i = 0;
   });
-  // souffle quasi inaudible en boucle : garde la session media et la liaison BT ouvertes
   const n = 22050, s = new Float32Array(n);
   for (let i = 0; i < n; i++) s[i] = (Math.random() * 2 - 1) * 0.0006;
   keepEl = new Audio(encodeWav(s, 22050));
   keepEl.loop = true; keepEl.preload = 'auto'; keepEl.load();
 }
-
-/* iOS exige que la premiere lecture parte d'un geste utilisateur.
-   On amorce donc tous les sons au premier contact. */
-function initAudio() {
+function playEl(name) {
   buildSounds();
-  if (audioReady) return;
-  const all = Object.keys(SND).map(k => SND[k]).reduce((a, v) => a.concat(v), []).concat([keepEl]);
-  let ok = 0, tried = 0;
-  all.forEach(a => {
-    const p = a.play();
-    if (p && p.then) p.then(() => {
-      a.pause(); a.currentTime = 0; ok++; tried++;
-      if (tried === all.length) { audioReady = ok > 0; audioBlocked = ok === 0; }
-    }).catch(() => {
-      tried++;
-      if (tried === all.length) { audioReady = ok > 0; audioBlocked = ok === 0; }
-    });
-    else { a.pause(); a.currentTime = 0; ok++; }
-  });
-  audioReady = true;
-}
-
-function play(name) {
-  const pool = SND[name];
-  if (!pool) return;
+  const pool = SND[name]; if (!pool) return;
   const a = pool[pool.i % pool.length]; pool.i++;
   try { a.currentTime = 0; const p = a.play(); if (p && p.catch) p.catch(() => { audioBlocked = true; }); } catch (e) {}
 }
 
-let keepEl = null;
-function startKeepAlive() {
+/* iOS exige un geste utilisateur avant la premiere lecture. */
+function initAudio() {
+  if (audioMode === 'mix') { ctx(); return; }
   buildSounds();
-  if (!keepEl) return;
-  try { const p = keepEl.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
-}
-function stopKeepAlive() {
-  if (!keepEl) return;
-  try { keepEl.pause(); keepEl.currentTime = 0; } catch (e) {}
+  if (elementsReady) return;
+  elementsReady = true;
+  const all = Object.keys(SND).reduce((a, k) => a.concat(SND[k]), []).concat([keepEl]);
+  all.forEach(a => {
+    try {
+      const p = a.play();
+      if (p && p.then) p.then(() => { a.pause(); a.currentTime = 0; }).catch(() => {});
+      else { a.pause(); a.currentTime = 0; }
+    } catch (e) {}
+  });
 }
 
+/* Maintien du lien Bluetooth : les ecouteurs coupent la liaison apres
+   ~10-20 s de silence et mettent 200-500 ms a se reveiller. En mode mix on
+   diffuse un souffle Web Audio (qui ne vole pas la session media). */
+let keepNode = null;
+function startKeepAlive() {
+  if (audioMode === 'mix') {
+    const c = ctx(); if (!c || keepNode) return;
+    try {
+      const buf = c.createBuffer(1, c.sampleRate, c.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * 0.0008;
+      const src = c.createBufferSource();
+      src.buffer = buf; src.loop = true; src.connect(c.destination); src.start();
+      keepNode = src;
+    } catch (e) {}
+    return;
+  }
+  buildSounds();
+  if (keepEl) { try { const p = keepEl.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {} }
+}
+function stopKeepAlive() {
+  if (keepNode) { try { keepNode.stop(); } catch (e) {} keepNode = null; }
+  if (keepEl) { try { keepEl.pause(); keepEl.currentTime = 0; } catch (e) {} }
+}
+
+function play(name) { audioBlocked = false; audioMode === 'mix' ? playCtx(name) : playEl(name); }
 function beepWork() { play('go'); }
 function beepRest() { play('rest'); }
 function beepTick() { play('tick'); }
@@ -1356,6 +1409,7 @@ const lv = document.getElementById('listView'),
   fSlCount = document.getElementById('fSlCount'),
   fSlReps = document.getElementById('fSlReps'),
   slSummary = document.getElementById('slSummary'),
+  soundPrefBox = document.getElementById('soundPrefBox'),
   timerView = document.getElementById('timerView'),
   hiitListView = document.getElementById('hiitListView'),
   wkScroll = document.getElementById('wkScroll'),
@@ -1428,6 +1482,9 @@ function setCtrMode(m) {
   amrapFields.style.display  = (m === 'amrap')  ? 'block' : 'none';
   pacingFields.style.display = (m === 'pacing') ? 'block' : 'none';
   slicesFields.style.display = (m === 'slices') ? 'block' : 'none';
+  const sonore = (m === 'slices' || m === 'pacing' || m === 'series' || m === 'amrap');
+  soundPrefBox.style.display = sonore ? 'block' : 'none';
+  if (sonore) renderAudioSeg('audioSegCtr', 'audioHintCtr');
   if (m === 'slices') slUpdateSummary();
 }
 
@@ -1912,7 +1969,8 @@ function tmRenderChips() {
     if (tmState === 'run' || tmState === 'paused') {
       if (cur && cur.idx != null) {
         if (i < cur.idx) c.classList.add('c-off');
-        else if (i === cur.idx) c.classList.add(cur.type === 'work' ? 'c-on' : 'c-rest');
+        else if (i === cur.idx) { c.classList.add(cur.type === 'work' ? 'c-on' : 'c-rest');
+          if (cur.type === 'work') c.classList.add('pop'); }
       }
     } else if (tmState === 'done') c.classList.add('c-off');
     tmChips.appendChild(c);
@@ -1926,9 +1984,12 @@ function tmEnterPhase(i, silent) {
   tmRemain = p.dur; tmEndAt = Date.now() + p.dur * 1000;
   timerView.className = 'view ph-' + (p.type === 'roundrest' ? 'cyclerest' : p.type === 'warmup' ? 'prep' : p.type);
   tmPhaseEl.textContent = PH_LABEL[p.type];
+  replay(tmPhaseEl, 'in'); replay(tmExEl, 'in');
+  replay(document.querySelector('.tm-ring-wrap'), 'beat');
   tmPhaseEl.className = 'tm-phase p-' + (p.type === 'roundrest' ? 'cyclerest' : p.type === 'warmup' ? 'prep' : p.type);
   tmRingFill.className = 'tm-ring-fill c-' + (p.type === 'roundrest' ? 'cyclerest' : p.type === 'warmup' ? 'prep' : p.type);
   tmRingFill.style.strokeDashoffset = '0';
+  replay(tmPhaseEl, 'in');
   tmClock.textContent = tmFmt(tmRemain); tmClock.classList.remove('urgent');
   tmExEl.textContent = p.ex;
   tmSub.textContent = (p.round > 0)
@@ -2132,7 +2193,7 @@ function openWorkoutSheet(id) {
   fWkVib.checked = !!wkStore.opts.vib;
   fWkWake.checked = !!wkStore.opts.wake;
   fWkHalf.checked = !!wkStore.opts.halfway;
-  edRenderEmojis(); edRenderBlocks();
+  edRenderEmojis(); edRenderBlocks(); renderAudioSeg('audioSegWk', 'audioHintWk');
   wkDelBtn.style.display = w ? 'block' : 'none';
   wkDupBtn.style.display = w ? 'block' : 'none';
 }
@@ -2150,6 +2211,40 @@ function saveWorkout() {
   } else wkStore.workouts.push(w);
   wkPersist(); renderWkList();
   return true;
+}
+
+/* Relance une animation CSS : il faut retirer la classe et forcer un reflow. */
+function replay(el, cls) {
+  if (!el) return;
+  el.classList.remove(cls);
+  void el.offsetWidth;
+  el.classList.add(cls);
+}
+
+/* Choix du mode audio, rendu au meme endroit dans les deux feuilles. */
+const AUDIO_CHOICES = [
+  { id: 'mix',  name: '🎵 Avec ma musique',
+    hint: 'Les bips se superposent à ta musique sans la couper. Nécessite que l\'interrupteur silence de l\'iPhone soit désactivé.' },
+  { id: 'solo', name: '🔔 Priorité aux bips',
+    hint: 'Bips toujours audibles, même iPhone en silencieux — mais ta musique se met en pause pendant la séance.' }
+];
+function renderAudioSeg(segId, hintId) {
+  const seg = document.getElementById(segId), hint = document.getElementById(hintId);
+  if (!seg) return;
+  seg.innerHTML = '';
+  AUDIO_CHOICES.forEach(ch => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = ch.name;
+    b.classList.toggle('sel', audioMode === ch.id);
+    b.addEventListener('click', () => {
+      setAudioMode(ch.id);
+      renderAudioSeg('audioSegWk', 'audioHintWk');
+      renderAudioSeg('audioSegCtr', 'audioHintCtr');
+    });
+    seg.appendChild(b);
+  });
+  const cur = AUDIO_CHOICES.find(c => c.id === audioMode);
+  if (hint) hint.textContent = cur ? cur.hint : '';
 }
 
 /* ══════════ Mode Tranches ══════════
@@ -2195,8 +2290,11 @@ function refreshSlicesUI(c) {
                                          : 'TRANCHE 1/' + tg.length;
   pacingTarget.textContent = slRunning ? 'Cette tranche · ' + inSlice + '/' + tg[i]
                                        : 'Prêt · ' + fmtTime(s.totalSec);
+  const wasHit = sliceSub.classList.contains('hit');
+  const isHit = slRunning && inSlice >= tg[i];
   sliceSub.classList.toggle('on', slRunning);
-  sliceSub.classList.toggle('hit', slRunning && inSlice >= tg[i]);
+  sliceSub.classList.toggle('hit', isHit);
+  if (isHit && !wasHit) replay(sliceSub, 'pop');
   sliceSub.textContent = slRunning
     ? inSlice + ' / ' + tg[i] + ' sur cette tranche' + (inSlice >= tg[i] ? '  ✓' : '')
     : '';
@@ -2209,6 +2307,7 @@ function refreshSlicesUI(c) {
       const r = slResults[k];
       chip.textContent = r.actual;
       chip.classList.add(r.actual >= r.target ? 'ok' : 'miss');
+      if (k === slResults.length - 1 && slRunning) chip.classList.add('pop');
     } else {
       chip.textContent = t;
       if (slRunning && k === slIdx) chip.classList.add('active');
@@ -2272,6 +2371,7 @@ function slAdvance() {
   // Echeancier fixe : on ajoute l'intervalle au lieu de repartir de maintenant.
   slNextAt += slIv(c) * 1000;
   slLastSec = -1;
+  replay(document.querySelector('.it-ring-wrap'), 'beat');
   beepWork(); vib([70, 30, 70]);
   refreshSlicesUI(c); refreshLogBtn();
 }
@@ -2499,11 +2599,6 @@ function openHistory(from, focusId) {
   if (histFrom === 'list') lv.classList.add('gone');
   else cv.classList.add('gone');
   hv.classList.remove('gone');
-}
-function closeHistory() {
-  hv.classList.add('gone');
-  if (histFrom === 'list') lv.classList.remove('gone');
-  else cv.classList.remove('gone');
 }
 
 cvHistBtn.addEventListener('click', () => openHistory('counter', activeId));
