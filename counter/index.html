@@ -620,13 +620,13 @@
     .hs-badge.partial { background: rgba(255,159,10,0.16); color: #ff9f0a; }
     /* ── Sélecteur de mode du compteur ── */
     .seg {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px;
       background: #1c1c1e; padding: 4px; border-radius: 13px;
     }
     .seg button {
       padding: 10px 4px; border: none; border-radius: 10px;
       background: transparent; color: var(--text-dim);
-      font-size: 12.5px; font-weight: 700; font-family: inherit; cursor: pointer;
+      font-size: 11.5px; font-weight: 700; font-family: inherit; cursor: pointer;
       -webkit-tap-highlight-color: transparent; transition: background 0.18s, color 0.18s;
     }
     .seg button.sel { background: var(--text); color: var(--bg); }
@@ -699,7 +699,7 @@
         <span class="it-clock" id="itDisplay">0:30</span>
       </div>
     </div>
-    <div class="it-presets">
+    <div class="it-presets" id="itPresets">
       <button class="dt-preset active" id="itPreset30" data-dur="30">30s</button>
       <button class="dt-preset" id="itPreset60" data-dur="60">60s</button>
     </div>
@@ -828,6 +828,7 @@
     <button type="button" data-m="series">S&#233;ries</button>
     <button type="button" data-m="pacing">Pacing</button>
     <button type="button" data-m="amrap">AMRAP</button>
+    <button type="button" data-m="slices">Tranches</button>
   </div>
   <div class="seg-hint" id="ctrModeHint"></div>
 
@@ -846,6 +847,19 @@
     </div>
   </div>
 
+  <div id="slicesFields" style="display:none">
+    <div class="fields-row">
+      <div class="field"><label>Temps cible &#8212; minutes</label><input type="number" id="fSlMin" value="3" min="0" max="60"></div>
+      <div class="field"><label>&#8230; et secondes</label><input type="number" id="fSlSec" value="30" min="0" max="59"></div>
+    </div>
+    <div class="field"><label>Nombre de tranches</label>
+      <input type="number" id="fSlCount" value="7" min="1" max="60"></div>
+    <div class="field">
+      <label>R&#233;p&#233;titions &#8212; s&#233;quence ou total</label>
+      <input type="text" id="fSlReps" placeholder="8,6,8,6,8,6,6   ou   48" maxlength="90">
+    </div>
+    <div class="seg-hint" id="slSummary"></div>
+  </div>
   <div id="pacingFields" style="display:none">
     <div class="field">
       <label>S&#233;ries cibles (ex&nbsp;: 10,10,9,8,7,6)</label>
@@ -919,6 +933,7 @@ data.forEach(c => {
   else if (c.amrap.singleRound === undefined) c.amrap.singleRound = false;
   if (c.seriesMode === undefined) c.seriesMode = false;
   if (!c.pacing) c.pacing = {enabled:false, sets:[10,10,9,8,7,6], rest:12};
+  if (!c.slices) c.slices = {enabled:false, totalSec:210, count:7, reps:[8,6,8,6,8,6,6], repsTotal:48};
 });
 
 let histData = JSON.parse(localStorage.getItem('ctr2_hist') || '{}');
@@ -1326,6 +1341,13 @@ const lv = document.getElementById('listView'),
   fPacingSets = document.getElementById('fPacingSets'),
   fPacingRest = document.getElementById('fPacingRest'),
   pacingFields = document.getElementById('pacingFields'),
+  slicesFields = document.getElementById('slicesFields'),
+  itPresets = document.getElementById('itPresets'),
+  fSlMin = document.getElementById('fSlMin'),
+  fSlSec = document.getElementById('fSlSec'),
+  fSlCount = document.getElementById('fSlCount'),
+  fSlReps = document.getElementById('fSlReps'),
+  slSummary = document.getElementById('slSummary'),
   timerView = document.getElementById('timerView'),
   hiitListView = document.getElementById('hiitListView'),
   wkScroll = document.getElementById('wkScroll'),
@@ -1387,8 +1409,9 @@ let ctrMode = 'simple';
 const CTR_MODE_HINTS = {
   simple: 'Compteur nu : tu incrémentes, c\'est tout. Idéal pour un total sur la journée.',
   series: 'Chrono d\'intervalle + bouton « Enregistrer la série ». Chaque série part à l\'historique.',
-  pacing: 'Tu programmes tes séries à l\'avance (ex : 10,10,9,8,7,6). Repos automatique entre chaque.',
-  amrap:  'Chrono par round qui tourne en boucle. Tu comptes tes reps pendant le temps imparti.'
+  pacing: 'Tu programmes tes séries à l\'avance (ex : 10,10,9,8,7,6). Le repos démarre quand tu valides : le temps total flotte.',
+  amrap:  'Chrono par round qui tourne en boucle. Tu comptes tes reps pendant le temps imparti.',
+  slices: 'Ton volume découpé sur un temps imposé. C\'est l\'horloge qui commande : la tranche suivante part à l\'heure dite, fini ou pas.'
 };
 function setCtrMode(m) {
   ctrMode = m;
@@ -1396,8 +1419,41 @@ function setCtrMode(m) {
   ctrModeHint.textContent = CTR_MODE_HINTS[m] || '';
   amrapFields.style.display  = (m === 'amrap')  ? 'block' : 'none';
   pacingFields.style.display = (m === 'pacing') ? 'block' : 'none';
+  slicesFields.style.display = (m === 'slices') ? 'block' : 'none';
+  if (m === 'slices') slUpdateSummary();
 }
+
+/* Recapitulatif vivant : l'intervalle se deduit du temps cible et du nombre
+   de tranches, avec une alerte s'il sort de la plage utile. */
+function slReadSheet() {
+  const totalSec = Math.max(5, (parseInt(fSlMin.value) || 0) * 60 + (parseInt(fSlSec.value) || 0));
+  const count = Math.min(60, Math.max(1, parseInt(fSlCount.value) || 1));
+  const raw = fSlReps.value.trim();
+  let reps = null, repsTotal = 0;
+  if (raw.indexOf(',') >= 0) {
+    reps = raw.split(',').map(x => Math.max(0, parseInt(x.trim()) || 0)).filter(x => x > 0);
+    repsTotal = reps.reduce((a, b) => a + b, 0);
+    if (!reps.length) reps = null;
+  } else if (raw) { repsTotal = Math.max(0, parseInt(raw) || 0); }
+  return { enabled: true, totalSec, count, reps, repsTotal };
+}
+function slUpdateSummary() {
+  const s = slReadSheet();
+  const iv = s.totalSec / s.count;
+  const fake = { slices: s };
+  const tg = slTargets(fake);
+  const tot = tg.reduce((a, b) => a + b, 0);
+  const ivTxt = (Math.round(iv * 10) / 10) + ' s';
+  let warn = '';
+  if (iv < 15) warn = ' ⚠️ intervalle très court';
+  else if (iv > 90) warn = ' ⚠️ intervalle très long';
+  slSummary.innerHTML = '<strong>' + s.count + '</strong> tranches de <strong>' + ivTxt + '</strong> · ' +
+    '<strong>' + tot + '</strong> reps au total · dur&eacute;e <strong>' + fmtTime(s.totalSec) + '</strong>' + warn +
+    '<br><span style="opacity:.75">R&#233;partition : ' + tg.join(' · ') + '</span>';
+}
+[fSlMin, fSlSec, fSlCount, fSlReps].forEach(el => el.addEventListener('input', slUpdateSummary));
 function ctrModeOf(c) {
+  if (c && c.slices && c.slices.enabled) return 'slices';
   if (c && c.pacing && c.pacing.enabled) return 'pacing';
   if (c && c.amrap && c.amrap.enabled) return 'amrap';
   if (c && c.seriesMode) return 'series';
@@ -1515,18 +1571,22 @@ function openCounter(id) {
   lastLogVal = c.value;
   sessionList.style.display = 'none';
 
+  const hasSlices = !!(c.slices && c.slices.enabled);
+  const hasPacing = !hasSlices && !!(c.pacing && c.pacing.enabled);
   const hasSeries = !!c.seriesMode;
-  const hasPacing = !!(c.pacing && c.pacing.enabled);
-  logZone.style.display = (hasSeries || hasPacing) ? 'flex' : 'none';
-  cvHistBtn.style.display = (hasSeries || hasPacing) ? 'flex' : 'none';
-  itZone.classList.toggle('on', hasSeries && !(c.amrap && c.amrap.enabled));
-  pacingZone.classList.toggle('on', hasPacing);
-  if (hasSeries) { itStart(); }
+  logZone.style.display = (hasSeries || hasPacing || hasSlices) ? 'flex' : 'none';
+  cvHistBtn.style.display = (hasSeries || hasPacing || hasSlices) ? 'flex' : 'none';
+  itZone.classList.toggle('on', hasSeries && !hasSlices && !hasPacing && !(c.amrap && c.amrap.enabled));
+  pacingZone.classList.toggle('on', hasPacing || hasSlices);
+  slReset();
+  if (hasSeries && !hasSlices && !hasPacing) { itStart(); }
   if (hasPacing) {
     pacingIndex = 0; pacingResults = []; pacingResting = false;
     refreshPacingUI(c);
   }
-  if (hasSeries || hasPacing) { stStart(); refreshLogBtn(); }
+  itPresets.style.display = hasSlices ? 'none' : '';
+  if (hasSlices) refreshSlicesUI(c);
+  if (hasSeries || hasPacing || hasSlices) { stStart(); refreshLogBtn(); }
 
   if (c.amrap && c.amrap.enabled) {
     amrapZone.classList.add('on');
@@ -1550,6 +1610,7 @@ backBtn.addEventListener('click', () => {
   itZone.classList.remove('on');
   pacingZone.classList.remove('on');
   pacingIndex = 0; pacingResults = []; pacingResting = false;
+  slReset();
   cv.classList.add('gone'); lv.classList.remove('gone'); activeId = null; renderList();
 });
 
@@ -1569,6 +1630,18 @@ function refreshProg(c) {
 }
 function refreshLogBtn() {
   const c = byId(activeId); if (!c) return;
+  if (c.slices && c.slices.enabled) {
+    logBtn.style.opacity = '1';
+    if (!slRunning && slResults.length === 0) {
+      const iv = Math.round(slIv(c) * 10) / 10;
+      logBtn.textContent = '▶︎ Démarrer · ' + slTargets(c).length + ' tranches de ' + iv + ' s';
+    } else if (slRunning) {
+      logBtn.textContent = '■ Arrêter la séance';
+    } else {
+      logBtn.textContent = '↻ Relancer la séance';
+    }
+    return;
+  }
   if (c.pacing && c.pacing.enabled) {
     if (pacingResting) {
       logBtn.textContent = 'Repos en cours…';
@@ -2068,6 +2141,156 @@ function saveWorkout() {
   return true;
 }
 
+/* ══════════ Mode Tranches ══════════
+   Volume total decoupe en tranches, sur un temps impose.
+   Contrairement au mode Pacing (ou le repos demarre quand TU valides),
+   ici c'est l'horloge qui commande : la tranche suivante part a l'heure
+   dite, que tu aies fini ou non. L'echeancier est calcule par addition
+   successive pour ne jamais deriver. */
+
+let slIdx = 0, slResults = [], slInterval = null;
+let slStartAt = 0, slNextAt = 0, slLastSec = -1, slRunning = false;
+
+function slCfg(c) { return c && c.slices ? c.slices : null; }
+function slIv(c) { const s = slCfg(c); return s ? s.totalSec / Math.max(1, s.count) : 30; }
+
+/* Objectifs par tranche : soit la sequence saisie, soit un total reparti
+   au plus juste (le reste est distribue sur les premieres tranches). */
+function slTargets(c) {
+  const s = slCfg(c); if (!s) return [];
+  const n = Math.max(1, s.count);
+  if (s.reps && s.reps.length) {
+    const out = [];
+    for (let i = 0; i < n; i++) out.push(s.reps[i] != null ? s.reps[i] : s.reps[s.reps.length - 1]);
+    return out;
+  }
+  const tot = Math.max(0, s.repsTotal || 0);
+  const base = Math.floor(tot / n), rem = tot % n;
+  return Array.from({ length: n }, (_, i) => base + (i < rem ? 1 : 0));
+}
+function slTotalReps(c) { return slTargets(c).reduce((a, b) => a + b, 0); }
+
+function refreshSlicesUI(c) {
+  const s = slCfg(c); if (!s) return;
+  const tg = slTargets(c);
+  const doneIdx = Math.min(slIdx, tg.length - 1);
+  pacingSetLabel.textContent = 'TRANCHE ' + Math.min(slIdx + 1, tg.length) + '/' + tg.length;
+  pacingTarget.textContent = slRunning ? 'Objectif · ' + tg[doneIdx] : 'Prêt · ' + fmtTime(s.totalSec);
+  pacingChips.innerHTML = '';
+  tg.forEach((t, i) => {
+    const chip = document.createElement('span');
+    chip.className = 'pacing-chip';
+    if (i < slResults.length) {
+      const r = slResults[i];
+      chip.textContent = r.actual;
+      chip.classList.add(r.actual >= r.target ? 'ok' : 'miss');
+    } else {
+      chip.textContent = t;
+      if (slRunning && i === slIdx) chip.classList.add('active');
+    }
+    pacingChips.appendChild(chip);
+  });
+  const done = slResults.reduce((a, r) => a + r.actual, 0) + (slRunning ? (c.value - c.start) : 0);
+  const el = slRunning ? Math.min(s.totalSec, (Date.now() - slStartAt) / 1000) : 0;
+  pacingTotal.textContent = done + ' / ' + slTotalReps(c) + ' reps · ' + fmtTime(el) + ' / ' + fmtTime(s.totalSec);
+}
+function fmtTime(sec) {
+  sec = Math.max(0, Math.round(sec));
+  return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
+}
+
+function slStart() {
+  const c = byId(activeId); const s = slCfg(c); if (!s) return;
+  initAudio(); startKeepAlive();
+  slIdx = 0; slResults = []; slRunning = true; slLastSec = -1;
+  slStartAt = Date.now();
+  slNextAt = slStartAt + slIv(c) * 1000;
+  c.value = c.start; persist(); refreshNum(c); refreshProg(c);
+  itDuration = slIv(c); itRemaining = Math.round(itDuration);
+  itZone.classList.add('on'); updateItDisplay();
+  beepWork(); vib([70, 30, 70]);
+  refreshSlicesUI(c); refreshLogBtn();
+  if (slInterval) clearInterval(slInterval);
+  slInterval = setInterval(slTick, 100);
+}
+
+function slTick() {
+  const c = byId(activeId); const s = slCfg(c);
+  if (!c || !s) { slStop(false); return; }
+  const iv = slIv(c);
+  const left = Math.max(0, (slNextAt - Date.now()) / 1000);
+  itDuration = iv; itRemaining = Math.ceil(left);
+  updateItDisplay();
+  const sec = Math.ceil(left);
+  if (sec !== slLastSec) {
+    slLastSec = sec;
+    if (sec <= 3 && sec > 0) beepTick();
+    refreshSlicesUI(c);
+  }
+  if (Date.now() >= slNextAt) slAdvance();
+}
+
+function slAdvance() {
+  const c = byId(activeId); const s = slCfg(c); if (!c || !s) return;
+  const tg = slTargets(c);
+  const actual = c.value - c.start;
+  const target = tg[slIdx] != null ? tg[slIdx] : 0;
+  slResults.push({ actual, target });
+  if (!histData[c.id]) histData[c.id] = [];
+  histData[c.id].push({ ts: Date.now(), reps: actual, target });
+  persistHist();
+  slIdx++;
+  c.value = c.start; persist(); refreshNum(c); refreshProg(c);
+  if (slIdx >= tg.length) { slDone(c); return; }
+  // Echeancier fixe : on ajoute l'intervalle au lieu de repartir de maintenant.
+  slNextAt += slIv(c) * 1000;
+  slLastSec = -1;
+  beepWork(); vib([70, 30, 70]);
+  refreshSlicesUI(c); refreshLogBtn();
+}
+
+function slDone(c) {
+  if (slInterval) { clearInterval(slInterval); slInterval = null; }
+  slRunning = false; stopKeepAlive();
+  itZone.classList.remove('on');
+  beepDone(); vib([80, 40, 80, 40, 160]);
+  const done = slResults.reduce((a, r) => a + r.actual, 0);
+  const goal = slTotalReps(c);
+  const hit = slResults.filter(r => r.actual >= r.target).length;
+  flashBanner(done >= goal ? '🏆 ' + done + '/' + goal + ' reps !' : '✓ ' + done + '/' + goal + ' reps', null);
+  // Les pastilles d'abord, le bilan ensuite : refreshSlicesUI reecrit les libelles.
+  refreshSlicesUI(c);
+  pacingSetLabel.textContent = 'TERMINÉ';
+  pacingTarget.textContent = hit + '/' + slResults.length + ' tranches tenues';
+  pacingTotal.textContent = done + ' / ' + goal + ' reps en ' + fmtTime(slCfg(c).totalSec);
+  logBtn.textContent = '✓ Séance terminée · ' + done + ' reps';
+  logBtn.style.opacity = '0.45';
+}
+
+function slStop(log) {
+  if (slInterval) { clearInterval(slInterval); slInterval = null; }
+  slRunning = false; stopKeepAlive();
+  itZone.classList.remove('on');
+  slLastSec = -1;
+  if (log) { const c = byId(activeId); if (c) refreshSlicesUI(c); }
+}
+function slToggle() {
+  const c = byId(activeId); if (!c || !c.slices) return;
+  if (slRunning) {
+    slStop(true);
+    const done = slResults.reduce((a, r) => a + r.actual, 0);
+    flashBanner('Séance arrêtée · ' + done + ' reps', null);
+    refreshSlicesUI(c); refreshLogBtn();
+  } else {
+    slIdx = 0; slResults = [];
+    slStart();
+  }
+}
+function slReset() {
+  slStop(false);
+  slIdx = 0; slResults = []; slStartAt = 0; slNextAt = 0;
+}
+
 /* — Session timer (auto-runs, never resets mid-session) — */
 function stStart() {
   if (stRunning) return;
@@ -2115,12 +2338,14 @@ let _logLastTouch = 0;
 logBtn.addEventListener('touchend', e => {
   e.preventDefault(); _logLastTouch = Date.now();
   const c = byId(activeId);
+  if (c && c.slices && c.slices.enabled) { slToggle(); return; }
   if (c && c.pacing && c.pacing.enabled) { logPacingSet(); return; }
   logSet();
 });
 logBtn.addEventListener('click', () => {
   if (Date.now() - _logLastTouch < 500) return;
   const c = byId(activeId);
+  if (c && c.slices && c.slices.enabled) { slToggle(); return; }
   if (c && c.pacing && c.pacing.enabled) { logPacingSet(); return; }
   logSet();
 });
@@ -2343,6 +2568,7 @@ function openSheet(mode, id) {
     fTitle.value = ''; fStart.value = '0'; fStep.value = '1'; fGoal.value = '';
     fAmrapDur.value = '60'; fAmrapReps.value = '5'; fAmrapReset.checked = false; fAmrapSingle.checked = false;
     fPacingSets.value = '10,10,9,8,7,6'; fPacingRest.value = '12';
+    fSlMin.value = '3'; fSlSec.value = '30'; fSlCount.value = '7'; fSlReps.value = '8,6,8,6,8,6,6';
     setCtrMode('simple');
     pickColor(COLORS[0]); resetBtn.style.display = 'none'; deleteBtn.style.display = 'none';
   } else {
@@ -2356,6 +2582,11 @@ function openSheet(mode, id) {
     const p = c.pacing || {};
     fPacingSets.value = p.sets ? p.sets.join(',') : '10,10,9,8,7,6';
     fPacingRest.value = p.rest || 12;
+    const sl = c.slices || {};
+    fSlMin.value = Math.floor((sl.totalSec || 210) / 60);
+    fSlSec.value = (sl.totalSec || 210) % 60;
+    fSlCount.value = sl.count || 7;
+    fSlReps.value = (sl.reps && sl.reps.length) ? sl.reps.join(',') : String(sl.repsTotal || 48);
     setCtrMode(ctrModeOf(c));
     pickColor(c.color); resetBtn.style.display = 'block'; deleteBtn.style.display = 'block';
   }
@@ -2385,18 +2616,19 @@ saveBtn.addEventListener('click', () => {
     singleRound: fAmrapSingle.checked
   };
   // Pacing implique le bouton « enregistrer la serie » : on active seriesMode avec.
-  const seriesMode = (ctrMode === 'series' || ctrMode === 'pacing');
+  const seriesMode = (ctrMode === 'series' || ctrMode === 'pacing' || ctrMode === 'slices');
   const pacingEnabled = ctrMode === 'pacing';
   const pacingRestSec = Math.max(3, parseInt(fPacingRest.value) || 12);
   const pacingSets = (fPacingSets.value.trim() || '10,10,9,8,7,6')
     .split(',').map(s => Math.max(1, parseInt(s.trim()) || 1));
   const pacing = {enabled: pacingEnabled, sets: pacingSets, rest: pacingRestSec};
+  const slices = slReadSheet(); slices.enabled = (ctrMode === 'slices');
   if (sheetMode === 'new') {
-    const c = { id: uid(), title, value: start, start, step, goal, color: pickedColor, amrap, seriesMode, pacing };
+    const c = { id: uid(), title, value: start, start, step, goal, color: pickedColor, amrap, seriesMode, pacing, slices };
     data.push(c); persist(); closeSheet(); renderList(); openCounter(c.id);
   } else {
     const c = byId(editId);
-    c.title = title; c.start = start; c.step = step; c.goal = goal; c.color = pickedColor; c.amrap = amrap; c.seriesMode = seriesMode; c.pacing = pacing;
+    c.title = title; c.start = start; c.step = step; c.goal = goal; c.color = pickedColor; c.amrap = amrap; c.seriesMode = seriesMode; c.pacing = pacing; c.slices = slices;
     persist(); closeSheet(); renderList();
     if (activeId === editId) {
       cvTitle.textContent = c.title; cv.style.background = c.color; refreshProg(c);
