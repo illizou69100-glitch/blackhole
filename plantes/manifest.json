@@ -1,0 +1,17 @@
+{
+  "name": "Plantes — Entretien & identification",
+  "short_name": "Plantes",
+  "description": "Collection de plantes, rappels d'arrosage, fiches d'entretien et identification par photo.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0c110d",
+  "theme_color": "#0c110d",
+  "lang": "fr",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

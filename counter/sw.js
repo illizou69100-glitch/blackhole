@@ -1,7 +1,8 @@
 /* Service worker — Compteur / Chrono
    Stale-while-revalidate : l'app s'ouvre instantanément depuis le cache,
    et la version réseau est récupérée en arrière-plan pour la fois suivante. */
-const CACHE = 'counter-v11';
+const CACHE = 'counter-v12';
+const PREFIX = 'counter-';   // ne purger que SES caches : les 3 apps partagent l'origine
 const ASSETS = ['./', './index.html', './manifest.json', './icon-180.png', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -15,7 +16,7 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
-      .then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(ks => Promise.all(ks.filter(k => k.startsWith(PREFIX) && k !== CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });

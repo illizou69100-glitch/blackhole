@@ -1,8 +1,8 @@
-/* Service worker — Focus — Pomodoro & Tâches
+/* Service worker — Plantes
    Stale-while-revalidate : l'app s'ouvre instantanément depuis le cache,
    et la version réseau est récupérée en arrière-plan pour la fois suivante. */
-const CACHE = 'focus-v6';
-const PREFIX = 'focus-';   // ne purger que SES caches : les 3 apps partagent l'origine
+const CACHE = 'plantes-v1';
+const PREFIX = 'plantes-';   // ne purger que SES caches : les 3 apps partagent l'origine
 const ASSETS = ['./', './index.html', './manifest.json', './icon-180.png', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -24,6 +24,7 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET' || !req.url.startsWith(self.location.origin)) return;
+  if (req.url.indexOf('plantnet') >= 0) return;   // identification : toujours en direct
   e.respondWith(
     caches.open(CACHE).then(cache =>
       cache.match(req).then(hit => {
