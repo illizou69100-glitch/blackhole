@@ -40,11 +40,11 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent;cursor:pointe
 .ibtn svg{width:19px;height:19px}
 
 /* Onglets */
-.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:grid;grid-template-columns:repeat(4,1fr);
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:grid;grid-template-columns:repeat(5,1fr);
   background:rgba(12,17,13,.94);-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);
   border-top:1px solid var(--line);padding-bottom:max(env(safe-area-inset-bottom),8px)}
 .tab{background:none;border:none;color:var(--dim);padding:9px 0 5px;display:flex;flex-direction:column;
-  align-items:center;gap:3px;font-size:10px;font-weight:700;transition:color .18s}
+  align-items:center;gap:3px;font-size:9.5px;font-weight:700;transition:color .18s}
 .tab svg{width:22px;height:22px}
 .tab.on{color:var(--leaf)}
 .tab:active{opacity:.6}
@@ -168,6 +168,49 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent;cursor:pointe
   border-radius:13px;font-size:13.5px;font-weight:600;opacity:0;pointer-events:none;
   transition:opacity .25s,bottom .25s;white-space:nowrap;max-width:88vw;overflow:hidden;text-overflow:ellipsis}
 .toast.on{opacity:1;bottom:calc(94px + max(env(safe-area-inset-bottom),10px))}
+/* Outils */
+.tool-seg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--surf);padding:4px;border-radius:14px;margin-bottom:16px}
+.tool-seg button{padding:11px 4px;border:none;border-radius:10px;background:transparent;color:var(--dim);
+  font-size:12.5px;font-weight:700;font-family:inherit;transition:all .18s}
+.tool-seg button.sel{background:var(--leaf);color:#0c110d}
+.tool-pane{display:none}
+.tool-pane.on{display:block}
+.lm-stage{width:100%;aspect-ratio:4/3;border-radius:18px;overflow:hidden;background:var(--surf);
+  display:flex;align-items:center;justify-content:center;position:relative}
+.lm-stage::after{content:'Caméra éteinte';color:var(--dim);font-size:13px}
+.lm-stage.on::after{display:none}
+.lm-stage video{width:100%;height:100%;object-fit:cover;display:none}
+.lm-stage.on video{display:block}
+.lm-read{margin-top:14px}
+.lm-level{font-size:26px;font-weight:800;text-align:center;letter-spacing:-.02em}
+.lm-track{height:9px;border-radius:9px;background:rgba(255,255,255,.08);margin-top:10px;overflow:hidden}
+.lm-fill{height:100%;border-radius:9px;transition:width .25s ease-out;
+  background:linear-gradient(90deg,#6b7686,#6fb6e8 25%,#5fd68a 50%,#e0b25c 75%,#f0776a)}
+.lm-scale{display:flex;justify-content:space-between;font-size:10.5px;color:var(--dim);margin-top:6px}
+.lm-verdict{margin-top:10px;padding:13px 15px;border-radius:13px;background:var(--surf);
+  font-size:14px;font-weight:600;text-align:center;line-height:1.4}
+.lm-verdict.good{background:rgba(95,214,138,.14);color:var(--leaf)}
+.lm-verdict.warn{background:rgba(224,178,92,.14);color:var(--soon)}
+.lm-verdict.bad{background:rgba(240,119,106,.14);color:var(--late)}
+.wc-big{font-size:44px;font-weight:800;text-align:center;letter-spacing:-.03em;color:var(--info)}
+.wc-sub{font-size:12.5px;color:var(--dim);text-align:center;margin-top:6px}
+.moon-face{font-size:74px;text-align:center;line-height:1}
+.moon-n{font-size:21px;font-weight:800;text-align:center;margin-top:8px}
+.moon-s{font-size:12.5px;color:var(--dim);text-align:center;margin-top:5px}
+.moon-row{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin-top:16px}
+.moon-p{aspect-ratio:1;border-radius:10px;background:var(--surf);display:flex;align-items:center;
+  justify-content:center;font-size:17px;opacity:.4;transition:all .25s}
+.moon-p.on{opacity:1;background:var(--surf2);transform:scale(1.08)}
+/* Onglets de fiche */
+.det-seg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--surf2);padding:4px;
+  border-radius:13px;margin:4px 0 14px}
+.det-seg button{padding:10px 4px;border:none;border-radius:10px;background:transparent;color:var(--dim);
+  font-size:12.5px;font-weight:700;font-family:inherit;transition:all .18s}
+.det-seg button.sel{background:var(--leaf);color:#0c110d}
+.pb-row{display:flex;gap:11px;background:var(--surf2);border-radius:13px;padding:12px 14px;margin-bottom:8px}
+.pb-ico{font-size:16px;flex-shrink:0}
+.pb-s{font-size:14px;font-weight:700}
+.pb-c{font-size:12.5px;color:var(--dim);margin-top:3px;line-height:1.45}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 </head>
@@ -201,6 +244,47 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent;cursor:pointe
   </div>
 </div>
 
+<!-- OUTILS -->
+<div class="view hidden" id="vTools">
+  <div class="vhdr"><h1>Outils</h1></div>
+  <div class="scroll">
+    <div class="tool-seg" id="toolSeg">
+      <button type="button" data-t="lm" class="sel">&#128161; Posem&#232;tre</button>
+      <button type="button" data-t="wc">&#128167; Arrosage</button>
+      <button type="button" data-t="mn">&#127765; Lune</button>
+    </div>
+
+    <div class="tool-pane on" id="paneLm">
+      <div class="lm-stage" id="lmStage">
+        <video id="lmVideo" playsinline muted></video>
+        <canvas id="lmCanvas" style="display:none"></canvas>
+      </div>
+      <div class="lm-read">
+        <div class="lm-level" id="lmLevel">&#8212;</div>
+        <div class="lm-track"><div class="lm-fill" id="lmFill"></div></div>
+        <div class="lm-scale"><span>Ombre</span><span>Moyenne</span><span>Plein soleil</span></div>
+      </div>
+      <div class="fld" style="margin-top:14px"><label>Comparer avec</label><select id="lmPlant"></select></div>
+      <div class="lm-verdict" id="lmVerdict">Choisis une plante pour comparer.</div>
+      <button class="btnw btn-g" id="lmStartBtn" style="margin-top:12px">D&#233;marrer la mesure</button>
+      <div class="note">Le navigateur n'expose pas les r&#233;glages du capteur sur iPhone : la mesure est
+        <strong>relative</strong>, class&#233;e en paliers. Elle r&#233;pond bien &#224; « cet endroit est-il assez lumineux
+        pour cette plante&#160;? », pas &#224; « combien de lux&#160;? ». Vise le mur derri&#232;re la plante, pas la fen&#234;tre.</div>
+    </div>
+
+    <div class="tool-pane" id="paneWc">
+      <div class="fld"><label>Diam&#232;tre du pot (cm)</label><input type="number" id="wcDia" value="15" min="4" max="120"></div>
+      <div class="fld"><label>Plante</label><select id="wcPlant"></select></div>
+      <button class="btnw btn-g" id="wcBtn">Calculer</button>
+      <div id="wcOut" style="margin-top:16px"></div>
+    </div>
+
+    <div class="tool-pane" id="paneMn">
+      <div id="moonOut"></div>
+    </div>
+  </div>
+</div>
+
 <!-- FICHES -->
 <div class="view hidden" id="vCare">
   <div class="vhdr"><h1>Fiches</h1></div>
@@ -223,6 +307,9 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent;cursor:pointe
   <button class="tab" data-v="vId">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
     <span>Identifier</span></button>
+  <button class="tab" data-v="vTools">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4"/><path d="M15.1 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5a6 6 0 0 0-12 0c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/></svg>
+    <span>Outils</span></button>
   <button class="tab" data-v="vCare">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
     <span>Fiches</span></button>
@@ -250,46 +337,46 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent;cursor:pointe
    Base embarquee : l'app doit rester utile sans reseau. `genus` sert a
    raccrocher un resultat d'identification a la bonne fiche. */
 const CARE = [
-  {g:'Monstera',n:'Monstera',lat:'Monstera deliciosa',e:'🌿',light:'Lumière vive indirecte',water:7,winter:12,hum:'Moyenne à élevée',temp:'18-27 °C',tox:1,diff:'Facile',tip:"Essuie les feuilles, elle respire mieux. Tuteur si elle penche."},
-  {g:'Ficus',n:'Ficus lyrata',lat:'Ficus lyrata',e:'🌳',light:'Lumière vive indirecte',water:7,winter:12,hum:'Moyenne',temp:'18-24 °C',tox:1,diff:'Difficile',tip:"Déteste être déplacé. Trouve-lui une place et n'y touche plus."},
-  {g:'Ficus',n:'Ficus elastica',lat:'Ficus elastica',e:'🌱',light:'Lumière vive indirecte',water:8,winter:14,hum:'Moyenne',temp:'16-24 °C',tox:1,diff:'Facile',tip:"Laisse sécher les 3 premiers cm avant d'arroser."},
-  {g:'Sansevieria',n:'Sansevieria',lat:'Dracaena trifasciata',e:'🗡',light:"Tolère tout, même l'ombre",water:18,winter:30,hum:'Faible',temp:'15-27 °C',tox:1,diff:'Très facile',tip:"La tuer, c'est l'arroser trop. En cas de doute, n'arrose pas."},
-  {g:'Zamioculcas',n:'ZZ plant',lat:'Zamioculcas zamiifolia',e:'🌿',light:'Faible à moyenne',water:18,winter:28,hum:'Faible',temp:'15-26 °C',tox:1,diff:'Très facile',tip:"Ses rhizomes stockent l'eau : elle pardonne les oublis, pas les excès."},
-  {g:'Epipremnum',n:'Pothos',lat:'Epipremnum aureum',e:'🍃',light:'Moyenne, tolère le faible',water:8,winter:12,hum:'Moyenne',temp:'17-27 °C',tox:1,diff:'Très facile',tip:"Bouture dans l'eau : ça marche à tous les coups."},
-  {g:'Spathiphyllum',n:'Spathiphyllum',lat:'Spathiphyllum wallisii',e:'🤍',light:'Moyenne à faible',water:5,winter:8,hum:'Élevée',temp:'18-25 °C',tox:1,diff:'Facile',tip:"Elle s'affaisse quand elle a soif, et repart en une heure après l'arrosage."},
-  {g:'Chlorophytum',n:'Plante araignée',lat:'Chlorophytum comosum',e:'🕷',light:'Vive indirecte',water:7,winter:11,hum:'Moyenne',temp:'15-25 °C',tox:0,diff:'Très facile',tip:"Pointes brunes = eau trop calcaire. Passe à l'eau filtrée."},
-  {g:'Dracaena',n:'Dracaena',lat:'Dracaena marginata',e:'🌴',light:'Moyenne à vive indirecte',water:12,winter:18,hum:'Moyenne',temp:'18-26 °C',tox:1,diff:'Facile',tip:"Sensible au fluor de l'eau du robinet. Laisse reposer l'eau 24 h."},
-  {g:'Aloe',n:'Aloe vera',lat:'Aloe barbadensis',e:'🌵',light:'Plein soleil à vive',water:18,winter:30,hum:'Faible',temp:'15-27 °C',tox:1,diff:'Très facile',tip:"Terreau de cactus obligatoire, et un pot percé."},
-  {g:'Crassula',n:'Arbre de jade',lat:'Crassula ovata',e:'💎',light:'Vive, un peu de soleil direct',water:16,winter:28,hum:'Faible',temp:'15-24 °C',tox:1,diff:'Facile',tip:"Feuilles ridées = elle a soif. Feuilles molles = trop d'eau."},
-  {g:'Echeveria',n:'Echeveria',lat:'Echeveria elegans',e:'🌸',light:'Plein soleil',water:14,winter:25,hum:'Faible',temp:'15-25 °C',tox:0,diff:'Facile',tip:"Arrose au pied, jamais sur la rosette : elle pourrit."},
-  {g:'Calathea',n:'Calathea',lat:'Calathea orbifolia',e:'🎋',light:'Moyenne indirecte, jamais direct',water:5,winter:8,hum:'Très élevée',temp:'18-26 °C',tox:0,diff:'Difficile',tip:"Eau non calcaire et humidité élevée, sinon les bords brunissent."},
-  {g:'Maranta',n:'Maranta',lat:'Maranta leuconeura',e:'🙏',light:'Moyenne indirecte',water:5,winter:8,hum:'Élevée',temp:'18-26 °C',tox:0,diff:'Moyenne',tip:"Elle replie ses feuilles la nuit, c'est normal et bon signe."},
-  {g:'Philodendron',n:'Philodendron',lat:'Philodendron hederaceum',e:'💚',light:'Moyenne à vive indirecte',water:8,winter:12,hum:'Moyenne',temp:'18-27 °C',tox:1,diff:'Très facile',tip:"Pince les tiges pour la rendre plus touffue."},
-  {g:'Anthurium',n:'Anthurium',lat:'Anthurium andraeanum',e:'❤️',light:'Vive indirecte',water:6,winter:10,hum:'Élevée',temp:'18-27 °C',tox:1,diff:'Moyenne',tip:"Pas de fleurs ? Il lui manque de la lumière."},
-  {g:'Begonia',n:'Bégonia',lat:'Begonia rex',e:'🌺',light:'Moyenne indirecte',water:6,winter:10,hum:'Élevée',temp:'18-24 °C',tox:1,diff:'Moyenne',tip:"Jamais d'eau sur le feuillage, il tache et moisit."},
-  {g:'Peperomia',n:'Peperomia',lat:'Peperomia obtusifolia',e:'🪴',light:'Moyenne à vive indirecte',water:11,winter:18,hum:'Moyenne',temp:'18-26 °C',tox:0,diff:'Facile',tip:"Feuilles charnues : elle stocke, donc arrose peu."},
-  {g:'Hoya',n:'Hoya',lat:'Hoya carnosa',e:'⭐',light:'Vive indirecte',water:12,winter:20,hum:'Moyenne',temp:'16-27 °C',tox:0,diff:'Facile',tip:"Ne coupe pas les tiges florales fanées, elles refleurissent dessus."},
-  {g:'Scindapsus',n:'Scindapsus',lat:'Scindapsus pictus',e:'🥈',light:'Moyenne indirecte',water:9,winter:14,hum:'Moyenne',temp:'18-27 °C',tox:1,diff:'Facile',tip:"Les taches argentées pâlissent si elle manque de lumière."},
-  {g:'Alocasia',n:'Alocasia',lat:'Alocasia amazonica',e:'🔺',light:'Vive indirecte',water:6,winter:12,hum:'Très élevée',temp:'18-27 °C',tox:2,diff:'Difficile',tip:"Repos hivernal : elle peut perdre ses feuilles, ne la jette pas."},
-  {g:'Strelitzia',n:'Oiseau de paradis',lat:'Strelitzia nicolai',e:'🦜',light:'Très vive, soleil direct toléré',water:8,winter:14,hum:'Moyenne',temp:'18-27 °C',tox:1,diff:'Moyenne',tip:"Feuilles fendues = normal, c'est sa façon de résister au vent."},
-  {g:'Yucca',n:'Yucca',lat:'Yucca elephantipes',e:'🌵',light:'Vive à soleil direct',water:15,winter:25,hum:'Faible',temp:'15-27 °C',tox:1,diff:'Facile',tip:"Tronc mou à la base = pourriture, c'est souvent irréversible."},
-  {g:'Cactus',n:'Cactus',lat:'Cactaceae',e:'🌵',light:'Plein soleil',water:20,winter:45,hum:'Faible',temp:'12-30 °C',tox:0,diff:'Très facile',tip:"En hiver, arrête presque totalement l'arrosage."},
-  {g:'Nephrolepis',n:'Fougère de Boston',lat:'Nephrolepis exaltata',e:'🌿',light:'Moyenne indirecte',water:4,winter:6,hum:'Très élevée',temp:'16-24 °C',tox:0,diff:'Moyenne',tip:"Le substrat ne doit jamais sécher complètement."},
-  {g:'Asplenium',n:"Fougère nid d'oiseau",lat:'Asplenium nidus',e:'🪶',light:'Moyenne à faible',water:6,winter:9,hum:'Élevée',temp:'18-26 °C',tox:0,diff:'Facile',tip:"Arrose le terreau, jamais le cœur de la rosette."},
-  {g:'Aglaonema',n:'Aglaonema',lat:'Aglaonema commutatum',e:'🎨',light:'Faible à moyenne',water:9,winter:15,hum:'Moyenne',temp:'18-27 °C',tox:1,diff:'Très facile',tip:"Une des rares belles plantes qui prospère loin des fenêtres."},
-  {g:'Tradescantia',n:'Misère',lat:'Tradescantia zebrina',e:'💜',light:'Vive indirecte',water:6,winter:10,hum:'Moyenne',temp:'16-26 °C',tox:1,diff:'Très facile',tip:"Rabats-la sévèrement quand elle se dégarnit, elle repart."},
-  {g:'Pilea',n:'Pilea',lat:'Pilea peperomioides',e:'🪙',light:'Vive indirecte',water:8,winter:13,hum:'Moyenne',temp:'16-24 °C',tox:0,diff:'Facile',tip:"Tourne le pot d'un quart de tour par semaine, sinon elle penche."},
-  {g:'Schefflera',n:'Schefflera',lat:'Schefflera arboricola',e:'☂️',light:'Vive indirecte',water:9,winter:15,hum:'Moyenne',temp:'16-24 °C',tox:1,diff:'Facile',tip:"Perd ses feuilles du bas si elle manque de lumière."},
-  {g:'Orchidaceae',n:'Orchidée',lat:'Phalaenopsis',e:'🌸',light:'Vive indirecte',water:7,winter:10,hum:'Élevée',temp:'18-27 °C',tox:0,diff:'Moyenne',tip:"Trempage 10 min puis égouttage complet. Jamais d'eau stagnante."},
-  {g:'Citrus',n:'Citronnier',lat:'Citrus limon',e:'🍋',light:'Plein soleil',water:6,winter:11,hum:'Moyenne',temp:'12-28 °C',tox:0,diff:'Difficile',tip:"Engrais spécial agrumes de mars à septembre, sinon feuilles jaunes."},
-  {g:'Olea',n:'Olivier',lat:'Olea europaea',e:'🫒',light:'Plein soleil',water:10,winter:20,hum:'Faible',temp:'5-30 °C',tox:0,diff:'Moyenne',tip:"En intérieur il souffre : sors-le dès que possible."},
-  {g:'Basilicum',n:'Basilic',lat:'Ocimum basilicum',e:'🌿',light:'Plein soleil',water:2,winter:4,hum:'Moyenne',temp:'18-28 °C',tox:0,diff:'Moyenne',tip:"Pince les fleurs dès qu'elles pointent, sinon les feuilles amèrent."},
-  {g:'Mentha',n:'Menthe',lat:'Mentha spicata',e:'🍃',light:'Vive, mi-ombre',water:3,winter:5,hum:'Moyenne',temp:'15-25 °C',tox:0,diff:'Très facile',tip:"Envahissante : garde-la dans son propre pot."},
-  {g:'Euphorbia',n:'Euphorbe',lat:'Euphorbia trigona',e:'🌵',light:'Vive à soleil direct',water:16,winter:30,hum:'Faible',temp:'15-27 °C',tox:2,diff:'Facile',tip:"Sève blanche irritante : gants pour la manipuler."},
-  {g:'Kalanchoe',n:'Kalanchoé',lat:'Kalanchoe blossfeldiana',e:'🌼',light:'Vive, un peu de direct',water:12,winter:20,hum:'Faible',temp:'15-25 °C',tox:1,diff:'Facile',tip:"Pour refleurir : 6 semaines à 14 h d'obscurité par jour."},
-  {g:'Syngonium',n:'Syngonium',lat:'Syngonium podophyllum',e:'🔰',light:'Moyenne indirecte',water:7,winter:11,hum:'Élevée',temp:'18-27 °C',tox:1,diff:'Facile',tip:"Grimpe si tu lui donnes un tuteur, retombe sinon."},
-  {g:'Fittonia',n:'Fittonia',lat:'Fittonia albivenis',e:'🩸',light:'Moyenne indirecte',water:3,winter:5,hum:'Très élevée',temp:'18-26 °C',tox:0,diff:'Moyenne',tip:"S'effondre dramatiquement si elle a soif, puis repart. Idéale en terrarium."},
-  {g:'Hedera',n:'Lierre',lat:'Hedera helix',e:'🍀',light:'Moyenne indirecte',water:6,winter:10,hum:'Élevée',temp:'10-22 °C',tox:1,diff:'Facile',tip:"Aime le frais. Les araignées rouges l'attaquent si l'air est sec."}
+  {g:'Monstera',n:'Monstera',lat:'Monstera deliciosa',e:'🌿',light:'Lumière vive indirecte',water:7,winter:12,hum:'Moyenne à élevée',temp:'18-27 °C',tox:1,diff:'Facile',tip:"Essuie les feuilles, elle respire mieux. Tuteur si elle penche.",lvl:4,pb:"Feuilles sans découpes|Pas assez de lumière, rapproche-la d'une fenêtre.;Taches brunes sèches sur les bords|Air trop sec ou excès d'engrais.;Tiges qui s'étirent|Manque de lumière, elle cherche la fenêtre."},
+  {g:'Ficus',n:'Ficus lyrata',lat:'Ficus lyrata',e:'🌳',light:'Lumière vive indirecte',water:7,winter:12,hum:'Moyenne',temp:'18-24 °C',tox:1,diff:'Difficile',tip:"Déteste être déplacé. Trouve-lui une place et n'y touche plus.",lvl:4,pb:"Chute brutale des feuilles|Courant d'air, déplacement ou choc thermique.;Taches brunes au centre des feuilles|Excès d'eau, laisse sécher davantage."},
+  {g:'Ficus',n:'Ficus elastica',lat:'Ficus elastica',e:'🌱',light:'Lumière vive indirecte',water:8,winter:14,hum:'Moyenne',temp:'16-24 °C',tox:1,diff:'Facile',tip:"Laisse sécher les 3 premiers cm avant d'arroser.",lvl:4,pb:"Feuilles du bas qui jaunissent et tombent|Arrosage trop fréquent.;Feuilles ternes|Poussière : essuie-les avec un chiffon humide."},
+  {g:'Sansevieria',n:'Sansevieria',lat:'Dracaena trifasciata',e:'🗡',light:"Tolère tout, même l'ombre",water:18,winter:30,hum:'Faible',temp:'15-27 °C',tox:1,diff:'Très facile',tip:"La tuer, c'est l'arroser trop. En cas de doute, n'arrose pas.",lvl:2,pb:"Base molle et brune|Pourriture racinaire, tu arroses trop.;Feuilles qui se plient|Au contraire, elle a soif depuis longtemps."},
+  {g:'Zamioculcas',n:'ZZ plant',lat:'Zamioculcas zamiifolia',e:'🌿',light:'Faible à moyenne',water:18,winter:28,hum:'Faible',temp:'15-26 °C',tox:1,diff:'Très facile',tip:"Ses rhizomes stockent l'eau : elle pardonne les oublis, pas les excès.",lvl:2,pb:"Tiges jaunes à la base|Excès d'eau, quasi toujours.;Feuilles pâles|Trop de soleil direct."},
+  {g:'Epipremnum',n:'Pothos',lat:'Epipremnum aureum',e:'🍃',light:'Moyenne, tolère le faible',water:8,winter:12,hum:'Moyenne',temp:'17-27 °C',tox:1,diff:'Très facile',tip:"Bouture dans l'eau : ça marche à tous les coups.",lvl:3,pb:"Feuilles jaunes|Trop d'eau, laisse sécher entre deux arrosages.;Panachure qui disparaît|Manque de lumière."},
+  {g:'Spathiphyllum',n:'Spathiphyllum',lat:'Spathiphyllum wallisii',e:'🤍',light:'Moyenne à faible',water:5,winter:8,hum:'Élevée',temp:'18-25 °C',tox:1,diff:'Facile',tip:"Elle s'affaisse quand elle a soif, et repart en une heure après l'arrosage.",lvl:2,pb:"Pointes brunes|Eau calcaire ou air sec.;Ne fleurit plus|Trop d'ombre, ou pot trop grand."},
+  {g:'Chlorophytum',n:'Plante araignée',lat:'Chlorophytum comosum',e:'🕷',light:'Vive indirecte',water:7,winter:11,hum:'Moyenne',temp:'15-25 °C',tox:0,diff:'Très facile',tip:"Pointes brunes = eau trop calcaire. Passe à l'eau filtrée.",lvl:3,pb:"Pointes brunes|Fluor et chlore de l'eau du robinet.;Peu de rejets|Manque de lumière ou pot trop grand."},
+  {g:'Dracaena',n:'Dracaena',lat:'Dracaena marginata',e:'🌴',light:'Moyenne à vive indirecte',water:12,winter:18,hum:'Moyenne',temp:'18-26 °C',tox:1,diff:'Facile',tip:"Sensible au fluor de l'eau du robinet. Laisse reposer l'eau 24 h.",lvl:3,pb:"Pointes sèches|Eau du robinet trop dure.;Feuilles molles|Froid ou courant d'air."},
+  {g:'Aloe',n:'Aloe vera',lat:'Aloe barbadensis',e:'🌵',light:'Plein soleil à vive',water:18,winter:30,hum:'Faible',temp:'15-27 °C',tox:1,diff:'Très facile',tip:"Terreau de cactus obligatoire, et un pot percé.",lvl:5,pb:"Feuilles fines et enroulées|Elle a soif.;Feuilles translucides et molles|Excès d'eau, danger immédiat."},
+  {g:'Crassula',n:'Arbre de jade',lat:'Crassula ovata',e:'💎',light:'Vive, un peu de soleil direct',water:16,winter:28,hum:'Faible',temp:'15-24 °C',tox:1,diff:'Facile',tip:"Feuilles ridées = elle a soif. Feuilles molles = trop d'eau.",lvl:5,pb:"Chute des feuilles au moindre contact|Stress hydrique, souvent excès d'eau.;Taches noires|Pourriture, réduis fortement l'arrosage."},
+  {g:'Echeveria',n:'Echeveria',lat:'Echeveria elegans',e:'🌸',light:'Plein soleil',water:14,winter:25,hum:'Faible',temp:'15-25 °C',tox:0,diff:'Facile',tip:"Arrose au pied, jamais sur la rosette : elle pourrit.",lvl:5,pb:"Rosette qui s'étire vers le haut|Manque criant de lumière.;Cœur qui noircit|Eau tombée dans la rosette."},
+  {g:'Calathea',n:'Calathea',lat:'Calathea orbifolia',e:'🎋',light:'Moyenne indirecte, jamais direct',water:5,winter:8,hum:'Très élevée',temp:'18-26 °C',tox:0,diff:'Difficile',tip:"Eau non calcaire et humidité élevée, sinon les bords brunissent.",lvl:3,pb:"Bords bruns et croustillants|Air trop sec, ou eau calcaire.;Feuilles qui s'enroulent|Elle a soif, ou l'air est trop sec."},
+  {g:'Maranta',n:'Maranta',lat:'Maranta leuconeura',e:'🙏',light:'Moyenne indirecte',water:5,winter:8,hum:'Élevée',temp:'18-26 °C',tox:0,diff:'Moyenne',tip:"Elle replie ses feuilles la nuit, c'est normal et bon signe.",lvl:3,pb:"Feuilles qui restent repliées le jour|Manque de lumière.;Taches brunes|Eau du robinet, passe à l'eau filtrée."},
+  {g:'Philodendron',n:'Philodendron',lat:'Philodendron hederaceum',e:'💚',light:'Moyenne à vive indirecte',water:8,winter:12,hum:'Moyenne',temp:'18-27 °C',tox:1,diff:'Très facile',tip:"Pince les tiges pour la rendre plus touffue.",lvl:3,pb:"Tiges longues et feuilles espacées|Pas assez de lumière.;Feuilles jaunes|Trop d'eau."},
+  {g:'Anthurium',n:'Anthurium',lat:'Anthurium andraeanum',e:'❤️',light:'Vive indirecte',water:6,winter:10,hum:'Élevée',temp:'18-27 °C',tox:1,diff:'Moyenne',tip:"Pas de fleurs ? Il lui manque de la lumière.",lvl:4,pb:"Pas de fleurs|Lumière insuffisante.;Feuilles jaunes|Excès d'eau ou pot trop grand."},
+  {g:'Begonia',n:'Bégonia',lat:'Begonia rex',e:'🌺',light:'Moyenne indirecte',water:6,winter:10,hum:'Élevée',temp:'18-24 °C',tox:1,diff:'Moyenne',tip:"Jamais d'eau sur le feuillage, il tache et moisit.",lvl:3,pb:"Taches blanches poudreuses|Oïdium, air humide et stagnant.;Feuilles qui tombent|Arrosage irrégulier."},
+  {g:'Peperomia',n:'Peperomia',lat:'Peperomia obtusifolia',e:'🪴',light:'Moyenne à vive indirecte',water:11,winter:18,hum:'Moyenne',temp:'18-26 °C',tox:0,diff:'Facile',tip:"Feuilles charnues : elle stocke, donc arrose peu.",lvl:3,pb:"Feuilles molles|Excès d'eau.;Chute des feuilles|Coup de froid."},
+  {g:'Hoya',n:'Hoya',lat:'Hoya carnosa',e:'⭐',light:'Vive indirecte',water:12,winter:20,hum:'Moyenne',temp:'16-27 °C',tox:0,diff:'Facile',tip:"Ne coupe pas les tiges florales fanées, elles refleurissent dessus.",lvl:4,pb:"Ne fleurit jamais|Trop jeune, ou pas assez de lumière.;Feuilles ridées|Elle a soif."},
+  {g:'Scindapsus',n:'Scindapsus',lat:'Scindapsus pictus',e:'🥈',light:'Moyenne indirecte',water:9,winter:14,hum:'Moyenne',temp:'18-27 °C',tox:1,diff:'Facile',tip:"Les taches argentées pâlissent si elle manque de lumière.",lvl:3,pb:"Taches argentées qui pâlissent|Manque de lumière.;Feuilles jaunes|Trop d'eau."},
+  {g:'Alocasia',n:'Alocasia',lat:'Alocasia amazonica',e:'🔺',light:'Vive indirecte',water:6,winter:12,hum:'Très élevée',temp:'18-27 °C',tox:2,diff:'Difficile',tip:"Repos hivernal : elle peut perdre ses feuilles, ne la jette pas.",lvl:4,pb:"Gouttes d'eau au bout des feuilles|Normal, elle transpire.;Perte totale des feuilles|Repos hivernal, garde le rhizome au sec."},
+  {g:'Strelitzia',n:'Oiseau de paradis',lat:'Strelitzia nicolai',e:'🦜',light:'Très vive, soleil direct toléré',water:8,winter:14,hum:'Moyenne',temp:'18-27 °C',tox:1,diff:'Moyenne',tip:"Feuilles fendues = normal, c'est sa façon de résister au vent.",lvl:5,pb:"Feuilles qui ne se fendent pas|Jeune plant, ou trop peu de vent et de lumière.;Bords bruns|Air sec ou eau calcaire."},
+  {g:'Yucca',n:'Yucca',lat:'Yucca elephantipes',e:'🌵',light:'Vive à soleil direct',water:15,winter:25,hum:'Faible',temp:'15-27 °C',tox:1,diff:'Facile',tip:"Tronc mou à la base = pourriture, c'est souvent irréversible.",lvl:5,pb:"Tronc mou|Pourriture, souvent irréversible.;Pointes brunes|Air sec."},
+  {g:'Cactus',n:'Cactus',lat:'Cactaceae',e:'🌵',light:'Plein soleil',water:20,winter:45,hum:'Faible',temp:'12-30 °C',tox:0,diff:'Très facile',tip:"En hiver, arrête presque totalement l'arrosage.",lvl:5,pb:"Corps mou et jaunissant|Excès d'eau.;Étirement pâle vers le haut|Manque de soleil."},
+  {g:'Nephrolepis',n:'Fougère de Boston',lat:'Nephrolepis exaltata',e:'🌿',light:'Moyenne indirecte',water:4,winter:6,hum:'Très élevée',temp:'16-24 °C',tox:0,diff:'Moyenne',tip:"Le substrat ne doit jamais sécher complètement.",lvl:3,pb:"Frondes sèches et brunes|Air trop sec, augmente l'humidité.;Frondes pâles|Trop de lumière directe."},
+  {g:'Asplenium',n:"Fougère nid d'oiseau",lat:'Asplenium nidus',e:'🪶',light:'Moyenne à faible',water:6,winter:9,hum:'Élevée',temp:'18-26 °C',tox:0,diff:'Facile',tip:"Arrose le terreau, jamais le cœur de la rosette.",lvl:2,pb:"Bords bruns|Air sec ou eau calcaire.;Cœur qui pourrit|Tu as arrosé dans la rosette."},
+  {g:'Aglaonema',n:'Aglaonema',lat:'Aglaonema commutatum',e:'🎨',light:'Faible à moyenne',water:9,winter:15,hum:'Moyenne',temp:'18-27 °C',tox:1,diff:'Très facile',tip:"Une des rares belles plantes qui prospère loin des fenêtres.",lvl:2,pb:"Feuilles qui s'affaissent|Froid ou excès d'eau.;Taches jaunes|Soleil direct."},
+  {g:'Tradescantia',n:'Misère',lat:'Tradescantia zebrina',e:'💜',light:'Vive indirecte',water:6,winter:10,hum:'Moyenne',temp:'16-26 °C',tox:1,diff:'Très facile',tip:"Rabats-la sévèrement quand elle se dégarnit, elle repart.",lvl:4,pb:"Base dégarnie|Normal, rabats-la sévèrement.;Couleurs ternes|Manque de lumière."},
+  {g:'Pilea',n:'Pilea',lat:'Pilea peperomioides',e:'🪙',light:'Vive indirecte',water:8,winter:13,hum:'Moyenne',temp:'16-24 °C',tox:0,diff:'Facile',tip:"Tourne le pot d'un quart de tour par semaine, sinon elle penche.",lvl:4,pb:"Elle penche d'un côté|Tourne le pot régulièrement.;Feuilles qui tombent|Excès d'eau ou courant d'air froid."},
+  {g:'Schefflera',n:'Schefflera',lat:'Schefflera arboricola',e:'☂️',light:'Vive indirecte',water:9,winter:15,hum:'Moyenne',temp:'16-24 °C',tox:1,diff:'Facile',tip:"Perd ses feuilles du bas si elle manque de lumière.",lvl:4,pb:"Chute des feuilles du bas|Manque de lumière.;Feuilles collantes|Cochenilles, inspecte le dessous."},
+  {g:'Orchidaceae',n:'Orchidée',lat:'Phalaenopsis',e:'🌸',light:'Vive indirecte',water:7,winter:10,hum:'Élevée',temp:'18-27 °C',tox:0,diff:'Moyenne',tip:"Trempage 10 min puis égouttage complet. Jamais d'eau stagnante.",lvl:4,pb:"Racines vertes puis grises|Normal, elles verdissent mouillées.;Boutons qui tombent|Changement d'emplacement ou courant d'air."},
+  {g:'Citrus',n:'Citronnier',lat:'Citrus limon',e:'🍋',light:'Plein soleil',water:6,winter:11,hum:'Moyenne',temp:'12-28 °C',tox:0,diff:'Difficile',tip:"Engrais spécial agrumes de mars à septembre, sinon feuilles jaunes.",lvl:5,pb:"Feuilles jaunes à nervures vertes|Chlorose, il manque de fer.;Chute des fruits|Arrosage irrégulier."},
+  {g:'Olea',n:'Olivier',lat:'Olea europaea',e:'🫒',light:'Plein soleil',water:10,winter:20,hum:'Faible',temp:'5-30 °C',tox:0,diff:'Moyenne',tip:"En intérieur il souffre : sors-le dès que possible.",lvl:5,pb:"Feuilles qui tombent en intérieur|Manque de lumière, sors-le.;Feuilles grises et sèches|Il a soif."},
+  {g:'Basilicum',n:'Basilic',lat:'Ocimum basilicum',e:'🌿',light:'Plein soleil',water:2,winter:4,hum:'Moyenne',temp:'18-28 °C',tox:0,diff:'Moyenne',tip:"Pince les fleurs dès qu'elles pointent, sinon les feuilles amèrent.",lvl:5,pb:"Il monte en fleurs|Pince les sommets sans attendre.;Feuilles qui noircissent|Coup de froid ou excès d'eau."},
+  {g:'Mentha',n:'Menthe',lat:'Mentha spicata',e:'🍃',light:'Vive, mi-ombre',water:3,winter:5,hum:'Moyenne',temp:'15-25 °C',tox:0,diff:'Très facile',tip:"Envahissante : garde-la dans son propre pot.",lvl:4,pb:"Feuilles rouillées|Champignon, aère et espace les tiges.;Tiges nues à la base|Rabats-la, elle repartira."},
+  {g:'Euphorbia',n:'Euphorbe',lat:'Euphorbia trigona',e:'🌵',light:'Vive à soleil direct',water:16,winter:30,hum:'Faible',temp:'15-27 °C',tox:2,diff:'Facile',tip:"Sève blanche irritante : gants pour la manipuler.",lvl:5,pb:"Sève blanche à la coupe|Normal mais irritant, mets des gants.;Tige molle|Pourriture par excès d'eau."},
+  {g:'Kalanchoe',n:'Kalanchoé',lat:'Kalanchoe blossfeldiana',e:'🌼',light:'Vive, un peu de direct',water:12,winter:20,hum:'Faible',temp:'15-25 °C',tox:1,diff:'Facile',tip:"Pour refleurir : 6 semaines à 14 h d'obscurité par jour.",lvl:4,pb:"Ne refleurit pas|Il lui faut des nuits longues et noires.;Feuilles molles|Excès d'eau."},
+  {g:'Syngonium',n:'Syngonium',lat:'Syngonium podophyllum',e:'🔰',light:'Moyenne indirecte',water:7,winter:11,hum:'Élevée',temp:'18-27 °C',tox:1,diff:'Facile',tip:"Grimpe si tu lui donnes un tuteur, retombe sinon.",lvl:3,pb:"Feuilles qui perdent leur panachure|Manque de lumière.;Tiges qui retombent|Normal sans tuteur."},
+  {g:'Fittonia',n:'Fittonia',lat:'Fittonia albivenis',e:'🩸',light:'Moyenne indirecte',water:3,winter:5,hum:'Très élevée',temp:'18-26 °C',tox:0,diff:'Moyenne',tip:"S'effondre dramatiquement si elle a soif, puis repart. Idéale en terrarium.",lvl:3,pb:"Effondrement soudain|Elle a soif, elle repart après arrosage.;Bords secs|Air trop sec."},
+  {g:'Hedera',n:'Lierre',lat:'Hedera helix',e:'🍀',light:'Moyenne indirecte',water:6,winter:10,hum:'Élevée',temp:'10-22 °C',tox:1,diff:'Facile',tip:"Aime le frais. Les araignées rouges l'attaquent si l'air est sec.",lvl:3,pb:"Toiles fines sous les feuilles|Araignées rouges, air trop sec.;Feuilles sèches|Trop de chaleur."}
 ];
 const TOX = ['Non toxique','Toxique si ingéré','Très toxique'];
 
@@ -616,14 +703,31 @@ function renderCare(q){
   });
 }
 function openCare(c){
+  const pbs=(c.pb||'').split(';').filter(Boolean).map(x=>x.split('|'));
   $('careSheetBody').innerHTML=
     '<div class="sh-t">'+c.e+' '+esc(c.n)+'</div><div class="sh-sub">'+esc(c.lat)+'</div>'+
-    '<div class="care-grid">'+
-      ci('Lumière',c.light)+ci('Arrosage',c.water+' j en été · '+c.winter+' j en hiver')+
-      ci('Humidité',c.hum)+ci('Température',c.temp)+
-      ci('Difficulté',c.diff)+ci('Toxicité',TOX[c.tox])+
-    '</div><div class="note">💡 '+esc(c.tip)+'</div>'+
-    '<div class="acts"><button class="btnw btn-g" id="addFromCare">+ Ajouter à ma collection</button></div>';
+    '<div class="det-seg" id="detSeg">'+
+      '<button type="button" data-d="soin" class="sel">Entretien</button>'+
+      '<button type="button" data-d="exig">Exigences</button>'+
+      '<button type="button" data-d="pb">Probl&egrave;mes</button>'+
+    '</div><div id="detBody"></div>'+
+    '<div class="acts"><button class="btnw btn-g" id="addFromCare">+ Ajouter &agrave; ma collection</button></div>';
+  const panes={
+    soin:'<div class="care-grid">'+ci('Arrosage',c.water+' j en été · '+c.winter+' j en hiver')+
+         ci('Lumière',c.light)+'</div><div class="note">💡 '+esc(c.tip)+'</div>',
+    exig:'<div class="care-grid">'+ci('Lumière',LVL_NAME[c.lvl]+' — '+c.light)+ci('Humidité',c.hum)+
+         ci('Température',c.temp)+ci('Difficulté',c.diff)+ci('Toxicité',TOX[c.tox])+
+         ci('Rythme',c.water+' j / '+c.winter+' j')+'</div>',
+    pb: pbs.length? pbs.map(x=>'<div class="pb-row"><span class="pb-ico">⚠️</span><div>'+
+          '<div class="pb-s">'+esc(x[0])+'</div><div class="pb-c">'+esc(x[1]||'')+'</div></div></div>').join('')
+        : '<div class="note">Aucun problème courant recensé pour cette espèce.</div>'
+  };
+  function showPane(k){
+    $('detBody').innerHTML=panes[k];
+    $('detSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('sel',b.dataset.d===k));
+  }
+  $('detSeg').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>showPane(b.dataset.d)));
+  showPane('soin');
   $('addFromCare').addEventListener('click',()=>{
     closeSheets();
     setTimeout(()=>{ openPlant(null);
@@ -707,13 +811,171 @@ function maybeNotify(){
     {body:due.map(p=>p.nickname).join(', '),icon:'icon-192.png'}); }catch(e){}
 }
 
+/* ══════════ Outils ══════════ */
+
+const LVL_NAME = ['', 'Ombre', 'Faible', 'Moyenne', 'Vive', 'Plein soleil'];
+
+/* ── Posemètre ──
+   Le navigateur n'expose ni le temps de pose ni l'ISO sur iOS : impossible
+   de sortir des lux absolus. On mesure donc la luminance moyenne de l'image
+   et on la classe en paliers, ce qui suffit pour dire « cette plante est
+   trop loin de la fenêtre ». C'est indicatif, pas photométrique. */
+let lmStream = null, lmRAF = null, lmSmooth = null;
+
+async function lmStart() {
+  try {
+    lmStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 640 } }, audio: false
+    });
+  } catch (e) {
+    const v = $('lmVerdict');
+    v.className = 'lm-verdict bad';
+    v.textContent = "Accès à la caméra refusé. Autorise-le pour Safari dans Réglages › Safari › Caméra.";
+    return;
+  }
+  const v = $('lmVideo');
+  v.srcObject = lmStream; v.play().catch(() => {});
+  $('lmStartBtn').textContent = 'Arrêter';
+  $('lmStage').classList.add('on');
+  lmSmooth = null;
+  lmLoop();
+}
+function lmStop() {
+  if (lmRAF) { cancelAnimationFrame(lmRAF); lmRAF = null; }
+  if (lmStream) { lmStream.getTracks().forEach(t => t.stop()); lmStream = null; }
+  $('lmStartBtn').textContent = 'Démarrer la mesure';
+  $('lmStage').classList.remove('on');
+}
+function lmLoop() {
+  const v = $('lmVideo'), cv = $('lmCanvas');
+  if (!lmStream || !v.videoWidth) { lmRAF = requestAnimationFrame(lmLoop); return; }
+  const W = 64, H = 48;
+  cv.width = W; cv.height = H;
+  const g = cv.getContext('2d', { willReadFrequently: true });
+  g.drawImage(v, 0, 0, W, H);
+  const d = g.getImageData(0, 0, W, H).data;
+  let sum = 0;
+  for (let i = 0; i < d.length; i += 4) {
+    // luminance perceptuelle, puis retour en lineaire (le capteur applique un gamma)
+    const l = (0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2]) / 255;
+    sum += Math.pow(l, 2.2);
+  }
+  const lin = sum / (d.length / 4);
+  lmSmooth = lmSmooth == null ? lin : lmSmooth * 0.85 + lin * 0.15;
+  lmRender(lmSmooth);
+  lmRAF = requestAnimationFrame(lmLoop);
+}
+function lmLevel(x) {
+  if (x < 0.012) return 1;
+  if (x < 0.045) return 2;
+  if (x < 0.14)  return 3;
+  if (x < 0.34)  return 4;
+  return 5;
+}
+function lmRender(x) {
+  const lvl = lmLevel(x);
+  const pct = Math.min(100, Math.round(Math.pow(x, 0.42) * 118));
+  $('lmFill').style.width = pct + '%';
+  $('lmLevel').textContent = LVL_NAME[lvl];
+  $('lmLevel').style.color = ['', '#6b7686', '#6fb6e8', '#5fd68a', '#e0b25c', '#f0776a'][lvl];
+  const sel = $('lmPlant').value;
+  const c = sel ? CARE.find(k => k.lat === sel) : null;
+  const v = $('lmVerdict');
+  if (!c) { v.textContent = 'Choisis une plante pour comparer.'; v.className = 'lm-verdict'; return; }
+  const d = lvl - c.lvl;
+  if (d === 0)      { v.textContent = '✅ Emplacement idéal pour ' + c.n; v.className = 'lm-verdict good'; }
+  else if (d === -1){ v.textContent = '🔸 Un peu sombre — rapproche-la de la fenêtre'; v.className = 'lm-verdict warn'; }
+  else if (d <= -2) { v.textContent = '❌ Beaucoup trop sombre pour ' + c.n; v.className = 'lm-verdict bad'; }
+  else if (d === 1) { v.textContent = '🔸 Un peu trop lumineux — recule-la un peu'; v.className = 'lm-verdict warn'; }
+  else              { v.textContent = '❌ Bien trop lumineux, risque de brûlure'; v.className = 'lm-verdict bad'; }
+}
+
+/* ── Calculateur d'arrosage ──
+   Volume ≈ 6 à 10 % du volume de terre selon les besoins de l'espèce. */
+function waterCalc() {
+  const d = Math.max(4, parseFloat($('wcDia').value) || 15);
+  const sel = $('wcPlant').value;
+  const c = sel ? CARE.find(k => k.lat === sel) : null;
+  const r = d / 2, h = d * 0.85;                       // pot ~ légèrement moins haut que large
+  const litres = Math.PI * r * r * h / 1000;           // cm³ → L
+  const part = c ? (c.water <= 5 ? 0.11 : c.water <= 10 ? 0.085 : 0.055) : 0.08;
+  const ml = Math.round(litres * part * 1000 / 10) * 10;
+  $('wcOut').innerHTML = '<div class="wc-big">' + ml + ' ml</div>' +
+    '<div class="wc-sub">pot de ' + d + ' cm · ~' + litres.toFixed(1) + ' L de terre' +
+    (c ? ' · ' + esc(c.n) : '') + '</div>' +
+    '<div class="note" style="margin-top:12px">Arrose lentement jusqu\'à ce que l\'eau perle au fond, puis vide la soucoupe au bout de 15 min. ' +
+    (c ? 'Pour ' + esc(c.n) + ', compte environ tous les <strong>' + c.water + ' jours</strong> en été.' : '') + '</div>';
+}
+
+/* ── Calendrier lunaire ──
+   Phase calculée depuis une nouvelle lune de référence : aucun réseau requis. */
+function moonPhase(date) {
+  // Une simple division par le mois synodique derive jusqu'a 1,3 jour : l'orbite
+  // est elliptique. On calcule l'ecart des longitudes ecliptiques Lune - Soleil,
+  // avec les termes principaux — precision de l'ordre de 0,2 jour, sans reseau.
+  const n = date.getTime() / 86400000 - 10957.5;       // jours depuis J2000.0
+  const rad = Math.PI / 180, norm = x => ((x % 360) + 360) % 360;
+  const Ls = 280.460 + 0.9856474 * n;                  // longitude moyenne du Soleil
+  const gs = norm(357.528 + 0.9856003 * n) * rad;      // anomalie moyenne du Soleil
+  const lonSun = norm(Ls + 1.915 * Math.sin(gs) + 0.020 * Math.sin(2 * gs));
+  const Lm = 218.316 + 13.176396 * n;                  // longitude moyenne de la Lune
+  const Mm = norm(134.963 + 13.064993 * n) * rad;      // anomalie moyenne de la Lune
+  const D  = norm(297.850 + 12.190749 * n) * rad;      // elongation moyenne
+  const lonMoon = norm(Lm + 6.289 * Math.sin(Mm) + 1.274 * Math.sin(2 * D - Mm)
+                          + 0.658 * Math.sin(2 * D));
+  return norm(lonMoon - lonSun) / 360;                 // 0 = nouvelle, 0.5 = pleine
+}
+const MOON = [
+  { n: 'Nouvelle lune',      e: '🌑', t: "Repos. Bon moment pour désherber, nettoyer les pots et laisser la terre respirer." },
+  { n: 'Premier croissant',  e: '🌒', t: "La sève monte. Sème et bouture : l'enracinement démarre bien." },
+  { n: 'Premier quartier',   e: '🌓', t: "Croissance des parties aériennes. Rempote, et arrose plus généreusement." },
+  { n: 'Lune gibbeuse',      e: '🌔', t: "Pleine vigueur. Apporte l'engrais, la plante l'absorbe efficacement." },
+  { n: 'Pleine lune',        e: '🌕', t: "Sève au maximum. Récolte les aromatiques, leur parfum est le plus fort." },
+  { n: 'Lune gibbeuse déc.', e: '🌖', t: "La sève redescend. Bon moment pour tailler sans épuiser la plante." },
+  { n: 'Dernier quartier',   e: '🌗', t: "Travail racinaire. Divise les touffes et repique les boutures enracinées." },
+  { n: 'Dernier croissant',  e: '🌘', t: "Fin de cycle. Traite contre les parasites et allège les arrosages." }
+];
+function renderMoon() {
+  const a = moonPhase(new Date());
+  const idx = Math.floor(a * 8 + 0.5) % 8;
+  const m = MOON[idx];
+  const jours = Math.round((1 - a) * 29.53);
+  $('moonOut').innerHTML =
+    '<div class="moon-face">' + m.e + '</div>' +
+    '<div class="moon-n">' + m.n + '</div>' +
+    '<div class="moon-s">' + Math.round(a * 100) + ' % du cycle · nouvelle lune dans ' + jours + ' j</div>' +
+    '<div class="note" style="margin-top:14px;text-align:left">' + m.t + '</div>' +
+    '<div class="moon-row">' + MOON.map((x, i) =>
+      '<div class="moon-p' + (i === idx ? ' on' : '') + '"><span>' + x.e + '</span></div>').join('') + '</div>';
+}
+
+/* ── Remplissage des sélecteurs ── */
+function fillPlantSelects() {
+  const opts = '<option value="">— choisir —</option>' +
+    CARE.slice().sort((a, b) => a.n.localeCompare(b.n))
+      .map(c => '<option value="' + esc(c.lat) + '">' + esc(c.n) + '</option>').join('');
+  ['lmPlant', 'wcPlant'].forEach(id => { const e = $(id); if (e) e.innerHTML = opts; });
+}
+
 /* ══════════ Navigation ══════════ */
+document.getElementById('toolSeg').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+  document.getElementById('toolSeg').querySelectorAll('button').forEach(x=>x.classList.toggle('sel',x===b));
+  ['lm','wc','mn'].forEach(k=>$('pane'+k[0].toUpperCase()+k[1]).classList.toggle('on',k===b.dataset.t));
+  if(b.dataset.t!=='lm') lmStop();
+  if(b.dataset.t==='mn') renderMoon();
+}));
+$('lmStartBtn').addEventListener('click',()=>{ lmStream?lmStop():lmStart(); });
+$('lmPlant').addEventListener('change',()=>{ if(lmSmooth!=null) lmRender(lmSmooth); });
+$('wcBtn').addEventListener('click',waterCalc);
+
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===t));
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('hidden',v.id!==t.dataset.v));
   if(t.dataset.v==='vSet')renderSet();
   if(t.dataset.v==='vCare')renderCare($('careSearch').value);
   if(t.dataset.v==='vPlants')renderPlants();
+  if(t.dataset.v==='vTools')renderMoon();
+  if(t.dataset.v!=='vTools')lmStop();   // libere la camera en quittant
 }));
 const backdrop=$('backdrop');
 function openSheet(id){backdrop.classList.add('on');$(id).classList.add('on');}
@@ -725,7 +987,7 @@ async function refresh(){ PLANTS=await dbAll(); renderPlants(); }
 (async()=>{
   try{ await openDB(); }catch(e){ toast('Stockage indisponible'); }
   await refresh();
-  renderOrgans(); renderCare('');
+  renderOrgans(); renderCare(''); fillPlantSelects(); renderMoon();
   maybeNotify();
 })();
 
