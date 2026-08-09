@@ -271,7 +271,23 @@
       text-align: center; font-size: 10px;
       color: #2e2e2e; letter-spacing: 1.5px;
     }
-  </style>
+    .srv-toggle{background:none;border:none;color:rgba(255,255,255,.35);font-size:12px;
+    font-family:inherit;padding:10px;margin-top:6px;cursor:pointer;letter-spacing:.04em}
+  .srv-toggle:active{color:rgba(255,255,255,.6)}
+  .srv-box{display:none;width:100%;max-width:420px;margin:4px auto 0;text-align:left;
+    background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);
+    border-radius:16px;padding:16px}
+  .srv-box.on{display:block}
+  .srv-box label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    color:rgba(255,255,255,.4);margin-bottom:6px}
+  .srv-box input{width:100%;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.12);
+    color:#fff;padding:11px 12px;border-radius:11px;font-size:14px;font-family:inherit}
+  .srv-save{width:100%;margin-top:12px;padding:12px;border:none;border-radius:11px;
+    background:rgba(255,255,255,.9);color:#000;font-size:14px;font-weight:700;font-family:inherit}
+  .srv-save:active{opacity:.75}
+  .srv-note{font-size:11.5px;line-height:1.55;color:rgba(255,255,255,.42);margin-top:12px}
+  .srv-note strong{color:rgba(255,255,255,.7)}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -367,6 +383,20 @@
     <span class="plat">Twitch</span>
     <span class="plat">Pinterest</span>
     <span class="plat">Reddit</span>
+  </div>
+
+  <button class="srv-toggle" id="srvToggle">&#9881;&#65039; Serveur Cobalt</button>
+  <div class="srv-box" id="srvBox">
+    <label for="srvUrl">Adresse de l'instance</label>
+    <input type="url" id="srvUrl" placeholder="https://mon-instance.exemple/"
+      autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+    <label for="srvKey" style="margin-top:10px">Cl&#233; d'API (si l'instance en demande une)</label>
+    <input type="text" id="srvKey" placeholder="laisser vide si non requise"
+      autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+    <button class="srv-save" id="srvSave">Enregistrer</button>
+    <p class="srv-note">L'instance publique <strong>api.cobalt.tools</strong> a &#233;t&#233; ferm&#233;e aux
+      requ&#234;tes anonymes par ses mainteneurs. Il faut d&#233;sormais pointer l'app vers une instance
+      Cobalt que tu h&#233;berges toi-m&#234;me, ou &#224; laquelle tu as acc&#232;s.</p>
   </div>
 
   <div class="footer">BLACKHOLE · COBALT</div>
@@ -479,6 +509,28 @@
     errCard.classList.remove('show');
   }
 
+  /* ── Panneau serveur ── */
+  const srvToggle = document.getElementById('srvToggle');
+  const srvBox    = document.getElementById('srvBox');
+  const srvUrlIn  = document.getElementById('srvUrl');
+  const srvKeyIn  = document.getElementById('srvKey');
+  const srvSave   = document.getElementById('srvSave');
+  srvToggle.addEventListener('click', () => {
+    srvBox.classList.toggle('on');
+    if (srvBox.classList.contains('on')) {
+      srvUrlIn.value = localStorage.getItem('cobalt_srv') || '';
+      srvKeyIn.value = localStorage.getItem('cobalt_key') || '';
+    }
+  });
+  srvSave.addEventListener('click', () => {
+    const u = srvUrlIn.value.trim();
+    if (u) localStorage.setItem('cobalt_srv', u); else localStorage.removeItem('cobalt_srv');
+    const k = srvKeyIn.value.trim();
+    if (k) localStorage.setItem('cobalt_key', k); else localStorage.removeItem('cobalt_key');
+    srvBox.classList.remove('on');
+    setStatus('Serveur enregistré', u || 'instance par défaut');
+  });
+
   /* ── Download flow ── */
   async function startDownload(url) {
     isLoading = true;
@@ -504,12 +556,22 @@
     isLoading = false;
   }
 
+  /* L'instance publique api.cobalt.tools ne repond plus aux requetes anonymes :
+     l'adresse du serveur est donc reglable, avec cle facultative. */
+  const SRV_K = 'cobalt_srv', KEY_K = 'cobalt_key';
+  const srvUrl = () => (localStorage.getItem(SRV_K) || 'https://api.cobalt.tools/').trim();
+  const srvKey = () => (localStorage.getItem(KEY_K) || '').trim();
+
   async function cobalt(url) {
     let res;
+    const endpoint = srvUrl().endsWith('/') ? srvUrl() : srvUrl() + '/';
+    const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
+    const k = srvKey();
+    if (k) headers['Authorization'] = k.startsWith('Api-Key ') ? k : 'Api-Key ' + k;
     try {
-      res = await fetch('https://api.cobalt.tools/', {
+      res = await fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        headers,
         body: JSON.stringify({
           url,
           videoQuality: qualitySel.value,
@@ -518,8 +580,16 @@
         })
       });
     } catch {
-      throw new Error('Impossible de contacter le serveur. Vérifie ta connexion.');
+      throw new Error(
+        endpoint.indexOf('api.cobalt.tools') >= 0
+          ? "L'instance publique de Cobalt est fermée. Ouvre « Serveur Cobalt » en bas et indique ta propre instance."
+          : "Impossible de joindre " + endpoint + ". Vérifie l'adresse et ta connexion."
+      );
     }
+    if (res.status === 401 || res.status === 403)
+      throw new Error("Le serveur refuse la requête : il attend une clé d'API. Renseigne-la dans « Serveur Cobalt ».");
+    if (res.status === 404)
+      throw new Error("Adresse d'instance introuvable. Vérifie l'URL dans « Serveur Cobalt ».");
 
     let d;
     try { d = await res.json(); } catch { throw new Error('Réponse serveur invalide.'); }
