@@ -168,6 +168,28 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent;cursor:pointe
   border-radius:13px;font-size:13.5px;font-weight:600;opacity:0;pointer-events:none;
   transition:opacity .25s,bottom .25s;white-space:nowrap;max-width:88vw;overflow:hidden;text-overflow:ellipsis}
 .toast.on{opacity:1;bottom:calc(94px + max(env(safe-area-inset-bottom),10px))}
+/* Diagnostic */
+.sym-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.sym{display:flex;align-items:center;gap:8px;padding:11px 11px;border-radius:13px;
+  border:1px solid var(--line);background:var(--surf);color:var(--dim);
+  font-size:12.5px;font-weight:600;font-family:inherit;text-align:left;line-height:1.25;transition:all .18s}
+.sym.sel{border-color:var(--leaf);background:rgba(95,214,138,.13);color:var(--text)}
+.sym span:first-child{font-size:15px;flex-shrink:0}
+.dg{background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:10px;
+  animation:cardIn .3s cubic-bezier(.22,1,.36,1) backwards}
+.dg-top{display:flex;align-items:center;gap:11px}
+.dg-e{font-size:26px;flex-shrink:0}
+.dg-n{font-size:16.5px;font-weight:800;flex:1}
+.dg-p{font-size:12px;font-weight:800;padding:4px 9px;border-radius:8px;flex-shrink:0}
+.dg-p.hi{background:rgba(240,119,106,.18);color:var(--late)}
+.dg-p.md{background:rgba(224,178,92,.18);color:var(--soon)}
+.dg-p.lo{background:rgba(111,182,232,.16);color:var(--info)}
+.dg-c{font-size:13px;color:var(--dim);line-height:1.55;margin-top:10px}
+.dg-h{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--leaf);margin-top:14px}
+.dg-step{display:flex;gap:9px;font-size:13.5px;line-height:1.5;margin-top:8px}
+.dg-num{flex-shrink:0;width:19px;height:19px;border-radius:50%;background:rgba(95,214,138,.16);
+  color:var(--leaf);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.dg-prev{font-size:12.5px;color:var(--dim);line-height:1.5;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
 /* Outils */
 .tool-seg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--surf);padding:4px;border-radius:14px;margin-bottom:16px}
 .tool-seg button{padding:11px 4px;border:none;border-radius:10px;background:transparent;color:var(--dim);
@@ -228,19 +250,51 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent;cursor:pointe
   <button class="fab" id="addPlantBtn" aria-label="Ajouter">+</button>
 </div>
 
-<!-- IDENTIFIER -->
+<!-- IDENTIFIER / DIAGNOSTIC -->
 <div class="view hidden" id="vId">
-  <div class="vhdr"><h1>Identifier</h1></div>
+  <div class="vhdr"><h1 id="idTitle">Identifier</h1></div>
   <div class="scroll">
-    <button class="shot" id="shotBox">
-      <span class="shot-ico">&#128247;</span>
-      <span style="font-size:14px;font-weight:600">Prendre ou choisir une photo</span>
-      <span style="font-size:12px">Cadre bien l'organe (feuille, fleur&#8230;)</span>
-    </button>
-    <input type="file" id="shotFile" accept="image/*" style="display:none">
-    <div class="organ-row" id="organRow"></div>
-    <button class="btnw btn-g" id="idBtn" style="margin-top:14px">Identifier cette plante</button>
-    <div id="idOut" style="margin-top:16px"></div>
+    <div class="tool-seg" id="idSeg">
+      <button type="button" data-m="id" class="sel">&#128269; Identifier</button>
+      <button type="button" data-m="dg">&#129658; Diagnostiquer</button>
+    </div>
+
+    <div class="tool-pane on" id="paneId">
+      <button class="shot" id="shotBox">
+        <span class="shot-ico">&#128247;</span>
+        <span style="font-size:14px;font-weight:600">Prendre ou choisir une photo</span>
+        <span style="font-size:12px">Cadre bien l'organe (feuille, fleur&#8230;)</span>
+      </button>
+      <input type="file" id="shotFile" accept="image/*" style="display:none">
+      <div class="organ-row" id="organRow"></div>
+      <button class="btnw btn-g" id="idBtn" style="margin-top:14px">Identifier cette plante</button>
+      <div id="idOut" style="margin-top:16px"></div>
+    </div>
+
+    <div class="tool-pane" id="paneDg">
+      <div class="tool-seg" id="dgSeg" style="margin-bottom:14px">
+        <button type="button" data-d="sym" class="sel">Par sympt&#244;mes</button>
+        <button type="button" data-d="pho">Par photo</button>
+      </div>
+
+      <div id="dgSym">
+        <p class="note" style="margin:0 0 12px">S&#233;lectionne ce que tu observes. Fonctionne <strong>hors ligne</strong>, sans aucune cl&#233;.</p>
+        <div class="sym-grid" id="symGrid"></div>
+        <button class="btnw btn-g" id="dgBtn" style="margin-top:14px">Analyser</button>
+        <div id="dgOut" style="margin-top:16px"></div>
+      </div>
+
+      <div id="dgPho" style="display:none">
+        <button class="shot" id="dgShotBox">
+          <span class="shot-ico">&#129658;</span>
+          <span style="font-size:14px;font-weight:600">Photo de la partie malade</span>
+          <span style="font-size:12px">Cadre serr&#233; sur les taches ou les insectes</span>
+        </button>
+        <input type="file" id="dgShotFile" accept="image/*" style="display:none">
+        <button class="btnw btn-g" id="dgPhoBtn" style="margin-top:14px">Analyser la photo</button>
+        <div id="dgPhoOut" style="margin-top:16px"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -400,7 +454,8 @@ function dbPut(p){ return new Promise(r=>{ const q=tx('readwrite').put(p); q.ons
 function dbDel(id){ return new Promise(r=>{ const q=tx('readwrite').delete(id); q.onsuccess=()=>r(true); q.onerror=()=>r(false); }); }
 
 const SK='plantes_set';
-let SET=JSON.parse(localStorage.getItem(SK)||'null')||{plantnetKey:'',notify:false,sort:'water'};
+let SET=JSON.parse(localStorage.getItem(SK)||'null')||{plantnetKey:'',plantIdKey:'',notify:false,sort:'water'};
+if(SET.plantIdKey===undefined)SET.plantIdKey='';
 function saveSet(){ localStorage.setItem(SK,JSON.stringify(SET)); }
 let PLANTS=[];
 
@@ -548,7 +603,7 @@ function openPlant(id){
   specIn.addEventListener('input',syncCare);
   syncCare();
   if(p&&p.journal&&p.journal.length){
-    const J={water:['💧','Arrosée'],fertilize:['🌱','Engrais'],repot:['🪴','Rempotée'],prune:['✂️','Taillée'],note:['📝','Note']};
+    const J={water:['💧','Arrosée'],fertilize:['🌱','Engrais'],repot:['🪴','Rempotée'],prune:['✂️','Taillée'],note:['📝','Note'],diag:['🩺','Diagnostic']};
     $('jrn').innerHTML=p.journal.slice(0,14).map(e=>{
       const k=J[e.type]||['•',e.type];
       const d=new Date(e.ts).toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
@@ -683,6 +738,136 @@ function renderResults(rs){
   });
 }
 
+
+/* ── Diagnostic par symptômes ── */
+let symSel = [];
+function renderSym(){
+  const g=$('symGrid'); g.innerHTML='';
+  SYMPT.forEach(x=>{
+    const b=document.createElement('button');
+    b.className='sym'+(symSel.includes(x.id)?' sel':''); b.type='button';
+    b.innerHTML='<span>'+x.e+'</span><span>'+esc(x.n)+'</span>';
+    b.addEventListener('click',()=>{
+      const i=symSel.indexOf(x.id);
+      if(i>=0)symSel.splice(i,1); else symSel.push(x.id);
+      renderSym();
+    });
+    g.appendChild(b);
+  });
+}
+function renderDiagCards(list, out, source){
+  if(!list.length){ out.innerHTML='<div class="note">Aucune piste claire avec ces symptômes. Ajoute-en un ou deux, ou passe par la photo.</div>'; return; }
+  const max=list[0].sc;
+  out.innerHTML='';
+  list.forEach((x,i)=>{
+    const d=x.d, conf=Math.round(x.sc/max*100);
+    const cls=conf>=80?'hi':conf>=50?'md':'lo';
+    const el=document.createElement('div');
+    el.className='dg'; el.style.animationDelay=(i*60)+'ms';
+    el.innerHTML='<div class="dg-top"><span class="dg-e">'+d.e+'</span>'+
+      '<span class="dg-n">'+esc(d.n)+'</span>'+
+      '<span class="dg-p '+cls+'">'+conf+' %</span></div>'+
+      '<div class="dg-c">'+esc(d.cause)+'</div>'+
+      '<div class="dg-h">Que faire</div>'+
+      d.soin.map((t,k)=>'<div class="dg-step"><span class="dg-num">'+(k+1)+'</span><span>'+esc(t)+'</span></div>').join('')+
+      '<div class="dg-prev">🛡 '+esc(d.prev)+'</div>';
+    const save=document.createElement('button');
+    save.className='btnw btn-n'; save.style.marginTop='12px'; save.textContent='Noter dans le journal d\'une plante';
+    save.addEventListener('click',()=>saveDiag(d.n, source));
+    el.appendChild(save);
+    out.appendChild(el);
+  });
+}
+$('dgBtn')&&$('dgBtn').addEventListener('click',()=>{
+  if(!symSel.length){toast('Sélectionne au moins un symptôme');return;}
+  renderDiagCards(diagScore(symSel), $('dgOut'), 'symptômes');
+});
+
+/* Rattache un diagnostic au journal d'une plante. */
+async function saveDiag(nom, source){
+  if(!PLANTS.length){toast('Ajoute d\'abord une plante');return;}
+  const noms=PLANTS.map((p,i)=>(i+1)+'. '+p.nickname).join('\n');
+  const r=prompt('Noter « '+nom+' » dans le journal de quelle plante ?\n\n'+noms,'1');
+  const i=parseInt(r)-1;
+  if(isNaN(i)||i<0||i>=PLANTS.length)return;
+  const p=PLANTS[i];
+  p.journal=p.journal||[];
+  p.journal.unshift({ts:Date.now(),type:'diag',note:nom+' (par '+source+')'});
+  await dbPut(p); await refresh();
+  toast('Noté pour '+p.nickname);
+}
+
+/* ── Diagnostic par photo (API Plant.id) ── */
+let dgPhoto=null;
+$('dgShotBox')&&$('dgShotBox').addEventListener('click',()=>$('dgShotFile').click());
+$('dgShotFile')&&$('dgShotFile').addEventListener('change',async e=>{
+  const f=e.target.files[0]; if(!f)return;
+  dgPhoto=await compress(f,1100,.82);
+  if(dgPhoto)$('dgShotBox').innerHTML='<img src="'+dgPhoto+'" alt="">';
+  e.target.value='';
+});
+$('dgPhoBtn')&&$('dgPhoBtn').addEventListener('click',diagPhoto);
+async function diagPhoto(){
+  const out=$('dgPhoOut');
+  if(!dgPhoto){toast('Choisis d\'abord une photo');return;}
+  if(!SET.plantIdKey){
+    out.innerHTML='<div class="note"><strong>Clé Plant.id manquante.</strong><br>'+
+      "Le diagnostic par photo passe par l'API Plant.id. Crée un compte sur <strong>plant.id</strong>, "+
+      "copie ta clé et colle-la dans l'onglet Réglages. En attendant, le diagnostic par symptômes fonctionne sans rien.</div>";
+    return;
+  }
+  out.innerHTML='<div class="spin"></div><div style="text-align:center;color:var(--dim);font-size:13px;margin-top:12px">Analyse de la photo…</div>';
+  try{
+    const b64=dgPhoto.split(',')[1];
+    const r=await fetch('https://api.plant.id/v3/health_assessment?details=description,treatment&language=fr',{
+      method:'POST',
+      headers:{'Api-Key':SET.plantIdKey,'Content-Type':'application/json'},
+      body:JSON.stringify({images:[b64],similar_images:true})
+    });
+    if(r.status===401||r.status===403){out.innerHTML=note('Clé refusée. Vérifie-la dans les Réglages.');return;}
+    if(r.status===429){out.innerHTML=note('Quota atteint sur ta clé Plant.id.');return;}
+    if(!r.ok){out.innerHTML=note('Erreur '+r.status+' côté Plant.id.');return;}
+    const j=await r.json();
+    renderPhotoDiag(j,out);
+  }catch(e){
+    out.innerHTML=note("Impossible de joindre Plant.id. Le diagnostic par symptômes, lui, marche hors ligne.");
+  }
+}
+/* Lecture tolerante : l'API a change de forme entre v2 et v3. */
+function renderPhotoDiag(j,out){
+  const res=j.result||j.health_assessment||{};
+  const sain=res.is_healthy&&(res.is_healthy.binary!==undefined?res.is_healthy.binary:res.is_healthy);
+  const sug=(res.disease&&res.disease.suggestions)||res.diseases||[];
+  if(sain===true&&!sug.length){
+    out.innerHTML='<div class="dg"><div class="dg-top"><span class="dg-e">✅</span>'+
+      '<span class="dg-n">Plante en bonne santé</span></div>'+
+      '<div class="dg-c">Aucun problème détecté sur cette photo.</div></div>';
+    return;
+  }
+  if(!sug.length){out.innerHTML=note('Aucun diagnostic renvoyé pour cette photo. Réessaie en cadrant plus près de la zone atteinte.');return;}
+  out.innerHTML='';
+  sug.slice(0,4).forEach((x,i)=>{
+    const p=Math.round((x.probability||0)*100);
+    const det=x.details||x.disease_details||{};
+    const tr=det.treatment||{};
+    const etapes=[].concat(tr.biological||[],tr.prevention||[],tr.chemical||[]).slice(0,5);
+    const cls=p>=70?'hi':p>=35?'md':'lo';
+    const el=document.createElement('div');
+    el.className='dg'; el.style.animationDelay=(i*60)+'ms';
+    el.innerHTML='<div class="dg-top"><span class="dg-e">🩺</span>'+
+      '<span class="dg-n">'+esc(x.name||'Inconnu')+'</span>'+
+      '<span class="dg-p '+cls+'">'+p+' %</span></div>'+
+      (det.description?'<div class="dg-c">'+esc(det.description)+'</div>':'')+
+      (etapes.length?'<div class="dg-h">Que faire</div>'+etapes.map((t,k)=>
+        '<div class="dg-step"><span class="dg-num">'+(k+1)+'</span><span>'+esc(t)+'</span></div>').join(''):'');
+    const save=document.createElement('button');
+    save.className='btnw btn-n'; save.style.marginTop='12px'; save.textContent='Noter dans le journal d\'une plante';
+    save.addEventListener('click',()=>saveDiag(x.name||'Diagnostic','photo'));
+    el.appendChild(save);
+    out.appendChild(el);
+  });
+}
+
 /* ══════════ Fiches ══════════ */
 function renderCare(q){
   q=(q||'').trim().toLowerCase();
@@ -745,6 +930,8 @@ function renderSet(){
     '<div class="slbl">Identification</div>'+
     '<div class="fld"><label>Clé API PlantNet</label>'+
       '<input type="text" id="sKey" placeholder="colle ta clé ici" value="'+esc(SET.plantnetKey)+'"></div>'+
+    '<div class="fld" style="margin-top:10px"><label>Clé API Plant.id (diagnostic maladies)</label>'+
+      '<input type="text" id="sKeyD" placeholder="colle ta clé ici" value="'+esc(SET.plantIdKey||'')+'"></div>'+
     '<div class="note">L\'identification par photo passe par <strong>PlantNet</strong>, gratuit pour un usage personnel. '+
       'Crée un compte sur <strong>my.plantnet.org</strong>, récupère ta clé et colle-la ci-dessus. '+
       'C\'est la <strong>seule fonction qui a besoin d\'internet</strong> — le reste de l\'app marche hors ligne.</div>'+
@@ -763,6 +950,7 @@ function renderSet(){
     '<div class="note" style="text-align:center">'+PLANTS.length+' plante'+(PLANTS.length>1?'s':'')+' · '+CARE.length+' fiches embarquées</div>';
 
   $('sKey').addEventListener('change',e=>{SET.plantnetKey=e.target.value.trim();saveSet();toast('Clé enregistrée');});
+  $('sKeyD').addEventListener('change',e=>{SET.plantIdKey=e.target.value.trim();saveSet();toast('Clé enregistrée');});
   $('sNotify').addEventListener('change',async e=>{
     if(e.target.checked && 'Notification' in window){
       const p=await Notification.requestPermission();
@@ -809,6 +997,158 @@ function maybeNotify(){
   localStorage.setItem(k,'1');
   try{ new Notification('💧 '+due.length+' plante'+(due.length>1?'s ont':' a')+' soif',
     {body:due.map(p=>p.nickname).join(', '),icon:'icon-192.png'}); }catch(e){}
+}
+
+/* ══════════ Diagnostic ══════════
+   Deux voies : par symptomes, entierement hors ligne, et par photo via
+   l'API Plant.id. La voie hors ligne couvre l'essentiel de ce qu'on
+   rencontre sur des plantes d'interieur et ne depend de rien. */
+
+/* Vocabulaire des symptomes observables sans loupe. */
+const SYMPT = [
+  { id: 'jaune',    n: 'Feuilles jaunes',            e: '🟡' },
+  { id: 'brun',     n: 'Taches brunes',              e: '🟤' },
+  { id: 'bords',    n: 'Bords secs et cassants',     e: '🍂' },
+  { id: 'mou',      n: 'Feuilles molles, affaissées',e: '🥀' },
+  { id: 'chute',    n: 'Chute des feuilles',         e: '🍃' },
+  { id: 'toile',    n: 'Fines toiles',               e: '🕸' },
+  { id: 'coton',    n: 'Amas blancs cotonneux',      e: '🤍' },
+  { id: 'bosses',   n: 'Petites bosses brunes collées', e: '🟫' },
+  { id: 'collant',  n: 'Feuilles collantes',         e: '🍯' },
+  { id: 'poudre',   n: 'Poudre blanche farineuse',   e: '❄️' },
+  { id: 'mouches',  n: 'Petites mouches noires',     e: '🦟' },
+  { id: 'pucerons', n: 'Petits insectes verts ou noirs', e: '🐛' },
+  { id: 'argente',  n: 'Traînées argentées, points noirs', e: '✨' },
+  { id: 'trous',    n: 'Trous ou morsures',          e: '🕳' },
+  { id: 'odeur',    n: 'Terre qui sent mauvais',     e: '👃' },
+  { id: 'blanche',  n: 'Croûte blanche sur la terre',e: '🧂' },
+  { id: 'pale',     n: 'Feuillage pâle et terne',    e: '🌫' },
+  { id: 'nervures', n: 'Jaune entre des nervures vertes', e: '🍋' },
+  { id: 'etire',    n: 'Tiges étirées, feuilles espacées', e: '📏' },
+  { id: 'brule',    n: 'Plages décolorées, comme brûlées', e: '☀️' },
+  { id: 'noir',     n: 'Base de tige noire ou molle',e: '⚫' },
+  { id: 'croissance', n: 'Ne pousse plus du tout',   e: '⏸' }
+];
+
+/* Chaque affection pondere les symptomes : 2 = signe caracteristique,
+   1 = compatible. `contre` fait baisser le score. */
+const DIAG = [
+  { n: 'Excès d\'arrosage', e: '💧', sev: 3,
+    s: { jaune: 2, mou: 2, noir: 2, odeur: 2, chute: 1, croissance: 1 }, contre: { bords: 1 },
+    cause: "Le substrat reste détrempé : les racines s'asphyxient et pourrissent. C'est la première cause de mort des plantes d'intérieur.",
+    soin: ["Arrête d'arroser immédiatement.", "Dépote et regarde les racines : saines = fermes et claires, pourries = brunes et molles.", "Coupe le pourri au sécateur propre, rempote en terreau neuf et drainant.", "Vide toujours la soucoupe 15 min après l'arrosage."],
+    prev: "Attends que les 3 premiers centimètres soient secs. En cas de doute, n'arrose pas." },
+
+  { n: 'Manque d\'eau', e: '🏜', sev: 2,
+    s: { mou: 2, bords: 2, chute: 1, jaune: 1 }, contre: { odeur: 2, noir: 2 },
+    cause: "Le substrat a séché trop longtemps, la plante ferme ses stomates et sacrifie ses feuilles.",
+    soin: ["Trempe le pot dans une bassine 20 min, jusqu'à ce que la terre soit saturée.", "Égoutte complètement.", "Retire les feuilles totalement sèches, elles ne repartiront pas."],
+    prev: "Un rappel dans l'app, et un doigt dans la terre avant chaque arrosage." },
+
+  { n: 'Cochenilles farineuses', e: '🤍', sev: 3,
+    s: { coton: 2, collant: 2, croissance: 1, pale: 1, jaune: 1 },
+    cause: "Insectes suceurs cachés aux aisselles et sous les feuilles, protégés par une cire blanche.",
+    soin: ["Isole la plante des autres, elles se propagent vite.", "Tamponne chaque amas au coton imbibé d'alcool à 70°.", "Pulvérise ensuite eau + savon noir (1 cuillère à soupe par litre), dessus et dessous.", "Répète tous les 7 jours pendant 3 semaines : les œufs éclosent en décalé."],
+    prev: "Inspecte le dessous des feuilles à chaque arrosage." },
+
+  { n: 'Cochenilles à bouclier', e: '🟫', sev: 3,
+    s: { bosses: 2, collant: 2, jaune: 1, croissance: 1 },
+    cause: "Boucliers bruns immobiles collés le long des tiges et des nervures ; sous la carapace, l'insecte pompe la sève.",
+    soin: ["Gratte les boucliers à l'ongle ou avec une vieille brosse à dents.", "Passe à l'alcool à 70° sur les zones atteintes.", "Pulvérise du savon noir dilué, deux fois à une semaine d'écart."],
+    prev: "Les plantes affaiblies sont les premières touchées : lumière et arrosage réguliers." },
+
+  { n: 'Araignées rouges', e: '🕸', sev: 3,
+    s: { toile: 2, pale: 2, argente: 1, bords: 1, jaune: 1 },
+    cause: "Acariens minuscules qui prolifèrent dans l'air sec et chaud. Les toiles apparaissent quand l'infestation est déjà avancée.",
+    soin: ["Douche le feuillage à l'eau tiède, insiste sous les feuilles.", "Pulvérise eau + savon noir tous les 5 jours, 3 fois.", "Augmente l'humidité : brumisation quotidienne ou plateau de billes d'argile humides."],
+    prev: "Elles détestent l'humidité. Un air ambiant plus humide suffit souvent." },
+
+  { n: 'Thrips', e: '✨', sev: 3,
+    s: { argente: 2, brun: 1, pale: 1, croissance: 1, chute: 1 },
+    cause: "Très petits insectes allongés qui râpent la feuille : traînées argentées ponctuées de déjections noires.",
+    soin: ["Isole la plante, les thrips volent d'un pot à l'autre.", "Pose des pièges collants bleus au-dessus du feuillage.", "Pulvérise savon noir ou huile de neem tous les 5 jours pendant 3 semaines.", "Coupe les feuilles les plus atteintes."],
+    prev: "Quarantaine de deux semaines pour toute nouvelle plante." },
+
+  { n: 'Pucerons', e: '🐛', sev: 2,
+    s: { pucerons: 2, collant: 2, etire: 1, mou: 1 },
+    cause: "Colonies sur les jeunes pousses et boutons, elles affaiblissent la plante et laissent un miellat collant.",
+    soin: ["Douche au jet, la plupart partent mécaniquement.", "Pulvérise eau + savon noir, en insistant sur les jeunes pousses.", "Répète à 5 jours d'intervalle."],
+    prev: "Évite les excès d'engrais azoté, qui produisent des pousses tendres." },
+
+  { n: 'Mouches du terreau', e: '🦟', sev: 1,
+    s: { mouches: 2, odeur: 1 },
+    cause: "Sciarides : elles pondent dans un terreau constamment humide. Gênantes, rarement dangereuses, mais signalent un excès d'eau.",
+    soin: ["Laisse sécher le substrat en surface sur 3 à 4 cm.", "Couvre la terre d'une fine couche de sable ou de billes d'argile.", "Pièges collants jaunes pour les adultes."],
+    prev: "Arrosages plus espacés et jamais de soucoupe pleine." },
+
+  { n: 'Oïdium', e: '❄️', sev: 2,
+    s: { poudre: 2, pale: 1, chute: 1 },
+    cause: "Champignon en feutrage blanc farineux, favorisé par un air humide et stagnant.",
+    soin: ["Retire les feuilles les plus couvertes.", "Pulvérise du lait dilué (1 volume pour 9 d'eau) ou du bicarbonate (5 g/L) une fois par semaine.", "Aère la pièce et espace les plantes."],
+    prev: "De la circulation d'air, et pas d'eau sur le feuillage le soir." },
+
+  { n: 'Taches foliaires fongiques', e: '🟤', sev: 2,
+    s: { brun: 2, jaune: 1, chute: 1 },
+    cause: "Champignons installés sur un feuillage resté mouillé : taches brunes souvent cerclées de jaune.",
+    soin: ["Coupe et jette les feuilles touchées, ne les composte pas.", "Arrose uniquement au pied, jamais sur les feuilles.", "Espace les plantes pour que l'air circule."],
+    prev: "Feuillage sec, surtout la nuit." },
+
+  { n: 'Brûlure solaire', e: '☀️', sev: 1,
+    s: { brule: 2, bords: 1, pale: 1 },
+    cause: "Soleil direct sur une plante qui n'y est pas habituée : les zones exposées se décolorent puis se dessèchent.",
+    soin: ["Éloigne-la du soleil direct ou filtre avec un voilage.", "Les zones brûlées ne repartiront pas, coupe-les si elles te gênent."],
+    prev: "Toute exposition nouvelle se fait progressivement, sur une à deux semaines." },
+
+  { n: 'Chlorose — manque de fer', e: '🍋', sev: 2,
+    s: { nervures: 2, pale: 1, jaune: 1 },
+    cause: "Le fer devient indisponible quand l'eau ou le substrat sont trop calcaires : le jaune apparaît entre des nervures restées vertes.",
+    soin: ["Arrose à l'eau non calcaire, de pluie ou filtrée.", "Apporte un engrais riche en fer (chélate) selon la dose indiquée.", "Rempote en terreau plus acide si le problème persiste."],
+    prev: "Eau douce pour les espèces sensibles : agrumes, gardénias, azalées." },
+
+  { n: 'Carence nutritive', e: '🌫', sev: 1,
+    s: { pale: 2, croissance: 2, jaune: 1 },
+    cause: "Le substrat est épuisé : après un an sans engrais ni rempotage, il ne reste plus grand-chose à absorber.",
+    soin: ["Engrais liquide pour plantes vertes, à demi-dose, tous les 15 jours de mars à septembre.", "Rempote en terreau neuf si le sujet est en pot depuis plus de deux ans."],
+    prev: "Rempotage tous les 18 à 24 mois, engrais seulement en période de croissance." },
+
+  { n: 'Excès d\'engrais', e: '🧂', sev: 2,
+    s: { blanche: 2, bords: 2, brun: 1, croissance: 1 },
+    cause: "Les sels minéraux s'accumulent et brûlent les racines ; une croûte blanchâtre apparaît en surface et sur le pot.",
+    soin: ["Rince abondamment : fais couler de l'eau claire à travers le pot pendant 2 minutes.", "Gratte et retire la croûte blanche en surface.", "Suspends tout engrais pendant deux mois."],
+    prev: "Toujours à demi-dose, jamais sur substrat sec." },
+
+  { n: 'Air trop sec', e: '🏝', sev: 1,
+    s: { bords: 2, brun: 1, toile: 1 },
+    cause: "Chauffage en hiver : l'humidité tombe sous 40 %, les pointes et bords des feuilles se dessèchent.",
+    soin: ["Plateau de billes d'argile maintenu humide sous le pot.", "Regroupe les plantes, elles créent leur microclimat.", "Éloigne-les des radiateurs et des bouches d'air."],
+    prev: "Un humidificateur en hiver pour les espèces tropicales." },
+
+  { n: 'Coup de froid', e: '🥶', sev: 2,
+    s: { noir: 1, mou: 2, chute: 2, brun: 1 },
+    cause: "Courant d'air, fenêtre ouverte en hiver, ou transport sans protection : les tissus gèlent et noircissent.",
+    soin: ["Déplace-la loin des fenêtres et des portes.", "Coupe les parties noircies, elles ne récupéreront pas.", "N'arrose qu'au strict minimum le temps qu'elle reparte."],
+    prev: "Rien en dessous de 12 °C pour la plupart des plantes d'intérieur." },
+
+  { n: 'Manque de lumière', e: '📏', sev: 1,
+    s: { etire: 2, pale: 1, croissance: 1, chute: 1 },
+    cause: "La plante s'allonge vers la source lumineuse, les feuilles s'espacent et pâlissent.",
+    soin: ["Rapproche-la d'une fenêtre, ou passe par le posemètre de l'app pour trouver le bon endroit.", "Taille les tiges les plus étirées, elles ne se rétracteront pas."],
+    prev: "Vérifie l'exposition au posemètre avant d'installer une plante quelque part." }
+];
+
+function diagScore(sel) {
+  if (!sel.length) return [];
+  return DIAG.map(d => {
+    let sc = 0, hits = 0;
+    sel.forEach(id => {
+      if (d.s[id]) { sc += d.s[id]; hits++; }
+      if (d.contre && d.contre[id]) sc -= d.contre[id];
+    });
+    // On privilegie les affections qui expliquent une large part des symptomes
+    const couv = hits / sel.length;
+    return { d, sc: sc * (0.55 + 0.45 * couv), hits };
+  }).filter(x => x.hits > 0 && x.sc > 0)
+    .sort((a, b) => b.sc - a.sc).slice(0, 4);
 }
 
 /* ══════════ Outils ══════════ */
@@ -958,6 +1298,18 @@ function fillPlantSelects() {
 }
 
 /* ══════════ Navigation ══════════ */
+document.getElementById('idSeg').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+  document.getElementById('idSeg').querySelectorAll('button').forEach(x=>x.classList.toggle('sel',x===b));
+  $('paneId').classList.toggle('on',b.dataset.m==='id');
+  $('paneDg').classList.toggle('on',b.dataset.m==='dg');
+  $('idTitle').textContent = b.dataset.m==='id' ? 'Identifier' : 'Diagnostiquer';
+}));
+document.getElementById('dgSeg').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+  document.getElementById('dgSeg').querySelectorAll('button').forEach(x=>x.classList.toggle('sel',x===b));
+  $('dgSym').style.display = b.dataset.d==='sym' ? '' : 'none';
+  $('dgPho').style.display = b.dataset.d==='pho' ? '' : 'none';
+}));
+
 document.getElementById('toolSeg').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
   document.getElementById('toolSeg').querySelectorAll('button').forEach(x=>x.classList.toggle('sel',x===b));
   ['lm','wc','mn'].forEach(k=>$('pane'+k[0].toUpperCase()+k[1]).classList.toggle('on',k===b.dataset.t));
@@ -987,7 +1339,7 @@ async function refresh(){ PLANTS=await dbAll(); renderPlants(); }
 (async()=>{
   try{ await openDB(); }catch(e){ toast('Stockage indisponible'); }
   await refresh();
-  renderOrgans(); renderCare(''); fillPlantSelects(); renderMoon();
+  renderOrgans(); renderCare(''); fillPlantSelects(); renderMoon(); renderSym();
   maybeNotify();
 })();
 
