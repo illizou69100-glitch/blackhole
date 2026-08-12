@@ -964,6 +964,9 @@ function persistHist() { localStorage.setItem('ctr2_hist', JSON.stringify(histDa
 let activeId = null, sheetMode = 'new', editId = null, pickedColor = COLORS[0];
 let timerInterval = null, timerRemaining = 0, timerDuration = 60, timerRound = 1, timerRunning = false;
 let timerEndAt = 0;
+/* Valeur du compteur au debut du round : les reps du round s'en deduisent
+   par difference, que la remise a zero automatique soit active ou non. */
+let amrapRoundStart = 0;
 let openCard = null;
 let itInterval = null, itRemaining = 30, itDuration = 30;
 let stInterval = null, stRunning = false, stStartAt = 0;
@@ -1640,7 +1643,8 @@ function openCounter(id) {
   const hasPacing = !hasSlices && !!(c.pacing && c.pacing.enabled);
   const hasSeries = !!c.seriesMode;
   logZone.style.display = (hasSeries || hasPacing || hasSlices) ? 'flex' : 'none';
-  cvHistBtn.style.display = (hasSeries || hasPacing || hasSlices) ? 'flex' : 'none';
+  const hasAmrap = !!(c.amrap && c.amrap.enabled);
+  cvHistBtn.style.display = (hasSeries || hasPacing || hasSlices || hasAmrap) ? 'flex' : 'none';
   itZone.classList.toggle('on', hasSeries && !hasSlices && !hasPacing && !(c.amrap && c.amrap.enabled));
   pacingZone.classList.toggle('on', hasPacing || hasSlices);
   slReset();
@@ -1655,6 +1659,7 @@ function openCounter(id) {
 
   if (c.amrap && c.amrap.enabled) {
     amrapZone.classList.add('on');
+    amrapRoundStart = c.value;
     timerDuration = c.amrap.duration || 60;
     timerRemaining = timerDuration;
     timerRound = 1;
@@ -1669,6 +1674,8 @@ function openCounter(id) {
 }
 
 backBtn.addEventListener('click', () => {
+  const cq = byId(activeId);
+  if (cq && cq.amrap && cq.amrap.enabled) amrapLogRound(cq, true);
   stopTimer();
   itStop();
   stStop();
@@ -2501,8 +2508,16 @@ amrapRingWrap.addEventListener('touchend', e => {
   const dy = Math.abs(e.changedTouches[0].clientY - _ringTY);
   if (dx < 12 && dy < 12) {
     e.preventDefault();
+    _ringLastTouch = Date.now();
     if (timerRunning) pauseTimer(); else startTimer();
   }
+});
+/* Repli au clic : le toucher couvre l'iPhone, le clic couvre le reste
+   (souris, accessibilite). Le garde-temps evite le double declenchement. */
+let _ringLastTouch = 0;
+amrapRingWrap.addEventListener('click', () => {
+  if (Date.now() - _ringLastTouch < 500) return;
+  if (timerRunning) pauseTimer(); else startTimer();
 });
 
 function startTimer() {
@@ -2540,6 +2555,22 @@ function tickAccurate() {
   }
 }
 
+/* Enregistre le round AMRAP ecoule. Appele a chaque fin de round, et aussi
+   sur un round partiel quand on quitte ou reinitialise : sinon l'effort
+   deja fourni disparaissait sans laisser de trace. */
+function amrapLogRound(c, partial) {
+  if (!c || !c.amrap || !c.amrap.enabled) return 0;
+  const reps = c.value - amrapRoundStart;
+  if (reps <= 0) return 0;
+  if (!histData[c.id]) histData[c.id] = [];
+  histData[c.id].push({ ts: Date.now(), reps: reps, round: timerRound, partial: !!partial });
+  persistHist();
+  sessionSets.unshift({ ts: Date.now(), reps: reps });
+  renderSessionList();
+  amrapRoundStart = c.value;
+  return reps;
+}
+
 function onRoundEnd() {
   clearInterval(timerInterval); timerInterval = null; timerRunning = false;
   amrapRingWrap.classList.remove('running');
@@ -2547,6 +2578,7 @@ function onRoundEnd() {
   beepDone();
   const c = byId(activeId);
   const isSingle = c && c.amrap && c.amrap.singleRound;
+  amrapLogRound(c, false);
   if (isSingle) {
     flashBanner('&#127937; Terminé ! ' + (c ? c.value : 0) + ' reps', null);
     amrapHint.innerHTML = 'Appuie &#8635; pour recommencer';
@@ -2559,14 +2591,18 @@ function onRoundEnd() {
   flashBanner('&#128260; Round suivant !', null);
   timerRound++;
   if (c && c.amrap && c.amrap.autoReset) { c.value = c.start; persist(); refreshNum(c); refreshProg(c); }
+  if (c) amrapRoundStart = c.value;
   timerRemaining = timerDuration;
   if (c) updateAmrapUI(c);
   setTimeout(() => startTimer(), 600);
 }
 
 function resetTimer() {
+  const cPrev = byId(activeId);
+  if (cPrev) { const n = amrapLogRound(cPrev, true); if (n) flashBanner('Round partiel enregistré · ' + n + ' reps', null); }
   stopTimer();
   const c = byId(activeId); if (!c) return;
+  amrapRoundStart = c.value;
   timerDuration = c.amrap.duration || 60;
   timerRemaining = timerDuration;
   timerRound = 1; timerEndAt = 0;
@@ -2758,7 +2794,7 @@ saveBtn.addEventListener('click', () => {
       cvTitle.textContent = c.title; cv.style.background = c.color; refreshProg(c);
       const hp = !!(c.pacing && c.pacing.enabled);
       logZone.style.display = (c.seriesMode || hp) ? 'flex' : 'none';
-      cvHistBtn.style.display = (c.seriesMode || hp) ? 'flex' : 'none';
+      cvHistBtn.style.display = (c.seriesMode || hp || (c.amrap && c.amrap.enabled)) ? 'flex' : 'none';
       pacingZone.classList.toggle('on', hp);
       if (!c.seriesMode && !hp) { sessionList.style.display = 'none'; itStop(); stStop(); itZone.classList.remove('on'); }
       if (c.seriesMode || hp) refreshLogBtn();
