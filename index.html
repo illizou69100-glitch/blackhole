@@ -282,8 +282,17 @@
     color:rgba(255,255,255,.4);margin-bottom:6px}
   .srv-box input{width:100%;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.12);
     color:#fff;padding:11px 12px;border-radius:11px;font-size:14px;font-family:inherit}
-  .srv-save{width:100%;margin-top:12px;padding:12px;border:none;border-radius:11px;
+  .srv-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+  .srv-save{width:100%;padding:12px;border:none;border-radius:11px;
     background:rgba(255,255,255,.9);color:#000;font-size:14px;font-weight:700;font-family:inherit}
+  .srv-test{width:100%;padding:12px;border:1px solid rgba(255,255,255,.18);border-radius:11px;
+    background:transparent;color:rgba(255,255,255,.85);font-size:14px;font-weight:700;font-family:inherit}
+  .srv-test:active{background:rgba(255,255,255,.06)}
+  .srv-diag{font-size:12.5px;line-height:1.6;margin-top:11px;display:none}
+  .srv-diag.on{display:block}
+  .srv-diag .ok{color:#7ee0a0}
+  .srv-diag .ko{color:#ff8a80}
+  .srv-diag .nb{color:rgba(255,255,255,.55)}
   .srv-save:active{opacity:.75}
   .srv-note{font-size:11.5px;line-height:1.55;color:rgba(255,255,255,.42);margin-top:12px}
   .srv-note strong{color:rgba(255,255,255,.7)}
@@ -393,7 +402,11 @@
     <label for="srvKey" style="margin-top:10px">Cl&#233; d'API ou jeton de session</label>
     <input type="text" id="srvKey" placeholder="Api-Key… ou jeton JWT"
       autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-    <button class="srv-save" id="srvSave">Enregistrer</button>
+    <div class="srv-btns">
+      <button class="srv-test" id="srvTest">Tester</button>
+      <button class="srv-save" id="srvSave">Enregistrer</button>
+    </div>
+    <div class="srv-diag" id="srvDiag"></div>
     <p class="srv-note">Les instances publiques exigent un <strong>jeton de session</strong> obtenu via un
       d&#233;fi Turnstile, valable uniquement sur les domaines que leur op&#233;rateur autorise&#160;: une app tierce
       ne peut pas s'y connecter. La voie pr&#233;vue par Cobalt est d'<strong>h&#233;berger ta propre instance</strong>,
@@ -523,6 +536,61 @@
       srvKeyIn.value = localStorage.getItem('cobalt_key') || '';
     }
   });
+  /* Sonde d'instance : evite de deviner. On lit d'abord l'endpoint
+     d'information, puis on envoie une requete jetable pour savoir si
+     l'instance exige une authentification et laquelle. */
+  const srvDiag = document.getElementById('srvDiag');
+  document.getElementById('srvTest').addEventListener('click', async () => {
+    const base = (srvUrlIn.value.trim() || srvUrl()).replace(/\/*$/, '/') ;
+    srvDiag.className = 'srv-diag on';
+    srvDiag.innerHTML = '<span class="nb">Test en cours…</span>';
+    let info = null;
+    try {
+      const r = await fetch(base, { headers: { 'Accept': 'application/json' } });
+      info = await r.json();
+    } catch {
+      srvDiag.innerHTML = '<span class="ko">❌ Instance injoignable.</span><br>' +
+        '<span class="nb">Vérifie l\'adresse, et que le serveur autorise les requêtes depuis un navigateur (CORS).</span>';
+      return;
+    }
+    const c = info && info.cobalt;
+    if (!c) {
+      srvDiag.innerHTML = '<span class="ko">❌ Ce n\'est pas une instance Cobalt.</span><br>' +
+        '<span class="nb">L\'adresse répond, mais pas avec les informations attendues.</span>';
+      return;
+    }
+    let out = '<span class="ok">✅ Instance Cobalt joignable</span><br>' +
+      '<span class="nb">version ' + escHtml(String(c.version || '?')) +
+      (c.services ? ' · ' + c.services.length + ' services pris en charge' : '') + '</span>';
+
+    // Requete jetable : on ne cherche qu'a connaitre le regime d'authentification.
+    try {
+      const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
+      const k = (srvKeyIn.value.trim() || srvKey());
+      if (k) headers['Authorization'] = /^(Api-Key|Bearer)\s/i.test(k) ? k
+        : (k.startsWith('ey') && k.split('.').length === 3 ? 'Bearer ' + k : 'Api-Key ' + k);
+      const t = await fetch(base, { method: 'POST', headers,
+        body: JSON.stringify({ url: 'https://cobalt.tools' }) });
+      const d = await t.json().catch(() => ({}));
+      const code = (d && d.error && d.error.code) || '';
+      if (code.includes('auth.jwt'))
+        out += '<br><span class="ko">🔒 Jeton de session requis (Turnstile)</span><br>' +
+               '<span class="nb">Cette instance n\'accepte pas les clients tiers.</span>';
+      else if (code.includes('auth.key'))
+        out += '<br><span class="ko">🔑 Clé d\'API requise</span><br>' +
+               '<span class="nb">Demande-la à l\'opérateur et colle-la ci-dessus.</span>';
+      else if (code.includes('auth'))
+        out += '<br><span class="ko">🔒 Authentification refusée : ' + escHtml(code) + '</span>';
+      else
+        out += '<br><span class="ok">🔓 Requêtes acceptées avec ces réglages</span>';
+    } catch {
+      out += '<br><span class="nb">Le régime d\'authentification n\'a pas pu être déterminé.</span>';
+    }
+    srvDiag.innerHTML = out;
+  });
+
+  function escHtml(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
   srvSave.addEventListener('click', () => {
     const u = srvUrlIn.value.trim();
     if (u) localStorage.setItem('cobalt_srv', u); else localStorage.removeItem('cobalt_srv');
