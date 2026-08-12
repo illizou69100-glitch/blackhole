@@ -390,13 +390,14 @@
     <label for="srvUrl">Adresse de l'instance</label>
     <input type="url" id="srvUrl" placeholder="https://mon-instance.exemple/"
       autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-    <label for="srvKey" style="margin-top:10px">Cl&#233; d'API (si l'instance en demande une)</label>
-    <input type="text" id="srvKey" placeholder="laisser vide si non requise"
+    <label for="srvKey" style="margin-top:10px">Cl&#233; d'API ou jeton de session</label>
+    <input type="text" id="srvKey" placeholder="Api-Key… ou jeton JWT"
       autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
     <button class="srv-save" id="srvSave">Enregistrer</button>
-    <p class="srv-note">L'instance publique <strong>api.cobalt.tools</strong> a &#233;t&#233; ferm&#233;e aux
-      requ&#234;tes anonymes par ses mainteneurs. Il faut d&#233;sormais pointer l'app vers une instance
-      Cobalt que tu h&#233;berges toi-m&#234;me, ou &#224; laquelle tu as acc&#232;s.</p>
+    <p class="srv-note">Les instances publiques exigent un <strong>jeton de session</strong> obtenu via un
+      d&#233;fi Turnstile, valable uniquement sur les domaines que leur op&#233;rateur autorise&#160;: une app tierce
+      ne peut pas s'y connecter. La voie pr&#233;vue par Cobalt est d'<strong>h&#233;berger ta propre instance</strong>,
+      puis d'indiquer son adresse ici. Elle te donnera une cl&#233; d'API qui fonctionne directement.</p>
   </div>
 
   <div class="footer">BLACKHOLE · COBALT</div>
@@ -567,7 +568,13 @@
     const endpoint = srvUrl().endsWith('/') ? srvUrl() : srvUrl() + '/';
     const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
     const k = srvKey();
-    if (k) headers['Authorization'] = k.startsWith('Api-Key ') ? k : 'Api-Key ' + k;
+    if (k) {
+      // Cobalt accepte deux schemas : « Api-Key » pour une cle d'instance,
+      // « Bearer » pour un JWT de session. Un JWT commence toujours par « ey ».
+      if (/^(Api-Key|Bearer)\s/i.test(k)) headers['Authorization'] = k;
+      else if (k.startsWith('ey') && k.split('.').length === 3) headers['Authorization'] = 'Bearer ' + k;
+      else headers['Authorization'] = 'Api-Key ' + k;
+    }
     try {
       res = await fetch(endpoint, {
         method: 'POST',
@@ -586,21 +593,37 @@
           : "Impossible de joindre " + endpoint + ". Vérifie l'adresse et ta connexion."
       );
     }
-    if (res.status === 401 || res.status === 403)
-      throw new Error("Le serveur refuse la requête : il attend une clé d'API. Renseigne-la dans « Serveur Cobalt ».");
-    if (res.status === 404)
-      throw new Error("Adresse d'instance introuvable. Vérifie l'URL dans « Serveur Cobalt ».");
+    // Le statut HTTP n'est examine qu'en dernier recours : le corps de la
+    // reponse porte un code d'erreur bien plus precis, et le message generique
+    // le masquait completement.
+    const httpFallback = res.status === 404
+      ? "Adresse d'instance introuvable. Vérifie l'URL dans « Serveur Cobalt »."
+      : (res.status === 401 || res.status === 403)
+      ? "Le serveur refuse la requête. Vérifie ta clé dans « Serveur Cobalt »."
+      : null;
 
     let d;
-    try { d = await res.json(); } catch { throw new Error('Réponse serveur invalide.'); }
+    try { d = await res.json(); }
+    catch { throw new Error(httpFallback || 'Réponse serveur invalide.'); }
 
     if (d.status === 'error' || !res.ok) {
       const code = d?.error?.code || '';
-      if (code.includes('link.unsupported')) throw new Error('Ce site n\'est pas supporté.');
+      // L'instance exige un jeton de session, delivre uniquement apres un defi
+      // Turnstile valide sur un domaine que son operateur a autorise.
+      if (code.includes('auth.jwt'))
+        throw new Error("Cette instance exige un jeton de session (Turnstile). Elle n'accepte pas les clients tiers : héberge ta propre instance Cobalt et indique-la ci-dessous.");
+      if (code.includes('auth.key'))
+        throw new Error("Cette instance exige une clé d'API. Renseigne-la dans « Serveur Cobalt ».");
+      if (code.includes('auth'))
+        throw new Error("Authentification refusée par l'instance : " + code);
+      if (code.includes('link.unsupported')) throw new Error('Ce site n\'est pas supporté par cette instance.');
       if (code.includes('link.invalid') || code.includes('link.empty')) throw new Error('Lien invalide.');
       if (code.includes('rate') || d.status === 'rate-limit') throw new Error('Trop de requêtes — réessaie dans quelques secondes.');
       if (code.includes('fetch.empty')) throw new Error('Aucun contenu trouvé à cette URL.');
-      throw new Error(code ? code.replace('error.api.', '') : 'Erreur. Réessaie.');
+      if (code.includes('content.too_long')) throw new Error('Le média est trop long pour cette instance.');
+      if (code.includes('fetch.fail')) throw new Error("L'instance n'a pas réussi à récupérer ce média.");
+      throw new Error(code ? 'Refus de l\'instance : ' + code.replace('error.api.', '')
+                           : (httpFallback || 'Erreur. Réessaie.'));
     }
 
     if (d.status === 'picker') {
