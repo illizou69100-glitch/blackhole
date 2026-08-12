@@ -464,6 +464,26 @@
     .tm-chip.c-on   { border-color: #34c759; color: #34c759; background: rgba(52,199,89,0.12); }
     .tm-chip.c-rest { border-color: #ff9f0a; color: #ff9f0a; background: rgba(255,159,10,0.12); }
     .tm-chip.c-off  { opacity: 0.3; }
+    .tm-reps {
+      display: flex; align-items: center; justify-content: center; gap: 14px;
+      width: 100%; padding: 12px 18px 0; flex-shrink: 0;
+    }
+    .tm-rep-btn {
+      width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
+      border: 1.5px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.28);
+      color: rgba(255,255,255,0.9); font-size: 25px; font-weight: 300; line-height: 1;
+      display: flex; align-items: center; justify-content: center; transition: transform 0.12s;
+    }
+    .tm-rep-btn:active { transform: scale(0.88); background: rgba(0,0,0,0.45); }
+    .tm-rep-mid { display: flex; flex-direction: column; align-items: center; min-width: 96px; }
+    .tm-rep-v {
+      font-size: 32px; font-weight: 800; letter-spacing: -0.03em; line-height: 1;
+      font-variant-numeric: tabular-nums;
+      transition: transform 0.16s cubic-bezier(.34,1.56,.64,1);
+    }
+    .tm-rep-v.bump { transform: scale(1.2); }
+    .tm-rep-k { font-size: 9.5px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--text-dim); margin-top: 4px; }
     .tm-controls { margin-top: auto; width: 100%; padding: 14px 18px 0; display: flex; gap: 9px; align-items: center; flex-shrink: 0; }
     .tm-btn {
       padding: 16px 10px; border: none; border-radius: 16px;
@@ -494,6 +514,35 @@
     #tmSheetSection.on { display: block; }
     #ctrSheetSection.off { display: none; }
 
+    .sess-h { font-size: 11px; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase;
+      color: var(--text-dim); padding: 12px 2px 8px; }
+    .sess-card { display: flex; align-items: center; gap: 12px; background: #161616;
+      border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 12px 14px; margin-bottom: 7px; }
+    .sc-l { flex: 1; min-width: 0; }
+    .sc-d { font-size: 14px; font-weight: 700; }
+    .sc-m { font-size: 11.5px; color: var(--text-dim); margin-top: 3px; }
+    .sc-r { text-align: right; flex-shrink: 0; }
+    .sc-v { font-size: 21px; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+    .sc-v span { font-size: 10.5px; font-weight: 700; color: var(--text-dim); margin-left: 4px; }
+    .sc-t { font-size: 12px; color: var(--text-dim); margin-top: 2px; font-variant-numeric: tabular-nums; }
+    .sess-bar {
+      display: flex; align-items: stretch; justify-content: center;
+      margin: 0 18px 6px; padding: 11px 8px; flex-shrink: 0;
+      background: rgba(0,0,0,0.22); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    }
+    .sess-i { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; }
+    .sess-v {
+      font-size: 21px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.05;
+      font-variant-numeric: tabular-nums; color: #fff;
+      transition: transform 0.16s cubic-bezier(.34,1.56,.64,1);
+    }
+    .sess-v.bump { transform: scale(1.22); }
+    .sess-k {
+      font-size: 9.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+    }
+    .sess-sep { width: 1px; background: rgba(255,255,255,0.11); margin: 2px 0; flex-shrink: 0; }
     /* ── Animations ─────────────────────
        Toutes neutralisees si l'utilisateur a demande moins de mouvement. */
     @keyframes chipPop   { 0%{transform:scale(1)} 45%{transform:scale(1.28)} 100%{transform:scale(1)} }
@@ -675,6 +724,14 @@
     </button>
   </div>
 
+  <div class="sess-bar" id="sessBar">
+    <div class="sess-i"><span class="sess-v" id="sessReps">0</span><span class="sess-k">reps</span></div>
+    <div class="sess-sep"></div>
+    <div class="sess-i"><span class="sess-v" id="sessTime">0:00</span><span class="sess-k">dur&#233;e</span></div>
+    <div class="sess-sep"></div>
+    <div class="sess-i"><span class="sess-v" id="sessSets">0</span><span class="sess-k">s&#233;ries</span></div>
+  </div>
+
   <div class="amrap-zone" id="amrapZone">
     <div class="amrap-round" id="amrapRound">Round 1</div>
     <div class="amrap-ring-wrap" id="amrapRingWrap">
@@ -789,6 +846,15 @@
     <div class="tm-total-lbl"><span id="tmElapsed">0:00</span><span id="tmRemain">4:00</span></div>
   </div>
   <div class="tm-chips" id="tmChips"></div>
+  <div class="tm-reps" id="tmReps">
+    <button class="tm-rep-btn" id="tmRepMinus" aria-label="Moins">&#8722;</button>
+    <div class="tm-rep-mid">
+      <span class="tm-rep-v" id="tmRepVal">0</span>
+      <span class="tm-rep-k">reps de la s&#233;ance</span>
+    </div>
+    <button class="tm-rep-btn" id="tmRepPlus" aria-label="Plus">+</button>
+  </div>
+
   <div class="tm-controls">
     <button class="tm-btn tm-btn-side" id="tmResetBtn" aria-label="R&#233;initialiser">&#8635;</button>
     <button class="tm-btn tm-btn-main" id="tmMainBtn">Lancer</button>
@@ -1133,7 +1199,8 @@ function renderWkHist() {
       row.innerHTML =
         '<div class="wk-emoji">' + (h.emoji || '🔥') + '</div>' +
         '<div class="hs-body"><div class="hs-name">' + esc(h.name) + '</div>' +
-        '<div class="hs-sub">' + t + ' · ' + fmtMin(h.durSec) + ' · ' + h.roundsDone + '/' + h.rounds + ' rounds</div></div>' +
+        '<div class="hs-sub">' + t + ' · ' + fmtMin(h.durSec) + ' · ' + h.roundsDone + '/' + h.rounds + ' rounds' +
+          (h.reps ? ' · ' + h.reps + ' reps' : '') + '</div></div>' +
         '<div class="hs-badge' + (h.completed ? '' : ' partial') + '">' + (h.completed ? 'Terminée' : 'Arrêtée') + '</div>';
       hsScroll.appendChild(row);
     });
@@ -1147,7 +1214,7 @@ function wkLogSession(completed) {
     id: uid(), workoutId: tmWk.id, name: tmWk.name, emoji: tmWk.emoji,
     at: tmStartedAt, durSec: Math.round((Date.now() - tmStartedAt) / 1000),
     rounds: tmWk.rounds, roundsDone: Math.min(tmWk.rounds, Math.ceil(done / perRound)),
-    completed: !!completed
+    reps: tmReps, completed: !!completed
   });
   if (wkStore.history.length > 400) wkStore.history = wkStore.history.slice(-400);
   wkPersist();
@@ -1394,6 +1461,10 @@ const lv = document.getElementById('listView'),
   itPreset30 = document.getElementById('itPreset30'),
   itPreset60 = document.getElementById('itPreset60'),
   stDisplay = document.getElementById('stDisplay'),
+  sessBar = document.getElementById('sessBar'),
+  sessReps = document.getElementById('sessReps'),
+  sessTime = document.getElementById('sessTime'),
+  sessSets = document.getElementById('sessSets'),
   logBtn = document.getElementById('logBtn'),
   sessionList = document.getElementById('sessionList'),
   pacingZone = document.getElementById('pacingZone'),
@@ -1433,6 +1504,9 @@ const lv = document.getElementById('listView'),
   tmMainBtn = document.getElementById('tmMainBtn'),
   tmResetBtn = document.getElementById('tmResetBtn'),
   tmSkipBtn = document.getElementById('tmSkipBtn'),
+  tmRepVal = document.getElementById('tmRepVal'),
+  tmRepPlus = document.getElementById('tmRepPlus'),
+  tmRepMinus = document.getElementById('tmRepMinus'),
   tmTestBtn = document.getElementById('tmTestBtn'),
   tmSoundNote = document.getElementById('tmSoundNote'),
   tabbar = document.getElementById('tabbar'),
@@ -1655,6 +1729,7 @@ function openCounter(id) {
   }
   itPresets.style.display = hasSlices ? 'none' : '';
   if (hasSlices) refreshSlicesUI(c);
+  sessBegin();                                     // tous les modes, sans exception
   if (hasSeries || hasPacing || hasSlices) { stStart(); refreshLogBtn(); }
 
   if (c.amrap && c.amrap.enabled) {
@@ -1676,6 +1751,9 @@ function openCounter(id) {
 backBtn.addEventListener('click', () => {
   const cq = byId(activeId);
   if (cq && cq.amrap && cq.amrap.enabled) amrapLogRound(cq, true);
+  const rec = sessSave(cq);
+  if (rec) flashBanner('✓ Séance enregistrée · ' + rec.reps + ' reps en ' + fmtDur(rec.dur), null);
+  sessEnd();
   stopTimer();
   itStop();
   stStop();
@@ -1746,6 +1824,7 @@ function refreshLogBtn() {
 function doInc() {
   const c = byId(activeId); if (!c) return;
   c.value += c.step; persist(); refreshNum(c); bumpNum(1); refreshProg(c); vib(10);
+  sessBump(c.step);
   const inSlices = !!(c.slices && c.slices.enabled);
   if (inSlices) refreshSlicesUI(c);
   if (c.seriesMode || (c.pacing && c.pacing.enabled)) refreshLogBtn();
@@ -1761,6 +1840,7 @@ function doInc() {
 function doDec() {
   const c = byId(activeId); if (!c) return;
   c.value -= c.step; persist(); refreshNum(c); bumpNum(-1); refreshProg(c); vib([8,20,8]);
+  sessBump(-c.step);
   if (c.slices && c.slices.enabled) refreshSlicesUI(c);
   if (c.seriesMode || (c.pacing && c.pacing.enabled)) refreshLogBtn();
 }
@@ -1851,6 +1931,7 @@ function logPacingSet() {
   pacingResults.push({actual, target});
   if (!histData[c.id]) histData[c.id] = [];
   histData[c.id].push({ts: Date.now(), reps: actual, target});
+  sessCountSet();
   persistHist();
   renderPacingChips(c);
   const tot = c.pacing.sets.reduce((s, t) => s + t, 0);
@@ -1914,6 +1995,14 @@ const PH_LABEL = { prep: 'Préparation', warmup: 'Échauffement', work: 'Effort'
 let tmWk = null, tmPhases = [], tmIdx = 0, tmRemain = 0, tmEndAt = 0;
 let tmRunning = false, tmInterval = null, tmState = 'idle', tmWakeLock = null;
 let tmStartedAt = 0, tmHalfDone = false;
+/* Compteur de repetitions pendant un circuit : il manquait totalement.
+   Le total part dans l'historique de la seance. */
+let tmReps = 0;
+function tmSetReps(n) {
+  tmReps = Math.max(0, n);
+  tmRepVal.textContent = tmReps;
+  replay(tmRepVal, 'bump');
+}
 
 async function tmAcquireWake() {
   if (!wkStore.opts.wake) return;
@@ -1951,7 +2040,7 @@ function tmReset() {
   tmHdrTitle.textContent = tmWk.name;
   timerView.className = 'view';
   tmPhaseEl.textContent = 'Prêt'; tmPhaseEl.className = 'tm-phase';
-  tmRingFill.className = 'tm-ring-fill'; tmRingFill.style.strokeDashoffset = '0';
+  tmRingFill.setAttribute('class', 'tm-ring-fill'); tmRingFill.style.strokeDashoffset = '0';
   tmRemain = tmPhases.length ? tmPhases[0].dur : 0;
   tmClock.textContent = tmFmt(tmRemain); tmClock.classList.remove('urgent');
   tmExEl.textContent = tmWk.blocks[0] ? tmWk.blocks[0].name : '—';
@@ -1994,7 +2083,7 @@ function tmEnterPhase(i, silent) {
   replay(tmPhaseEl, 'in'); replay(tmExEl, 'in');
   replay(document.querySelector('.tm-ring-wrap'), 'beat');
   tmPhaseEl.className = 'tm-phase p-' + (p.type === 'roundrest' ? 'cyclerest' : p.type === 'warmup' ? 'prep' : p.type);
-  tmRingFill.className = 'tm-ring-fill c-' + (p.type === 'roundrest' ? 'cyclerest' : p.type === 'warmup' ? 'prep' : p.type);
+  tmRingFill.setAttribute('class', 'tm-ring-fill c-' + (p.type === 'roundrest' ? 'cyclerest' : p.type === 'warmup' ? 'prep' : p.type));
   tmRingFill.style.strokeDashoffset = '0';
   replay(tmPhaseEl, 'in');
   tmClock.textContent = tmFmt(tmRemain); tmClock.classList.remove('urgent');
@@ -2057,7 +2146,7 @@ function tmStart() {
   initAudio();
   tmPhases = wkBuild(tmWk);
   if (!tmPhases.length) return;
-  tmState = 'run'; tmRunning = true; tmStartedAt = Date.now();
+  tmState = 'run'; tmRunning = true; tmStartedAt = Date.now(); tmSetReps(0);
   tmMainBtn.textContent = 'Pause'; tmMainBtn.classList.add('running');
   tmSkipBtn.disabled = false;
   tmAcquireWake(); startKeepAlive();
@@ -2095,7 +2184,7 @@ function tmDone() {
   tmState = 'done';
   timerView.className = 'view ph-done';
   tmPhaseEl.textContent = 'Terminé'; tmPhaseEl.className = 'tm-phase p-done';
-  tmRingFill.className = 'tm-ring-fill c-done';
+  tmRingFill.setAttribute('class', 'tm-ring-fill c-done');
   tmRingFill.style.strokeDashoffset = String(CIRC);
   tmExEl.textContent = '🏆 Séance bouclée !';
   tmClock.textContent = '0:00'; tmClock.classList.remove('urgent');
@@ -2114,6 +2203,9 @@ tmBackBtn.addEventListener('click', tmCloseRun);
 tmCfgBtn.addEventListener('click', () => tmWk && openSheet('workout', tmWk.id));
 tmResetBtn.addEventListener('click', tmReset);
 tmSkipBtn.addEventListener('click', tmSkip);
+tmRepPlus.addEventListener('click', () => { tmSetReps(tmReps + 1); vib(10); });
+tmRepMinus.addEventListener('click', () => { tmSetReps(tmReps - 1); vib([8, 20, 8]); });
+
 tmMainBtn.addEventListener('click', () => {
   initAudio();
   if (tmState === 'idle' || tmState === 'done') tmStart();
@@ -2254,6 +2346,60 @@ function renderAudioSeg(segId, hintId) {
   if (hint) hint.textContent = cur ? cur.hint : '';
 }
 
+
+/* ══════════ Séance ══════════
+   Le total de la séance est compté a l'increment, pas deduit de c.value :
+   plusieurs modes remettent le compteur a zero entre les series, la valeur
+   affichee ne dit donc rien du volume reellement effectue. */
+let sessTotal = 0, sessSetCount = 0, sessStartAt = 0, sessTick = null;
+
+function sessBegin() {
+  sessTotal = 0; sessSetCount = 0; sessStartAt = Date.now();
+  if (sessTick) clearInterval(sessTick);
+  sessTick = setInterval(sessRender, 500);
+  sessRender();
+}
+function sessEnd() {
+  if (sessTick) { clearInterval(sessTick); sessTick = null; }
+}
+function sessRender() {
+  sessReps.textContent = sessTotal;
+  sessSets.textContent = sessSetCount;
+  const t = sessStartAt ? Math.floor((Date.now() - sessStartAt) / 1000) : 0;
+  sessTime.textContent = Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0');
+}
+function sessBump(n) {
+  sessTotal = Math.max(0, sessTotal + n);
+  sessRender();
+  replay(sessReps, 'bump');
+}
+function sessCountSet() { sessSetCount++; sessRender(); }
+
+/* Archive de séance : c'est ce qui manquait pour retrouver la duree totale
+   d'un entrainement, et pas seulement les series une a une. */
+let sessData = JSON.parse(localStorage.getItem('ctr2_sess') || '[]');
+function persistSess() { localStorage.setItem('ctr2_sess', JSON.stringify(sessData)); }
+function sessSave(c) {
+  if (!c || !sessStartAt) return null;
+  const dur = Math.round((Date.now() - sessStartAt) / 1000);
+  if (sessTotal <= 0 && sessSetCount <= 0) return null;   // rien fait, rien a garder
+  const rec = { id: uid(), cid: c.id, title: c.title, color: c.color,
+                mode: ctrModeOf(c), at: sessStartAt, dur: dur,
+                reps: sessTotal, sets: sessSetCount };
+  sessData.push(rec);
+  if (sessData.length > 500) sessData = sessData.slice(-500);
+  persistSess();
+  sessStartAt = 0;
+  return rec;
+}
+function fmtDur(sec) {
+  sec = Math.max(0, Math.round(sec));
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), r = sec % 60;
+  if (h > 0) return h + 'h' + String(m).padStart(2, '0');
+  if (m > 0) return m + 'min' + (r ? String(r).padStart(2, '0') : '');
+  return r + 's';
+}
+
 /* ══════════ Mode Tranches ══════════
    Volume total decoupe en tranches, sur un temps impose.
    Contrairement au mode Pacing (ou le repos demarre quand TU valides),
@@ -2370,6 +2516,7 @@ function slAdvance() {
   slResults.push({ actual, target });
   if (!histData[c.id]) histData[c.id] = [];
   histData[c.id].push({ ts: Date.now(), reps: actual, target });
+  sessCountSet();
   persistHist();
   slIdx++;
   // Le total reste a l'ecran : on ne deplace que la borne de la tranche.
@@ -2453,6 +2600,7 @@ function logSet() {
   if (!histData[c.id]) histData[c.id] = [];
   histData[c.id].push(entry);
   persistHist();
+  sessCountSet();
   sessionSets.unshift(entry);
   c.value = c.start; persist(); refreshNum(c); refreshProg(c);
   lastLogVal = c.start;
@@ -2566,6 +2714,7 @@ function amrapLogRound(c, partial) {
   histData[c.id].push({ ts: Date.now(), reps: reps, round: timerRound, partial: !!partial });
   persistHist();
   sessionSets.unshift({ ts: Date.now(), reps: reps });
+  sessCountSet();
   renderSessionList();
   amrapRoundStart = c.value;
   return reps;
@@ -2639,14 +2788,37 @@ function openHistory(from, focusId) {
 
 cvHistBtn.addEventListener('click', () => openHistory('counter', activeId));
 
+/* Carte de séance : la durée totale d'un entraînement, ce que la liste
+   des séries seule ne permettait pas de retrouver. */
+function sessCards(cid) {
+  const list = sessData.filter(x => x.cid === cid).slice().reverse().slice(0, 12);
+  if (!list.length) return '';
+  return '<div class="sess-h">Séances</div>' + list.map(x => {
+    const d = new Date(x.at);
+    const j0 = t => { const z = new Date(t); z.setHours(0, 0, 0, 0); return z.getTime(); };
+    const jour = Math.round((j0(Date.now()) - j0(x.at)) / 86400000);
+    const q = jour === 0 ? "Aujourd'hui" : jour === 1 ? 'Hier'
+            : d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    const h = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    return '<div class="sess-card">' +
+      '<div class="sc-l"><div class="sc-d">' + q + ' · ' + h + '</div>' +
+      '<div class="sc-m">' + x.sets + ' série' + (x.sets > 1 ? 's' : '') + ' · ' + MODE_LBL[x.mode] + '</div></div>' +
+      '<div class="sc-r"><div class="sc-v">' + x.reps + '<span>reps</span></div>' +
+      '<div class="sc-t">' + fmtDur(x.dur) + '</div></div></div>';
+  }).join('');
+}
+const MODE_LBL = { simple:'Simple', series:'Séries', pacing:'Pacing', amrap:'AMRAP', slices:'Tranches' };
+
 function renderHistory() {
   histScroll.innerHTML = '';
-  let counters = data.filter(c => histData[c.id] && histData[c.id].length > 0);
+  // Un compteur apparait s'il a des series OU au moins une seance archivee.
+  let counters = data.filter(c => (histData[c.id] && histData[c.id].length > 0)
+                               || sessData.some(x => x.cid === c.id));
   if (histFocusId) {
     counters.sort((a, b) => (b.id === histFocusId ? 1 : 0) - (a.id === histFocusId ? 1 : 0));
   }
   if (!counters.length) {
-    histScroll.innerHTML = '<div class="hist-empty"><div class="hist-empty-icon">&#128202;</div><div>Aucune série enregistrée</div><div class="hist-empty-sub">Active le mode Séries dans les réglages d\'un compteur, puis appuie sur Enregistrer après chaque série.</div></div>';
+    histScroll.innerHTML = '<div class="hist-empty"><div class="hist-empty-icon">&#128202;</div><div>Aucune séance enregistrée</div><div class="hist-empty-sub">Ouvre un compteur, fais tes reps, puis reviens en arrière : la séance et sa durée sont archivées automatiquement.</div></div>';
     return;
   }
   counters.forEach(counter => {
@@ -2656,8 +2828,10 @@ function renderHistory() {
     label.className = 'hist-counter-label';
     label.innerHTML = '<span class="h-dot" style="background:' + counter.color + '"></span>' + esc(counter.title);
     section.appendChild(label);
+    const sc = sessCards(counter.id);
+    if (sc) { const box = document.createElement('div'); box.innerHTML = sc; section.appendChild(box); }
 
-    const entries = histData[counter.id].slice();
+    const entries = (histData[counter.id] || []).slice();
     const byDay = {};
     entries.forEach(e => {
       const d = new Date(e.ts); d.setHours(0,0,0,0);
