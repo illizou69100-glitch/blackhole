@@ -337,9 +337,19 @@
       font-size: 10px; font-weight: 700; letter-spacing: 1px;
       text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; padding: 0 2px;
     }
+    .he-wrap { position: relative; overflow: hidden; border-radius: 12px; margin-bottom: 6px; }
+    .he-del {
+      position: absolute; right: 0; top: 0; bottom: 0; width: 64px;
+      display: flex; align-items: center; justify-content: center;
+      background: #f87171; color: #fff; border: none; border-radius: 12px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .he-del svg { width: 19px; height: 19px; }
+    .he-del:active { background: #ef5350; }
+    .hist-entry { position: relative; will-change: transform; }
     .hist-entry {
       display: flex; align-items: center; gap: 8px;
-      background: #181818; border-radius: 12px; padding: 10px 14px; margin-bottom: 6px;
+      background: #181818; border-radius: 12px; padding: 10px 14px;
     }
     .he-reps { font-size: 22px; font-weight: 900; color: var(--text); line-height: 1; min-width: 36px; }
     .he-unit { font-size: 12px; color: var(--text-dim); font-weight: 500; flex: 1; }
@@ -1929,10 +1939,8 @@ function logPacingSet() {
   const actual = c.value - c.start;
   const target = c.pacing.sets[pacingIndex];
   pacingResults.push({actual, target});
-  if (!histData[c.id]) histData[c.id] = [];
-  histData[c.id].push({ts: Date.now(), reps: actual, target});
+  histPush(c, {reps: actual, target});
   sessCountSet();
-  persistHist();
   renderPacingChips(c);
   const tot = c.pacing.sets.reduce((s, t) => s + t, 0);
   const done = pacingResults.reduce((s, r) => s + r.actual, 0);
@@ -2352,9 +2360,26 @@ function renderAudioSeg(segId, hintId) {
    plusieurs modes remettent le compteur a zero entre les series, la valeur
    affichee ne dit donc rien du volume reellement effectue. */
 let sessTotal = 0, sessSetCount = 0, sessStartAt = 0, sessTick = null;
+/* Horodatage de la serie precedente : sert a mesurer le temps reel entre
+   deux series, ce qu'il faut pour caler un programme. */
+let lastSetAt = 0;
+
+/* Point d'entree unique vers l'historique. Les quatre modes passaient par
+   des push disperses : aucun n'enregistrait la duree. */
+function histPush(c, obj) {
+  if (!c) return null;
+  const e = Object.assign({ ts: Date.now() }, obj);
+  if (!e.id) e.id = uid();
+  if (lastSetAt && e.ts > lastSetAt) e.elapsed = e.ts - lastSetAt;
+  lastSetAt = e.ts;
+  if (!histData[c.id]) histData[c.id] = [];
+  histData[c.id].push(e);
+  persistHist();
+  return e;
+}
 
 function sessBegin() {
-  sessTotal = 0; sessSetCount = 0; sessStartAt = Date.now();
+  sessTotal = 0; sessSetCount = 0; sessStartAt = Date.now(); lastSetAt = 0;
   if (sessTick) clearInterval(sessTick);
   sessTick = setInterval(sessRender, 500);
   sessRender();
@@ -2514,10 +2539,8 @@ function slAdvance() {
   const actual = Math.max(0, c.value - slSliceStart);
   const target = tg[slIdx] != null ? tg[slIdx] : 0;
   slResults.push({ actual, target });
-  if (!histData[c.id]) histData[c.id] = [];
-  histData[c.id].push({ ts: Date.now(), reps: actual, target });
+  histPush(c, { reps: actual, target });
   sessCountSet();
-  persistHist();
   slIdx++;
   // Le total reste a l'ecran : on ne deplace que la borne de la tranche.
   slSliceStart = c.value;
@@ -2596,10 +2619,7 @@ function logSet() {
   const c = byId(activeId); if (!c) return;
   const reps = c.value - lastLogVal;
   if (reps <= 0) { vib([10, 20, 10]); return; }
-  const entry = { ts: Date.now(), reps };
-  if (!histData[c.id]) histData[c.id] = [];
-  histData[c.id].push(entry);
-  persistHist();
+  const entry = histPush(c, { reps });
   sessCountSet();
   sessionSets.unshift(entry);
   c.value = c.start; persist(); refreshNum(c); refreshProg(c);
@@ -2710,9 +2730,7 @@ function amrapLogRound(c, partial) {
   if (!c || !c.amrap || !c.amrap.enabled) return 0;
   const reps = c.value - amrapRoundStart;
   if (reps <= 0) return 0;
-  if (!histData[c.id]) histData[c.id] = [];
-  histData[c.id].push({ ts: Date.now(), reps: reps, round: timerRound, partial: !!partial });
-  persistHist();
+  histPush(c, { reps: reps, round: timerRound, partial: !!partial });
   sessionSets.unshift({ ts: Date.now(), reps: reps });
   sessCountSet();
   renderSessionList();
@@ -2809,6 +2827,64 @@ function sessCards(cid) {
 }
 const MODE_LBL = { simple:'Simple', series:'Séries', pacing:'Pacing', amrap:'AMRAP', slices:'Tranches' };
 
+/* Suppression d'une serie mal saisie. On retrouve l'entree par son
+   identifiant, avec repli sur l'horodatage pour les entrees anterieures
+   a l'ajout des identifiants. */
+function histDelete(cid, entry) {
+  const arr = histData[cid] || [];
+  let i = entry.id ? arr.findIndex(x => x.id === entry.id) : -1;
+  if (i < 0) i = arr.findIndex(x => x.ts === entry.ts && x.reps === entry.reps);
+  if (i < 0) return;
+  arr.splice(i, 1);
+  if (!arr.length) delete histData[cid];
+  persistHist();
+  renderHistory();
+  flashBanner('Série supprimée · ' + entry.reps + ' reps', null);
+}
+
+/* Meme geste que sur les cartes de compteur : on glisse vers la gauche
+   pour reveler la corbeille. Le sens est verrouille des les premiers
+   pixels pour ne pas gener le defilement vertical. */
+let openHistRow = null;
+function attachSwipeDelete(wrap, row) {
+  let x0 = 0, y0 = 0, dir = null, off = 0, moved = false;
+  wrap.addEventListener('touchstart', ev => {
+    x0 = ev.touches[0].clientX; y0 = ev.touches[0].clientY;
+    dir = null; moved = false;
+    row.style.transition = 'none';
+  }, { passive: true });
+  wrap.addEventListener('touchmove', ev => {
+    const dx = ev.touches[0].clientX - x0, dy = ev.touches[0].clientY - y0;
+    if (!dir) {
+      if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
+      dir = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
+    }
+    if (dir === 'v') return;
+    ev.preventDefault();
+    moved = true;
+    off = Math.max(-64, Math.min(0, dx));
+    row.style.transform = 'translateX(' + off + 'px)';
+  }, { passive: false });
+  wrap.addEventListener('touchend', () => {
+    row.style.transition = 'transform .22s cubic-bezier(.4,0,.2,1)';
+    if (moved && off < -32) {
+      if (openHistRow && openHistRow !== row) { openHistRow.style.transform = ''; }
+      row.style.transform = 'translateX(-64px)';
+      openHistRow = row;
+    } else {
+      row.style.transform = '';
+      if (openHistRow === row) openHistRow = null;
+    }
+  });
+}
+document.addEventListener('touchstart', ev => {
+  if (openHistRow && !ev.target.closest('.he-wrap')) {
+    openHistRow.style.transition = 'transform .22s cubic-bezier(.4,0,.2,1)';
+    openHistRow.style.transform = '';
+    openHistRow = null;
+  }
+}, { passive: true });
+
 function renderHistory() {
   histScroll.innerHTML = '';
   // Un compteur apparait s'il a des series OU au moins une seance archivee.
@@ -2861,23 +2937,40 @@ function renderHistory() {
       dayDiv.appendChild(dayLbl);
 
       dayEntries.forEach(e => {
+        const wrap = document.createElement('div');
+        wrap.className = 'he-wrap';
+        const del = document.createElement('button');
+        del.className = 'he-del'; del.type = 'button';
+        del.setAttribute('aria-label', 'Supprimer cette série');
+        del.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>';
+        del.addEventListener('click', () => histDelete(counter.id, e));
+        wrap.appendChild(del);
+
         const row = document.createElement('div');
         row.className = 'hist-entry';
         const t = new Date(e.ts);
-        const timeStr = String(t.getHours()).padStart(2,'0') + ':' + String(t.getMinutes()).padStart(2,'0');
+        const timeStr = String(t.getHours()).padStart(2,'0') + ':' + String(t.getMinutes()).padStart(2,'0')
+                      + ':' + String(t.getSeconds()).padStart(2,'0');
         row.innerHTML =
           '<span class="he-reps">' + e.reps + '</span>' +
           '<span class="he-unit">reps</span>' +
           (e.elapsed ? '<span class="he-elapsed">&#9201; ' + fmtMs(e.elapsed) + '</span>' : '') +
           '<span class="he-time">' + timeStr + '</span>';
-        dayDiv.appendChild(row);
+        attachSwipeDelete(wrap, row);
+        wrap.appendChild(row);
+        dayDiv.appendChild(wrap);
       });
 
       const total = dayEntries.reduce((s, e) => s + e.reps, 0);
       const best = Math.max(...dayEntries.map(e => e.reps));
       const tot = document.createElement('div');
       tot.className = 'hist-day-total';
-      tot.textContent = 'Total ' + total + ' · Meilleur ' + best + ' · ' + dayEntries.length + ' série' + (dayEntries.length > 1 ? 's' : '');
+      // Repos moyen : la donnee qu'on cherche quand on cale un programme.
+      const gaps = dayEntries.filter(e => e.elapsed > 0).map(e => e.elapsed);
+      const moy = gaps.length ? fmtMs(Math.round(gaps.reduce((a, b) => a + b, 0) / gaps.length)) : null;
+      tot.textContent = 'Total ' + total + ' · Meilleur ' + best + ' · ' + dayEntries.length
+        + ' série' + (dayEntries.length > 1 ? 's' : '')
+        + (moy ? ' · repos moyen ' + moy : '');
       dayDiv.appendChild(tot);
       section.appendChild(dayDiv);
     });
