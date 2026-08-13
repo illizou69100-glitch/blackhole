@@ -337,6 +337,17 @@
       font-size: 10px; font-weight: 700; letter-spacing: 1px;
       text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; padding: 0 2px;
     }
+    .hist-edit {
+      background: none; border: none; color: var(--text-dim);
+      font-size: 15px; font-weight: 600; font-family: inherit; padding: 6px 2px;
+      -webkit-tap-highlight-color: transparent; transition: color .15s;
+    }
+    .hist-edit.on { color: #f87171; font-weight: 700; }
+    /* En mode edition on retrecit la ligne au lieu de la decaler : un decalage
+       poussait le nombre de reps hors de l'ecran, on ne voyait plus ce qu'on
+       supprimait. */
+    .editing .hist-entry { transform: none !important; margin-right: 70px;
+      transition: margin-right .24s cubic-bezier(.4,0,.2,1); }
     .he-wrap { position: relative; overflow: hidden; border-radius: 12px; margin-bottom: 6px; }
     .he-del {
       position: absolute; right: 0; top: 0; bottom: 0; width: 64px;
@@ -811,7 +822,10 @@
 </div>
 
 <div class="view gone" id="histView">
-  <div class="list-hdr"><h1>Historique</h1></div>
+  <div class="list-hdr">
+    <h1>Historique</h1>
+    <button class="hist-edit" id="histEditBtn" type="button">Modifier</button>
+  </div>
   <div class="hist-seg" id="histSeg">
     <button type="button" data-h="sets" class="sel">S&#233;ries</button>
     <button type="button" data-h="wk">S&#233;ances cardio</button>
@@ -1521,6 +1535,7 @@ const lv = document.getElementById('listView'),
   tmSoundNote = document.getElementById('tmSoundNote'),
   tabbar = document.getElementById('tabbar'),
   histSeg = document.getElementById('histSeg'),
+  histEditBtn = document.getElementById('histEditBtn'),
   ctrSheetSection = document.getElementById('ctrSheetSection'),
   tmSheetSection = document.getElementById('tmSheetSection'),
   wkBlocks = document.getElementById('wkBlocks'),
@@ -2839,6 +2854,7 @@ function histDelete(cid, entry) {
   if (!arr.length) delete histData[cid];
   persistHist();
   renderHistory();
+  if (histEditing) histScroll.classList.add('editing');
   flashBanner('Série supprimée · ' + entry.reps + ' reps', null);
 }
 
@@ -2854,6 +2870,7 @@ function attachSwipeDelete(wrap, row) {
     row.style.transition = 'none';
   }, { passive: true });
   wrap.addEventListener('touchmove', ev => {
+    if (histEditing) return;
     const dx = ev.touches[0].clientX - x0, dy = ev.touches[0].clientY - y0;
     if (!dir) {
       if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
@@ -3168,10 +3185,24 @@ document.querySelectorAll('.view').forEach(v => _viewObs.observe(v, { attributes
 /* Historique : series de compteurs ou seances cardio */
 function renderHistTab() {
   const wk = histTab === 'wk';
+  histEditBtn.style.display = wk ? 'none' : '';
+  if (wk) setHistEditing(false);
   histScroll.style.display = wk ? 'none' : '';
   hsScroll.style.display = wk ? '' : 'none';
   if (wk) renderWkHist(); else renderHistory();
 }
+/* Mode edition : le glissement reste disponible pour qui le connait, mais
+   il n'est plus le seul chemin — c'etait une fonction invisible. */
+let histEditing = false;
+function setHistEditing(on) {
+  histEditing = on;
+  histScroll.classList.toggle('editing', on);
+  histEditBtn.classList.toggle('on', on);
+  histEditBtn.textContent = on ? 'OK' : 'Modifier';
+  if (!on && openHistRow) { openHistRow.style.transform = ''; openHistRow = null; }
+}
+histEditBtn.addEventListener('click', () => setHistEditing(!histEditing));
+
 histSeg.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
   histTab = b.dataset.h;
   histSeg.querySelectorAll('button').forEach(x => x.classList.toggle('sel', x === b));
