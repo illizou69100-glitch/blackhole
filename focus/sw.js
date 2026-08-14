@@ -1,7 +1,7 @@
 /* Service worker — Focus — Pomodoro & Tâches
    Stale-while-revalidate : l'app s'ouvre instantanément depuis le cache,
    et la version réseau est récupérée en arrière-plan pour la fois suivante. */
-const CACHE = 'focus-v6';
+const CACHE = 'focus-v7';
 const PREFIX = 'focus-';   // ne purger que SES caches : les 3 apps partagent l'origine
 const ASSETS = ['./', './index.html', './manifest.json', './icon-180.png', './icon-192.png', './icon-512.png'];
 

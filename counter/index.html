@@ -592,6 +592,30 @@
         transition-duration: .01ms !important;
       }
     }
+    .upd {
+      position: fixed; left: 12px; right: 12px; z-index: 120;
+      bottom: calc(74px + max(env(safe-area-inset-bottom), 8px));
+      display: flex; align-items: center; gap: 12px;
+      background: #f5f5f7; color: #111; border-radius: 15px;
+      padding: 12px 12px 12px 16px;
+      box-shadow: 0 10px 34px rgba(0,0,0,0.55);
+      /* 140% de sa propre hauteur ne suffit pas a franchir le decalage du bas :
+         on translate de sa hauteur + ce decalage pour sortir vraiment de l'ecran. */
+      transform: translateY(calc(100% + 74px + max(env(safe-area-inset-bottom), 8px) + 24px));
+      opacity: 0; pointer-events: none;
+      transition: transform .38s cubic-bezier(.32,.72,0,1), opacity .28s ease;
+    }
+    .upd.on { transform: translateY(0); opacity: 1; pointer-events: auto; }
+    .upd-t { flex: 1; font-size: 14px; font-weight: 700; }
+    .upd-b {
+      border: none; border-radius: 10px; padding: 9px 15px;
+      background: #111; color: #fff; font-size: 13.5px; font-weight: 700;
+      font-family: inherit; flex-shrink: 0;
+    }
+    .app-ver {
+      text-align: center; font-size: 11px; color: rgba(255,255,255,0.22);
+      padding: 18px 0 4px; letter-spacing: 0.06em; font-variant-numeric: tabular-nums;
+    }
     /* ── Barre d'onglets ───────────────── */
     .tabbar {
       position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
@@ -723,6 +747,7 @@
     <h1>Compteurs</h1>
   </div>
   <div class="grid" id="grid"></div>
+  <div class="app-ver" id="appVer"></div>
   <button class="fab" id="addBtn" aria-label="Ajouter">+</button>
 </div>
 
@@ -901,6 +926,11 @@
     <span>Historique</span>
   </button>
 </nav>
+
+<div class="upd" id="updBanner">
+  <span class="upd-t">Nouvelle version disponible</span>
+  <button class="upd-b" id="updBtn" type="button">Appliquer</button>
+</div>
 
 <div id="backdrop"></div>
 <div id="sheet">
@@ -3212,8 +3242,40 @@ histSeg.querySelectorAll('button').forEach(b => b.addEventListener('click', () =
 renderList();
 syncTabbar();
 
+/* Version affichee, pour savoir d'un coup d'oeil ce qui tourne reellement. */
+const APP_VERSION = 'v17';
+document.getElementById('appVer').textContent = 'Compteur ' + APP_VERSION;
+
+/* Le service worker sert d'abord le cache : une nouvelle version n'apparaissait
+   qu'au lancement suivant, sans que rien ne le signale. On verifie desormais a
+   chaque retour au premier plan, et on propose d'appliquer — sans jamais
+   recharger tout seul, ce qui couperait une seance en cours. */
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  const banner = document.getElementById('updBanner');
+  const showUpdate = () => banner.classList.add('on');
+  document.getElementById('updBtn').addEventListener('click', () => location.reload());
+
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    if (reg.waiting && navigator.serviceWorker.controller) showUpdate();
+    reg.addEventListener('updatefound', () => {
+      const nw = reg.installing;
+      if (!nw) return;
+      nw.addEventListener('statechange', () => {
+        if (nw.state === 'installed' && navigator.serviceWorker.controller) showUpdate();
+      });
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') reg.update().catch(() => {});
+    });
+    setTimeout(() => reg.update().catch(() => {}), 3000);
+  }).catch(() => {});
+
+  // controllerchange se declenche aussi a la toute premiere prise en main :
+  // sans controleur prealable il n'y a rien a mettre a jour.
+  const avaitControleur = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (avaitControleur) showUpdate();
+  });
 }
 </script>
 </body>

@@ -290,6 +290,20 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; cursor:
   opacity: 0; pointer-events: none; transition: opacity 0.25s, bottom 0.25s; white-space: nowrap;
 }
 .toast.on { opacity: 1; bottom: calc(94px + max(env(safe-area-inset-bottom), 10px)); }
+
+.upd{position:fixed;left:12px;right:12px;z-index:220;
+  bottom:calc(74px + max(env(safe-area-inset-bottom),8px));
+  display:flex;align-items:center;gap:12px;background:#f5f5f7;color:#111;
+  border-radius:15px;padding:12px 12px 12px 16px;box-shadow:0 10px 34px rgba(0,0,0,.55);
+  /* sa hauteur + le decalage du bas, sinon le bandeau cache reste sur l'ecran */
+  transform:translateY(calc(100% + 74px + max(env(safe-area-inset-bottom),8px) + 24px));
+  opacity:0;pointer-events:none;
+  transition:transform .38s cubic-bezier(.32,.72,0,1),opacity .28s ease}
+.upd.on{transform:translateY(0);opacity:1;pointer-events:auto}
+.upd-t{flex:1;font-size:14px;font-weight:700}
+.upd-b{border:none;border-radius:10px;padding:9px 15px;background:#111;color:#fff;
+  font-size:13.5px;font-weight:700;font-family:inherit;flex-shrink:0}
+.app-ver{text-align:center;font-size:11px;opacity:.3;padding:16px 0 4px;letter-spacing:.06em}
 @media (prefers-reduced-motion: reduce) { * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; } }
 </style>
 </head>
@@ -374,6 +388,7 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; cursor:
 <div class="view hidden" id="vSet">
   <div class="vhdr"><h1>R&#233;glages</h1></div>
   <div class="scroll" id="setScroll"></div>
+  <div class="app-ver" id="appVer"></div>
 </div>
 
 <!-- ══ TABBAR ══ -->
@@ -395,6 +410,11 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; cursor:
     <span>R&#233;glages</span>
   </button>
 </nav>
+
+<div class="upd" id="updBanner">
+  <span class="upd-t">Nouvelle version disponible</span>
+  <button class="upd-b" id="updBtn" type="button">Appliquer</button>
+</div>
 
 <div id="backdrop"></div>
 
@@ -1416,9 +1436,37 @@ renderTasks();
 renderTimer();
 document.addEventListener('touchstart', initAudio, { passive: true, once: true });
 document.addEventListener('click', initAudio, { once: true });
-if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
-}
+
+/* Le service worker sert d'abord le cache : une nouvelle version n'apparaissait
+   qu'au lancement suivant, sans que rien ne le signale. */
+const APP_VERSION = 'Focus v7';
+(function(){
+  const v = document.getElementById('appVer');
+  if (v) v.textContent = APP_VERSION;
+  if (!('serviceWorker' in navigator) || !location.protocol.startsWith('http')) return;
+  const banner = document.getElementById('updBanner');
+  const showUpdate = () => banner && banner.classList.add('on');
+  const btn = document.getElementById('updBtn');
+  if (btn) btn.addEventListener('click', () => location.reload());
+  const avaitControleur = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    if (reg.waiting && avaitControleur) showUpdate();
+    reg.addEventListener('updatefound', () => {
+      const nw = reg.installing; if (!nw) return;
+      nw.addEventListener('statechange', () => {
+        if (nw.state === 'installed' && navigator.serviceWorker.controller) showUpdate();
+      });
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') reg.update().catch(()=>{});
+    });
+    setTimeout(() => reg.update().catch(()=>{}), 3000);
+  }).catch(()=>{});
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (avaitControleur) showUpdate();
+  });
+})();
+
 window.addEventListener('beforeunload', () => { if (running && mode === 'focus') { /* la session en cours n'est pas comptée */ } });
 </script>
 </body>

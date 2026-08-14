@@ -233,6 +233,20 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent;cursor:pointe
 .pb-ico{font-size:16px;flex-shrink:0}
 .pb-s{font-size:14px;font-weight:700}
 .pb-c{font-size:12.5px;color:var(--dim);margin-top:3px;line-height:1.45}
+
+.upd{position:fixed;left:12px;right:12px;z-index:220;
+  bottom:calc(74px + max(env(safe-area-inset-bottom),8px));
+  display:flex;align-items:center;gap:12px;background:#f5f5f7;color:#111;
+  border-radius:15px;padding:12px 12px 12px 16px;box-shadow:0 10px 34px rgba(0,0,0,.55);
+  /* sa hauteur + le decalage du bas, sinon le bandeau cache reste sur l'ecran */
+  transform:translateY(calc(100% + 74px + max(env(safe-area-inset-bottom),8px) + 24px));
+  opacity:0;pointer-events:none;
+  transition:transform .38s cubic-bezier(.32,.72,0,1),opacity .28s ease}
+.upd.on{transform:translateY(0);opacity:1;pointer-events:auto}
+.upd-t{flex:1;font-size:14px;font-weight:700}
+.upd-b{border:none;border-radius:10px;padding:9px 15px;background:#111;color:#fff;
+  font-size:13.5px;font-weight:700;font-family:inherit;flex-shrink:0}
+.app-ver{text-align:center;font-size:11px;opacity:.3;padding:16px 0 4px;letter-spacing:.06em}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 </head>
@@ -352,6 +366,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent;cursor:pointe
 <div class="view hidden" id="vSet">
   <div class="vhdr"><h1>R&#233;glages</h1></div>
   <div class="scroll" id="setScroll"></div>
+  <div class="app-ver" id="appVer"></div>
 </div>
 
 <nav class="tabbar">
@@ -371,6 +386,11 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent;cursor:pointe
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V10a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     <span>R&#233;glages</span></button>
 </nav>
+
+<div class="upd" id="updBanner">
+  <span class="upd-t">Nouvelle version disponible</span>
+  <button class="upd-b" id="updBtn" type="button">Appliquer</button>
+</div>
 
 <div id="backdrop"></div>
 
@@ -1345,8 +1365,37 @@ async function refresh(){ PLANTS=await dbAll(); renderPlants(); }
 
 /* Enregistrement direct : ce script s'execute apres des await, donc l'evenement
    « load » est deja passe et s'y abonner ne declencherait jamais rien. */
-if('serviceWorker' in navigator && location.protocol.startsWith('http'))
-  navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+/* Le service worker sert d'abord le cache : une nouvelle version n'apparaissait
+   qu'au lancement suivant, sans que rien ne le signale. */
+const APP_VERSION = 'Plantes v4';
+(function(){
+  const v = document.getElementById('appVer');
+  if (v) v.textContent = APP_VERSION;
+  if (!('serviceWorker' in navigator) || !location.protocol.startsWith('http')) return;
+  const banner = document.getElementById('updBanner');
+  const showUpdate = () => banner && banner.classList.add('on');
+  const btn = document.getElementById('updBtn');
+  if (btn) btn.addEventListener('click', () => location.reload());
+  const avaitControleur = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    if (reg.waiting && avaitControleur) showUpdate();
+    reg.addEventListener('updatefound', () => {
+      const nw = reg.installing; if (!nw) return;
+      nw.addEventListener('statechange', () => {
+        if (nw.state === 'installed' && navigator.serviceWorker.controller) showUpdate();
+      });
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') reg.update().catch(()=>{});
+    });
+    setTimeout(() => reg.update().catch(()=>{}), 3000);
+  }).catch(()=>{});
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (avaitControleur) showUpdate();
+  });
+})();
+
 </script>
 </body>
 </html>
