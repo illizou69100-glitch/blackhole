@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+<title>Sommeil</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sommeil">
+<meta name="theme-color" content="#07080c">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #07080c;
+  --surf: #101218;
+  --surf2: #181b23;
+  --line: rgba(255,255,255,0.07);
+  --text: #eceef4;
+  --dim: #6d7384;
+  --mid: #9aa0b1;
+  --accent: #b7b9ff;
+  --accent-dim: rgba(183,185,255,0.16);
+  --danger: #ff6b6b;
+}
+html, body {
+  min-height: 100%;
+  background: var(--bg); color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-user-select: none; user-select: none;
+  overscroll-behavior: none;
+}
+input { -webkit-user-select: text; user-select: text; font-family: inherit; }
+button { font-family: inherit; -webkit-tap-highlight-color: transparent; cursor: pointer; color: inherit; }
+
+/* halo lunaire discret derrière le compteur */
+body::before {
+  content: ''; position: fixed; left: 50%; top: -18vh; width: 130vw; height: 70vh;
+  transform: translateX(-50%); pointer-events: none; z-index: 0;
+  background: radial-gradient(closest-side, rgba(140,145,255,0.13), rgba(140,145,255,0) 70%);
+}
+
+.app {
+  position: relative; z-index: 1;
+  max-width: 460px; margin: 0 auto;
+  padding: max(env(safe-area-inset-top), 44px) 20px max(env(safe-area-inset-bottom), 24px);
+}
+
+/* ── En-tête ─────────────────────────── */
+.top { display: flex; justify-content: space-between; align-items: center; height: 28px; }
+.brand { font-size: 12px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim); }
+.now { font-size: 13px; font-weight: 600; color: var(--mid); font-variant-numeric: tabular-nums; }
+
+/* ── Compteur ────────────────────────── */
+.hero { text-align: center; padding: 11vh 0 6vh; }
+.hero-lbl { font-size: 13px; color: var(--dim); letter-spacing: 0.02em; }
+.big {
+  margin-top: 10px;
+  font-size: clamp(76px, 25vw, 112px); font-weight: 200; letter-spacing: -0.045em; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.big small { font-size: 0.36em; font-weight: 300; color: var(--mid); letter-spacing: 0; margin: 0 0.18em 0 0.06em; }
+.big.none { color: var(--dim); }
+.hero-sub { margin-top: 16px; font-size: 15px; color: var(--mid); }
+.hero-sub b { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* cycles de 90 min */
+.cycles { display: flex; justify-content: center; gap: 7px; margin-top: 30px; }
+.cyc { width: 26px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.08); overflow: hidden; }
+.cyc i { display: block; height: 100%; background: var(--accent); border-radius: 2px; }
+.cyc-lbl { margin-top: 10px; font-size: 12px; color: var(--dim); }
+
+/* ── Sections ────────────────────────── */
+.sec { margin-top: 26px; }
+.sec-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 2px; }
+.sec-h h2 { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); }
+.add {
+  width: 30px; height: 30px; border-radius: 50%; border: none;
+  background: var(--surf2); display: flex; align-items: center; justify-content: center;
+}
+.add svg { width: 15px; height: 15px; }
+.add:active { background: #232734; }
+
+/* heures de coucher conseillées */
+.beds { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.bed {
+  background: var(--surf); border: 1px solid var(--line); border-radius: 16px;
+  padding: 13px 8px 11px; text-align: center;
+}
+.bed-t { font-size: 20px; font-weight: 400; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.bed-c { margin-top: 3px; font-size: 11px; color: var(--dim); }
+.bed.best { border-color: rgba(183,185,255,0.35); background: linear-gradient(180deg, var(--accent-dim), transparent); }
+.bed.best .bed-t { color: var(--accent); }
+.empty-note { font-size: 13px; color: var(--dim); padding: 14px 2px; }
+
+/* alarmes */
+.alarms { background: var(--surf); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+.alarm {
+  display: flex; align-items: center; gap: 14px; padding: 13px 16px;
+  border-top: 1px solid var(--line); transition: background 0.15s;
+}
+.alarm:first-child { border-top: none; }
+.alarm:active { background: var(--surf2); }
+.alarm-main { flex: 1; min-width: 0; }
+.alarm-t { font-size: 34px; font-weight: 200; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1.1; transition: color 0.2s; }
+.alarm-m { font-size: 12.5px; color: var(--dim); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alarm.off .alarm-t { color: var(--dim); }
+.alarm.next .alarm-t { color: var(--accent); }
+
+.sw { position: relative; width: 50px; height: 30px; flex-shrink: 0; border: none; background: none; }
+.sw::before { content: ''; position: absolute; inset: 0; border-radius: 15px; background: #262a35; transition: background 0.22s; }
+.sw::after {
+  content: ''; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%;
+  background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.35); transition: transform 0.22s cubic-bezier(.32,.72,0,1);
+}
+.sw.on::before { background: var(--accent); }
+.sw.on::after { transform: translateX(20px); }
+
+/* réglage d'endormissement */
+.lat {
+  width: 100%; margin-top: 10px; display: flex; justify-content: space-between; align-items: center;
+  background: none; border: none; padding: 12px 2px; font-size: 14px; color: var(--mid);
+}
+.lat b { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+.hint { font-size: 11.5px; color: var(--dim); line-height: 1.5; padding: 0 2px; }
+.app-ver { text-align: center; font-size: 11px; opacity: 0.3; padding: 22px 0 4px; letter-spacing: 0.06em; }
+
+/* ── Feuille d'édition ───────────────── */
+.scrim {
+  position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.55);
+  opacity: 0; pointer-events: none; transition: opacity 0.25s;
+}
+.scrim.on { opacity: 1; pointer-events: auto; }
+.sheet {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 101;
+  max-width: 460px; margin: 0 auto;
+  background: #12141b; border-radius: 24px 24px 0 0; border-top: 1px solid var(--line);
+  padding: 10px 20px max(env(safe-area-inset-bottom), 20px);
+  transform: translateY(105%); visibility: hidden;
+  transition: transform 0.38s cubic-bezier(.32,.72,0,1), visibility 0s 0.38s;
+}
+.sheet.on { transform: translateY(0); visibility: visible; transition: transform 0.38s cubic-bezier(.32,.72,0,1); }
+.grip { width: 38px; height: 5px; border-radius: 3px; background: rgba(255,255,255,0.14); margin: 0 auto 12px; }
+.sheet-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.sheet-h button { background: none; border: none; font-size: 16px; padding: 6px 2px; color: var(--mid); }
+.sheet-h button.ok { color: var(--accent); font-weight: 700; }
+.sheet-h span { font-size: 15px; font-weight: 700; }
+.time-in {
+  display: block; width: 100%; margin: 12px 0 18px;
+  background: none; border: none; color: var(--text); text-align: center;
+  font-size: 60px; font-weight: 200; letter-spacing: -0.04em; font-variant-numeric: tabular-nums;
+  color-scheme: dark;
+}
+.time-in:focus { outline: none; }
+.time-in::-webkit-date-and-time-value { text-align: center; }
+.time-in::-webkit-calendar-picker-indicator { display: none; }
+.field {
+  width: 100%; background: var(--surf2); border: 1px solid transparent; border-radius: 13px;
+  padding: 13px 14px; font-size: 16px; color: var(--text);
+}
+.field:focus { outline: none; border-color: rgba(183,185,255,0.35); }
+.field::placeholder { color: var(--dim); }
+.days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 12px; }
+.day {
+  aspect-ratio: 1; border-radius: 50%; border: 1px solid var(--line); background: none;
+  font-size: 13px; font-weight: 600; color: var(--mid); transition: all 0.18s;
+}
+.day.on { background: var(--accent); border-color: var(--accent); color: #0b0c14; }
+.days-lbl { font-size: 12px; color: var(--dim); text-align: center; margin-top: 10px; min-height: 16px; }
+.del {
+  width: 100%; margin-top: 18px; padding: 13px; border-radius: 13px; border: none;
+  background: rgba(255,107,107,0.1); color: var(--danger); font-size: 15px; font-weight: 600;
+}
+.del.hidden { display: none; }
+
+/* ── Bandeau de mise à jour ──────────── */
+.upd{position:fixed;left:12px;right:12px;z-index:220;
+  bottom:max(env(safe-area-inset-bottom),16px);
+  display:flex;align-items:center;gap:12px;background:#f5f5f7;color:#111;
+  border-radius:15px;padding:12px 12px 12px 16px;box-shadow:0 10px 34px rgba(0,0,0,.55);
+  /* sa hauteur + le decalage du bas, sinon le bandeau cache reste sur l'ecran */
+  transform:translateY(calc(100% + max(env(safe-area-inset-bottom),16px) + 24px));
+  opacity:0;pointer-events:none;
+  transition:transform .38s cubic-bezier(.32,.72,0,1),opacity .28s ease}
+.upd.on{transform:translateY(0);opacity:1;pointer-events:auto}
+.upd-t{flex:1;font-size:14px;font-weight:700}
+.upd-b{border:none;border-radius:10px;padding:9px 15px;background:#111;color:#fff;
+  font-size:13.5px;font-weight:700;font-family:inherit;flex-shrink:0}
+@media (prefers-reduced-motion: reduce) { * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; } }
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="top">
+    <span class="brand">Sommeil</span>
+    <span class="now" id="now">--:--</span>
+  </header>
+
+  <section class="hero">
+    <div class="hero-lbl" id="heroLbl">Sommeil restant</div>
+    <div class="big" id="big">—</div>
+    <div class="hero-sub" id="heroSub"></div>
+    <div class="cycles" id="cycles"></div>
+    <div class="cyc-lbl" id="cycLbl"></div>
+  </section>
+
+  <section class="sec" id="bedSec">
+    <div class="sec-h"><h2>Se coucher à</h2></div>
+    <div id="beds"></div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-h">
+      <h2>Alarmes</h2>
+      <button class="add" id="addBtn" type="button" aria-label="Ajouter une alarme">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 2.5v11M2.5 8h11"/></svg>
+      </button>
+    </div>
+    <div id="alarms"></div>
+    <button class="lat" id="latBtn" type="button"><span>Temps d'endormissement</span><b id="latVal"></b></button>
+    <p class="hint">Le temps restant est calculé jusqu'à la prochaine alarme active, moins le temps qu'il te faut pour t'endormir. Un cycle de sommeil dure environ 90 min&nbsp;: se réveiller entre deux cycles, c'est se lever moins fatigué.</p>
+  </section>
+
+  <div class="app-ver" id="appVer"></div>
+</main>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="grip"></div>
+  <div class="sheet-h">
+    <button type="button" id="cancelBtn">Annuler</button>
+    <span id="sheetTitle">Alarme</span>
+    <button type="button" class="ok" id="saveBtn">OK</button>
+  </div>
+  <input class="time-in" id="timeIn" type="time" value="07:00" required>
+  <input class="field" id="labelIn" type="text" placeholder="Nom (facultatif)" maxlength="40" autocomplete="off">
+  <div class="days" id="days"></div>
+  <div class="days-lbl" id="daysLbl"></div>
+  <button class="del hidden" id="delBtn" type="button">Supprimer l'alarme</button>
+</div>
+
+<div class="upd" id="updBanner">
+  <span class="upd-t">Nouvelle version disponible</span>
+  <button class="upd-b" id="updBtn" type="button">Appliquer</button>
+</div>
+
+<script>
+const CYCLE = 90;                          // minutes
+const LATENCES = [0, 5, 10, 15, 20, 30];
+const JOURS = [1, 2, 3, 4, 5, 6, 0];       // ordre d'affichage, valeurs de Date#getDay
+const JOUR_COURT = { 1: 'L', 2: 'M', 3: 'M', 4: 'J', 5: 'V', 6: 'S', 0: 'D' };
+const JOUR_ABR = { 1: 'lun', 2: 'mar', 3: 'mer', 4: 'jeu', 5: 'ven', 6: 'sam', 0: 'dim' };
+const JOUR_LONG = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+const KEY = 'sommeil-v1';
+
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2, '0');
+const hm = d => pad(d.getHours()) + ':' + pad(d.getMinutes());
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+/* ── État ─────────────────────────────── */
+let state = { alarms: [], latence: 15 };
+try {
+  const s = JSON.parse(localStorage.getItem(KEY));
+  if (s && Array.isArray(s.alarms)) state = { alarms: s.alarms, latence: LATENCES.includes(s.latence) ? s.latence : 15 };
+} catch (e) {}
+if (!state.alarms.length && localStorage.getItem(KEY) === null) {
+  state.alarms.push({ id: uid(), h: 7, m: 0, label: '', days: [1, 2, 3, 4, 5], on: true, armedAt: Date.now() });
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+/* ── Calcul ───────────────────────────── */
+// Prochain déclenchement d'une alarme après `from`. Sans jour choisi, l'alarme
+// sonne une seule fois : à la première occurrence qui suit son activation.
+function nextFire(a, from) {
+  const base = a.days.length ? from : Math.max(from, a.armedAt || 0);
+  const start = new Date(base);
+  for (let d = 0; d <= 7; d++) {
+    const t = new Date(start.getFullYear(), start.getMonth(), start.getDate() + d, a.h, a.m, 0, 0);
+    if (t.getTime() > base && (!a.days.length || a.days.includes(t.getDay()))) return t;
+  }
+  return null;
+}
+
+// Une alarme « une fois » déjà passée se désactive, comme sur l'iPhone.
+function expireOneShots(now) {
+  let changed = false;
+  for (const a of state.alarms) {
+    if (a.on && !a.days.length) {
+      const t = nextFire(a, a.armedAt || 0);
+      if (t && t.getTime() <= now) { a.on = false; changed = true; }
+    }
+  }
+  if (changed) save();
+}
+
+function nextAlarm(now) {
+  let best = null;
+  for (const a of state.alarms) {
+    if (!a.on) continue;
+    const t = nextFire(a, now);
+    if (t && (!best || t < best.t)) best = { a, t };
+  }
+  return best;
+}
+
+function jourRelatif(t, now) {
+  const d0 = new Date(now); d0.setHours(0, 0, 0, 0);
+  const d1 = new Date(t); d1.setHours(0, 0, 0, 0);
+  const diff = Math.round((d1 - d0) / 86400000);
+  if (diff === 0) return "aujourd'hui";
+  if (diff === 1) return 'demain';
+  return JOUR_LONG[t.getDay()];
+}
+
+function joursTexte(days) {
+  if (!days.length) return 'Une fois';
+  if (days.length === 7) return 'Tous les jours';
+  const s = [...days].sort().join();
+  if (s === '1,2,3,4,5') return 'En semaine';
+  if (s === '0,6') return 'Le week-end';
+  return JOURS.filter(j => days.includes(j)).map(j => JOUR_ABR[j]).join(' ');
+}
+
+/* ── Rendu ────────────────────────────── */
+let nextId = null;
+
+function render() {
+  const now = Date.now();
+  expireOneShots(now);
+  $('now').textContent = hm(new Date(now));
+
+  const nx = nextAlarm(now);
+  nextId = nx ? nx.a.id : null;
+  const big = $('big');
+
+  if (!nx) {
+    big.className = 'big none';
+    big.textContent = '—';
+    $('heroLbl').textContent = 'Sommeil restant';
+    $('heroSub').textContent = 'Aucune alarme active';
+    $('cycles').innerHTML = '';
+    $('cycLbl').textContent = '';
+    $('bedSec').style.display = 'none';
+  } else {
+    const untilMin = Math.floor((nx.t - now) / 60000);
+    const sleepMin = Math.max(0, untilMin - state.latence);
+    big.className = 'big';
+    big.innerHTML = Math.floor(sleepMin / 60) + '<small>h</small>' + pad(sleepMin % 60);
+    $('heroLbl').textContent = 'Sommeil restant si tu dors maintenant';
+    const nom = nx.a.label ? ' · ' + esc(nx.a.label) : '';
+    $('heroSub').innerHTML = 'Réveil <b>' + hm(nx.t) + '</b> ' + jourRelatif(nx.t, now) + nom;
+
+    const cyc = sleepMin / CYCLE;
+    const n = Math.max(5, Math.min(8, Math.ceil(cyc)));
+    let h = '';
+    for (let i = 0; i < n; i++) {
+      const f = Math.max(0, Math.min(1, cyc - i));
+      h += '<span class="cyc"><i style="width:' + (f * 100).toFixed(1) + '%"></i></span>';
+    }
+    $('cycles').innerHTML = h;
+    const full = Math.floor(cyc);
+    $('cycLbl').textContent = full === 0 ? 'Moins d’un cycle complet'
+      : full + (full > 1 ? ' cycles complets' : ' cycle complet') + ' · ' + cyc.toFixed(1).replace('.', ',');
+    renderBeds(nx.t, now);
+  }
+  renderAlarms(now);
+  $('latVal').textContent = state.latence + ' min';
+}
+
+function renderBeds(t, now) {
+  $('bedSec').style.display = '';
+  const opts = [];
+  for (const k of [6, 5, 4, 3]) {
+    const b = new Date(t.getTime() - (k * CYCLE + state.latence) * 60000);
+    if (b.getTime() > now) opts.push({ b, k });
+  }
+  if (!opts.length) {
+    $('beds').innerHTML = '<div class="empty-note">Plus assez de temps pour 3 cycles complets. Couche-toi dès que possible.</div>';
+    return;
+  }
+  $('beds').innerHTML = '<div class="beds">' + opts.slice(0, 3).map((o, i) =>
+    '<div class="bed' + (i === 0 ? ' best' : '') + '"><div class="bed-t">' + hm(o.b) + '</div>' +
+    '<div class="bed-c">' + o.k + ' cycles · ' + Math.floor(o.k * CYCLE / 60) + 'h' + pad(o.k * CYCLE % 60) + '</div></div>'
+  ).join('') + '</div>';
+}
+
+function renderAlarms(now) {
+  const box = $('alarms');
+  if (!state.alarms.length) {
+    box.innerHTML = '<div class="empty-note">Aucune alarme. Ajoute celle de ton téléphone avec +.</div>';
+    return;
+  }
+  const list = [...state.alarms].sort((a, b) => (a.h * 60 + a.m) - (b.h * 60 + b.m));
+  box.innerHTML = '<div class="alarms">' + list.map(a =>
+    '<div class="alarm' + (a.on ? '' : ' off') + (a.id === nextId ? ' next' : '') + '" data-id="' + a.id + '">' +
+      '<div class="alarm-main">' +
+        '<div class="alarm-t">' + pad(a.h) + ':' + pad(a.m) + '</div>' +
+        '<div class="alarm-m">' + (a.label ? esc(a.label) + ' · ' : '') + joursTexte(a.days) + '</div>' +
+      '</div>' +
+      '<button class="sw' + (a.on ? ' on' : '') + '" type="button" data-sw="' + a.id + '" aria-label="Activer" aria-pressed="' + a.on + '"></button>' +
+    '</div>'
+  ).join('') + '</div>';
+}
+
+$('alarms').addEventListener('click', e => {
+  const sw = e.target.closest('[data-sw]');
+  if (sw) {
+    const a = state.alarms.find(x => x.id === sw.dataset.sw);
+    if (!a) return;
+    a.on = !a.on;
+    if (a.on) a.armedAt = Date.now();
+    save(); render();
+    return;
+  }
+  const row = e.target.closest('.alarm');
+  if (row) openSheet(state.alarms.find(x => x.id === row.dataset.id));
+});
+
+$('latBtn').addEventListener('click', () => {
+  state.latence = LATENCES[(LATENCES.indexOf(state.latence) + 1) % LATENCES.length];
+  save(); render();
+});
+
+/* ── Feuille d'édition ────────────────── */
+let editing = null, selDays = [];
+
+$('days').innerHTML = JOURS.map(j => '<button class="day" type="button" data-d="' + j + '">' + JOUR_COURT[j] + '</button>').join('');
+$('days').addEventListener('click', e => {
+  const b = e.target.closest('.day'); if (!b) return;
+  const d = +b.dataset.d;
+  selDays = selDays.includes(d) ? selDays.filter(x => x !== d) : [...selDays, d];
+  paintDays();
+});
+function paintDays() {
+  document.querySelectorAll('.day').forEach(b => b.classList.toggle('on', selDays.includes(+b.dataset.d)));
+  $('daysLbl').textContent = joursTexte(selDays);
+}
+
+function openSheet(a) {
+  editing = a || null;
+  $('sheetTitle').textContent = a ? 'Modifier' : 'Nouvelle alarme';
+  $('timeIn').value = a ? pad(a.h) + ':' + pad(a.m) : '07:00';
+  $('labelIn').value = a ? a.label : '';
+  selDays = a ? [...a.days] : [1, 2, 3, 4, 5];
+  paintDays();
+  $('delBtn').classList.toggle('hidden', !a);
+  $('scrim').classList.add('on');
+  $('sheet').classList.add('on');
+}
+function closeSheet() {
+  document.activeElement && document.activeElement.blur();
+  $('scrim').classList.remove('on');
+  $('sheet').classList.remove('on');
+  editing = null;
+}
+
+$('addBtn').addEventListener('click', () => openSheet(null));
+$('scrim').addEventListener('click', closeSheet);
+$('cancelBtn').addEventListener('click', closeSheet);
+$('saveBtn').addEventListener('click', () => {
+  const [h, m] = ($('timeIn').value || '07:00').split(':').map(Number);
+  if (Number.isNaN(h) || Number.isNaN(m)) return;
+  const data = { h, m, label: $('labelIn').value.trim(), days: selDays, on: true, armedAt: Date.now() };
+  if (editing) Object.assign(editing, data);
+  else state.alarms.push({ id: uid(), ...data });
+  save(); closeSheet(); render();
+});
+$('delBtn').addEventListener('click', () => {
+  if (!editing) return;
+  state.alarms = state.alarms.filter(x => x !== editing);
+  save(); closeSheet(); render();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+
+/* ── Horloge ──────────────────────────── */
+render();
+// se recaler sur chaque changement de minute
+(function tick() {
+  setTimeout(() => { render(); tick(); }, 60000 - (Date.now() % 60000) + 20);
+})();
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') render(); });
+
+/* Le service worker sert d'abord le cache : une nouvelle version n'apparaissait
+   qu'au lancement suivant, sans que rien ne le signale. */
+const APP_VERSION = 'Sommeil v1';
+(function(){
+  const v = document.getElementById('appVer');
+  if (v) v.textContent = APP_VERSION;
+  if (!('serviceWorker' in navigator) || !location.protocol.startsWith('http')) return;
+  const banner = document.getElementById('updBanner');
+  const showUpdate = () => banner && banner.classList.add('on');
+  const btn = document.getElementById('updBtn');
+  if (btn) btn.addEventListener('click', () => location.reload());
+  const avaitControleur = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    if (reg.waiting && avaitControleur) showUpdate();
+    reg.addEventListener('updatefound', () => {
+      const nw = reg.installing; if (!nw) return;
+      nw.addEventListener('statechange', () => {
+        if (nw.state === 'installed' && navigator.serviceWorker.controller) showUpdate();
+      });
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') reg.update().catch(()=>{});
+    });
+    setTimeout(() => reg.update().catch(()=>{}), 3000);
+  }).catch(()=>{});
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (avaitControleur) showUpdate();
+  });
+})();
+</script>
+</body>
+</html>

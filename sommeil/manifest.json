@@ -1,0 +1,17 @@
+{
+  "name": "Sommeil",
+  "short_name": "Sommeil",
+  "description": "Temps de sommeil restant avant la prochaine alarme active, en cycles de 90 minutes.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#07080c",
+  "theme_color": "#07080c",
+  "lang": "fr",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
