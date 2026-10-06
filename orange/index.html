@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+  <title>Télécommande TV</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Télécommande">
+  <meta name="theme-color" content="#0b0b0d">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="icon" href="icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0b0b0d;
+      --surf: #17171b;
+      --surf2: #222228;
+      --line: rgba(255,255,255,0.07);
+      --text: #f2f2f4;
+      --dim: #82828c;
+      --accent: #ff7900;
+      --red: #ff4d4d;
+      --green: #3ddc84;
+    }
+    html, body {
+      height: 100%; background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -webkit-user-select: none; user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    body {
+      display: flex; flex-direction: column; align-items: center;
+      padding: max(env(safe-area-inset-top), 18px) 16px max(env(safe-area-inset-bottom), 18px);
+      min-height: 100%;
+    }
+    .wrap { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 18px; }
+
+    /* En-tête */
+    header { display: flex; align-items: center; gap: 12px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--dim); flex: none; transition: background .3s, box-shadow .3s; }
+    .dot.on { background: var(--green); box-shadow: 0 0 10px var(--green); }
+    .dot.veille { background: var(--accent); }
+    .dot.off { background: var(--red); }
+    .titre { flex: 1; min-width: 0; }
+    .titre h1 { font-size: 18px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .titre p { font-size: 12px; color: var(--dim); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    button {
+      font: inherit; color: inherit; border: none; background: var(--surf);
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+      transition: transform .08s, background .15s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    button:active, button.press { transform: scale(0.93); background: var(--surf2); }
+    button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .ico { width: 44px; height: 44px; border-radius: 14px; flex: none; }
+
+    /* Rangée du haut */
+    .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .pill { height: 52px; border-radius: 16px; gap: 8px; font-size: 13px; font-weight: 600; color: var(--dim); }
+    .pill svg { color: var(--text); }
+    .power { background: rgba(255,77,77,0.14); }
+    .power svg { color: var(--red); }
+
+    /* Croix directionnelle */
+    .dpad {
+      position: relative; width: min(78vw, 270px); aspect-ratio: 1; margin: 0 auto;
+      border-radius: 50%; background: var(--surf); overflow: hidden;
+      box-shadow: inset 0 0 0 1px var(--line);
+    }
+    .dpad button.dir {
+      position: absolute; background: transparent; border-radius: 0; color: var(--dim);
+    }
+    .dpad button.dir:active, .dpad button.dir.press { background: rgba(255,255,255,0.06); transform: none; color: var(--text); }
+    .dir.haut   { top: 0; left: 25%; width: 50%; height: 33%; }
+    .dir.bas    { bottom: 0; left: 25%; width: 50%; height: 33%; }
+    .dir.gauche { left: 0; top: 25%; width: 33%; height: 50%; }
+    .dir.droite { right: 0; top: 25%; width: 33%; height: 50%; }
+    .dir svg { width: 28px; height: 28px; }
+    .ok {
+      position: absolute; inset: 31%; border-radius: 50%;
+      background: var(--accent); color: #111; font-weight: 800; font-size: 20px; letter-spacing: .5px;
+      box-shadow: 0 6px 24px rgba(255,121,0,0.35);
+    }
+    .ok:active, .ok.press { background: #ff8f2b; }
+
+    /* Volume / chaînes */
+    .bascules { display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px; align-items: center; }
+    .bascule { display: flex; flex-direction: column; border-radius: 20px; background: var(--surf); overflow: hidden; }
+    .bascule button { height: 58px; background: transparent; border-radius: 0; }
+    .bascule button:active, .bascule button.press { background: var(--surf2); transform: none; }
+    .bascule span { text-align: center; font-size: 11px; font-weight: 700; color: var(--dim); letter-spacing: 1px; padding: 2px 0; }
+    .milieu { display: flex; flex-direction: column; gap: 12px; }
+    .milieu button { width: 58px; height: 52px; border-radius: 16px; }
+    .milieu button.actif svg { color: var(--accent); }
+
+    /* Lecture */
+    .media { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .media button { height: 48px; border-radius: 14px; }
+    .rec svg { color: var(--red); }
+
+    /* Onglets */
+    .onglets { display: grid; grid-template-columns: 1fr 1fr; background: var(--surf); border-radius: 12px; padding: 3px; }
+    .onglets button { background: transparent; height: 34px; border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--dim); }
+    .onglets button.sel { background: var(--surf2); color: var(--text); }
+    .onglets button:active { transform: none; }
+
+    .pave { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .pave button { height: 54px; border-radius: 16px; font-size: 22px; font-weight: 600; }
+    .pave .vide { visibility: hidden; }
+    .saisie { text-align: center; font-size: 13px; color: var(--dim); height: 18px; font-variant-numeric: tabular-nums; }
+    .saisie b { color: var(--accent); font-size: 15px; }
+
+    .chaines { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .chaines button { flex-direction: column; height: 64px; border-radius: 16px; gap: 2px; padding: 0 6px; }
+    .chaines b { font-size: 18px; color: var(--accent); font-variant-numeric: tabular-nums; }
+    .chaines small { font-size: 11px; color: var(--dim); max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chaines .modif { color: var(--dim); font-size: 12px; font-weight: 600; }
+
+    .cache { display: none !important; }
+
+    /* Bandeau */
+    .bandeau {
+      background: rgba(255,121,0,0.1); border: 1px solid rgba(255,121,0,0.3);
+      border-radius: 14px; padding: 12px 14px; font-size: 13px; line-height: 1.45;
+    }
+    .bandeau b { color: var(--accent); }
+    .bandeau code { background: rgba(255,255,255,0.08); padding: 1px 5px; border-radius: 5px; font-size: 12px; }
+
+    /* Toast */
+    .toast {
+      position: fixed; left: 50%; bottom: max(env(safe-area-inset-bottom), 20px);
+      transform: translate(-50%, 30px); opacity: 0; pointer-events: none;
+      background: #2a2a31; padding: 10px 16px; border-radius: 12px; font-size: 13px;
+      max-width: calc(100% - 32px); box-shadow: 0 8px 30px rgba(0,0,0,.5); transition: opacity .2s, transform .2s; z-index: 30;
+    }
+    .toast.vu { opacity: 1; transform: translate(-50%, 0); }
+
+    /* Feuille réglages */
+    .voile { position: fixed; inset: 0; background: rgba(0,0,0,0.55); opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 10; }
+    .voile.ouvert { opacity: 1; pointer-events: auto; }
+    .feuille {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+      max-height: 88vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      background: var(--surf); border-radius: 22px 22px 0 0;
+      padding: 10px 18px max(env(safe-area-inset-bottom), 22px);
+      transform: translateY(105%); visibility: hidden;
+      transition: transform .3s cubic-bezier(.4,0,.2,1), visibility 0s .3s;
+      -webkit-user-select: text; user-select: text;
+    }
+    .feuille.ouvert { transform: none; visibility: visible; transition-delay: 0s; }
+    .feuille .poignee { width: 40px; height: 5px; border-radius: 3px; background: var(--surf2); margin: 0 auto 14px; }
+    .feuille h2 { font-size: 20px; margin-bottom: 14px; }
+    .feuille h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--dim); margin: 18px 0 8px; }
+    .feuille .contenu { max-width: 420px; margin: 0 auto; }
+    .champ { display: flex; gap: 8px; }
+    input, textarea {
+      font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line);
+      border-radius: 12px; padding: 11px 12px; width: 100%; font-size: 15px;
+    }
+    input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+    textarea { min-height: 170px; resize: vertical; font-size: 14px; line-height: 1.5; font-family: ui-monospace, Menlo, monospace; }
+    .btn { height: 44px; padding: 0 16px; border-radius: 12px; font-size: 14px; font-weight: 600; white-space: nowrap; background: var(--surf2); }
+    .btn.prim { background: var(--accent); color: #111; }
+    .aide { font-size: 12px; color: var(--dim); margin-top: 6px; line-height: 1.45; }
+    .trouves { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+    .trouves button { justify-content: space-between; height: 44px; border-radius: 12px; padding: 0 14px; font-size: 14px; background: var(--bg); }
+    .actions { display: flex; gap: 10px; margin-top: 22px; }
+    .actions .btn { flex: 1; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <span class="dot" id="dot"></span>
+    <div class="titre">
+      <h1 id="nom">Décodeur TV</h1>
+      <p id="etat">Connexion…</p>
+    </div>
+    <button class="ico" id="btnReglages" aria-label="Réglages">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </header>
+
+  <div class="bandeau cache" id="bandeau"></div>
+
+  <div class="row">
+    <button class="pill power" data-k="POWER" aria-label="Marche / veille">
+      <svg viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+    </button>
+    <button class="pill" data-k="MENU" aria-label="Menu">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Menu
+    </button>
+    <button class="pill" data-k="VOD" aria-label="Vidéo à la demande">
+      <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><polygon points="10 9 15 12 10 15 10 9"/></svg>VOD
+    </button>
+  </div>
+
+  <div class="dpad">
+    <button class="dir haut" data-k="UP" data-rep aria-label="Haut"><svg viewBox="0 0 24 24"><polyline points="6 15 12 9 18 15"/></svg></button>
+    <button class="dir bas" data-k="DOWN" data-rep aria-label="Bas"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
+    <button class="dir gauche" data-k="LEFT" data-rep aria-label="Gauche"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <button class="dir droite" data-k="RIGHT" data-rep aria-label="Droite"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+    <button class="ok" data-k="OK">OK</button>
+  </div>
+
+  <div class="bascules">
+    <div class="bascule">
+      <button data-k="VOL_UP" data-rep aria-label="Volume plus"><svg viewBox="0 0 24 24"><line x1="12" y1="6" x2="12" y2="18"/><line x1="6" y1="12" x2="18" y2="12"/></svg></button>
+      <span>VOL</span>
+      <button data-k="VOL_DOWN" data-rep aria-label="Volume moins"><svg viewBox="0 0 24 24"><line x1="6" y1="12" x2="18" y2="12"/></svg></button>
+    </div>
+    <div class="milieu">
+      <button data-k="MUTE" id="btnMute" aria-label="Couper le son">
+        <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+      </button>
+      <button data-k="BACK" aria-label="Retour">
+        <svg viewBox="0 0 24 24"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
+      </button>
+    </div>
+    <div class="bascule">
+      <button data-k="CH_UP" aria-label="Chaîne suivante"><svg viewBox="0 0 24 24"><polyline points="6 15 12 9 18 15"/></svg></button>
+      <span>CH</span>
+      <button data-k="CH_DOWN" aria-label="Chaîne précédente"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
+    </div>
+  </div>
+
+  <div class="media">
+    <button data-k="REWIND" aria-label="Retour rapide"><svg viewBox="0 0 24 24"><polygon points="11 19 2 12 11 5 11 19"/><polygon points="22 19 13 12 22 5 22 19"/></svg></button>
+    <button data-k="PLAY_PAUSE" aria-label="Lecture / pause"><svg viewBox="0 0 24 24"><polygon points="4 5 12 12 4 19 4 5"/><line x1="16" y1="5" x2="16" y2="19"/><line x1="20" y1="5" x2="20" y2="19"/></svg></button>
+    <button data-k="FORWARD" aria-label="Avance rapide"><svg viewBox="0 0 24 24"><polygon points="13 19 22 12 13 5 13 19"/><polygon points="2 19 11 12 2 5 2 19"/></svg></button>
+    <button class="rec" data-k="REC" aria-label="Enregistrer"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="currentColor"/></svg></button>
+  </div>
+
+  <div class="onglets" role="tablist">
+    <button class="sel" data-onglet="chaines" role="tab">Chaînes</button>
+    <button data-onglet="pave" role="tab">Pavé numérique</button>
+  </div>
+
+  <div class="chaines" id="chaines"></div>
+
+  <div class="cache" id="paveZone">
+    <div class="saisie" id="saisie"></div>
+    <div class="pave" id="pave"></div>
+  </div>
+
+</div>
+
+<div class="voile" id="voile"></div>
+<div class="feuille" id="feuille" role="dialog" aria-label="Réglages">
+  <div class="contenu">
+    <div class="poignee"></div>
+    <h2>Réglages</h2>
+
+    <h3>Décodeur</h3>
+    <div class="champ">
+      <input id="inIp" inputmode="decimal" placeholder="192.168.1.20" autocomplete="off">
+      <button class="btn prim" id="btnIp">Valider</button>
+    </div>
+    <div class="champ" style="margin-top:8px">
+      <button class="btn" id="btnScan" style="flex:1">Rechercher sur le réseau</button>
+    </div>
+    <div class="trouves" id="trouves"></div>
+    <p class="aide">L'IP du décodeur est visible dans l'interface de la Livebox (192.168.1.1 › Mes équipements) ou dans Paramètres › Informations du décodeur.</p>
+
+    <h3>Relais</h3>
+    <input id="inRelais" placeholder="Vide = ce serveur (recommandé)" autocomplete="off" spellcheck="false">
+    <p class="aide">Adresse du relais <code>serveur.py</code>, par ex. <code>http://192.168.1.50:8765</code>. Laissez vide si cette page est servie par le relais.</p>
+
+    <h3>Chaînes favorites</h3>
+    <textarea id="inFavs" spellcheck="false"></textarea>
+    <p class="aide">Une chaîne par ligne : <code>numéro nom</code>. L'app tape le numéro au pavé, comme la vraie télécommande.</p>
+
+    <div class="actions">
+      <button class="btn" id="btnFermer">Fermer</button>
+      <button class="btn prim" id="btnSauver">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+/* Codes des touches de l'API locale du décodeur (port 8080, operation=01). */
+const TOUCHES = {
+  POWER: 116, OK: 352, BACK: 158, MENU: 139, VOD: 393,
+  UP: 103, DOWN: 108, LEFT: 105, RIGHT: 106,
+  VOL_UP: 115, VOL_DOWN: 114, MUTE: 113,
+  CH_UP: 402, CH_DOWN: 403,
+  PLAY_PAUSE: 164, REWIND: 168, FORWARD: 159, REC: 167,
+};
+const CHIFFRE = d => 512 + Number(d);   // 0 → 512 … 9 → 521
+
+const FAVS_DEFAUT = `1 TF1
+2 France 2
+3 France 3
+5 France 5
+6 M6
+7 Arte`;
+
+const $ = id => document.getElementById(id);
+const stock = {
+  get(k, d) { try { const v = localStorage.getItem('orange.' + k); return v === null ? d : v; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem('orange.' + k, v); } catch {} },
+};
+
+/* ---------- Relais ---------- */
+function base() {
+  return stock.get('relais', '').trim().replace(/\/+$/, '');
+}
+
+async function api(route, params = {}) {
+  const qs = new URLSearchParams(params).toString();
+  const r = await fetch(`${base()}/api/${route}${qs ? '?' + qs : ''}`, { cache: 'no-store' });
+  let corps = {};
+  try { corps = await r.json(); } catch {}
+  if (!r.ok) throw new Error(corps.erreur || `Erreur ${r.status}`);
+  return corps;
+}
+
+/* ---------- Retour visuel ---------- */
+let toastT;
+function toast(msg) {
+  const t = $('toast');
+  t.textContent = msg; t.classList.add('vu');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('vu'), 2600);
+}
+function vibre() { if (navigator.vibrate) navigator.vibrate(8); }
+
+/* ---------- Envoi des touches ---------- */
+let derniereErreur = 0;
+async function touche(code, mode = 0) {
+  try {
+    await api('touche', { code, mode });
+  } catch (e) {
+    if (Date.now() - derniereErreur > 3000) { toast(e.message); derniereErreur = Date.now(); }
+    marquer('off', 'Hors ligne');
+  }
+}
+
+const attendre = ms => new Promise(r => setTimeout(r, ms));
+async function taperNumero(num) {
+  for (const d of String(num)) { await touche(CHIFFRE(d)); await attendre(250); }
+}
+
+/* Boutons data-k : appui simple ; data-rep : répétition tant qu'on maintient. */
+document.querySelectorAll('[data-k]').forEach(b => {
+  const code = TOUCHES[b.dataset.k];
+  let rep, delai;
+  const stop = () => { clearTimeout(delai); clearInterval(rep); b.classList.remove('press'); };
+  b.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    b.classList.add('press'); vibre(); touche(code);
+    if (b.dataset.k === 'MUTE') b.classList.toggle('actif');
+    if ('rep' in b.dataset) {
+      delai = setTimeout(() => { rep = setInterval(() => touche(code), 160); }, 420);
+    }
+  });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, stop));
+  b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); touche(code); } });
+});
+
+/* ---------- Pavé numérique ---------- */
+const pave = $('pave');
+['1','2','3','4','5','6','7','8','9','', '0', ''].forEach(d => {
+  const b = document.createElement('button');
+  b.textContent = d;
+  if (!d) { b.className = 'vide'; b.tabIndex = -1; }
+  else b.addEventListener('click', () => { vibre(); touche(CHIFFRE(d)); saisir(d); });
+  pave.appendChild(b);
+});
+let saisieT, saisieTxt = '';
+function saisir(d) {
+  saisieTxt = (saisieTxt + d).slice(-3);
+  $('saisie').innerHTML = `Chaîne <b>${saisieTxt}</b>`;
+  clearTimeout(saisieT);
+  saisieT = setTimeout(() => { saisieTxt = ''; $('saisie').textContent = ''; }, 2000);
+}
+
+/* ---------- Chaînes favorites ---------- */
+function lireFavs() {
+  return stock.get('favs', FAVS_DEFAUT).split('\n').map(l => l.trim()).filter(Boolean)
+    .map(l => { const m = l.match(/^(\d{1,4})\s*(.*)$/); return m && { num: m[1], nom: m[2] }; })
+    .filter(Boolean);
+}
+function rendreFavs() {
+  const z = $('chaines'); z.innerHTML = '';
+  lireFavs().forEach(f => {
+    const b = document.createElement('button');
+    const n = document.createElement('b'); n.textContent = f.num;
+    const s = document.createElement('small'); s.textContent = f.nom || ' ';
+    b.append(n, s);
+    b.addEventListener('click', () => { vibre(); taperNumero(f.num); toast(`→ ${f.nom || 'Chaîne ' + f.num}`); });
+    z.appendChild(b);
+  });
+  const m = document.createElement('button');
+  m.className = 'modif'; m.textContent = '+ Modifier';
+  m.addEventListener('click', () => ouvrirReglages(true));
+  z.appendChild(m);
+}
+
+document.querySelectorAll('[data-onglet]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-onglet]').forEach(x => x.classList.toggle('sel', x === b));
+  const pav = b.dataset.onglet === 'pave';
+  $('paveZone').classList.toggle('cache', !pav);
+  $('chaines').classList.toggle('cache', pav);
+  stock.set('onglet', b.dataset.onglet);
+}));
+if (stock.get('onglet', 'chaines') === 'pave') document.querySelector('[data-onglet="pave"]').click();
+
+/* ---------- État du décodeur ---------- */
+const CONTEXTES = { LIVE: 'En direct', MAIN_PROCESS: 'Menu', HOMEPAGE: 'Accueil', VOD: 'Vidéo à la demande', TIMESHIFT: 'Contrôle du direct' };
+function marquer(cls, txt) {
+  $('dot').className = 'dot ' + cls;
+  $('etat').textContent = txt;
+}
+async function rafraichir() {
+  try {
+    const r = await api('etat');
+    const d = (r.result && r.result.data) || {};
+    if (d.friendlyName) $('nom').textContent = d.friendlyName;
+    if (d.activeStandbyState === '1') return marquer('veille', 'En veille');
+    const ctx = CONTEXTES[d.osdContext] || CONTEXTES[d.playedMediaType] || 'Allumé';
+    const pause = d.playedMediaState === 'PAUSE' ? ' · en pause' : '';
+    marquer('on', ctx + pause);
+    $('bandeau').classList.add('cache');
+  } catch (e) {
+    marquer('off', e.message.includes('configuré') ? 'Aucun décodeur configuré' : 'Hors ligne');
+    if (e instanceof TypeError) montrerAideRelais();
+  }
+}
+function montrerAideRelais() {
+  const bd = $('bandeau');
+  const https = location.protocol === 'https:' && !base().startsWith('https:');
+  bd.innerHTML = https
+    ? `<b>Relais local requis.</b> Le décodeur ne parle qu'en HTTP sur votre réseau, ce qu'une page HTTPS ne peut pas faire. Lancez <code>python3 serveur.py</code> sur un ordinateur de la maison, puis ouvrez l'adresse <code>http://…:8765</code> qu'il affiche.`
+    : `<b>Relais introuvable.</b> Vérifiez que <code>serveur.py</code> tourne et que l'adresse du relais (⚙︎) est correcte.`;
+  bd.classList.remove('cache');
+}
+let poll;
+function demarrerSuivi() {
+  clearInterval(poll); rafraichir();
+  poll = setInterval(() => { if (document.visibilityState === 'visible') rafraichir(); }, 5000);
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') rafraichir(); });
+
+/* ---------- Réglages ---------- */
+async function ouvrirReglages(focusFavs) {
+  $('inRelais').value = stock.get('relais', '');
+  $('inFavs').value = stock.get('favs', FAVS_DEFAUT);
+  $('trouves').innerHTML = '';
+  $('voile').classList.add('ouvert'); $('feuille').classList.add('ouvert');
+  if (focusFavs) setTimeout(() => $('inFavs').focus(), 320);
+  try { const r = await api('decodeur'); $('inIp').value = r.ip || ''; } catch {}
+}
+function fermerReglages() { $('voile').classList.remove('ouvert'); $('feuille').classList.remove('ouvert'); }
+$('btnReglages').addEventListener('click', () => ouvrirReglages(false));
+$('voile').addEventListener('click', fermerReglages);
+$('btnFermer').addEventListener('click', fermerReglages);
+
+async function choisirIp(ip) {
+  try { await api('decodeur', { ip }); $('inIp').value = ip; toast('Décodeur : ' + ip); rafraichir(); }
+  catch (e) { toast(e.message); }
+}
+$('btnIp').addEventListener('click', () => choisirIp($('inIp').value.trim()));
+
+$('btnScan').addEventListener('click', async () => {
+  const b = $('btnScan'), z = $('trouves');
+  b.disabled = true; b.textContent = 'Recherche… (quelques secondes)'; z.innerHTML = '';
+  try {
+    const r = await api('recherche');
+    if (!r.decodeurs.length) toast('Aucun décodeur trouvé sur le réseau');
+    r.decodeurs.forEach(d => {
+      const x = document.createElement('button');
+      const n = document.createElement('span'); n.textContent = d.nom;
+      const i = document.createElement('span'); i.textContent = d.ip; i.style.color = 'var(--dim)';
+      x.append(n, i);
+      x.addEventListener('click', () => choisirIp(d.ip));
+      z.appendChild(x);
+    });
+    if (r.decodeurs.length === 1) { $('inIp').value = r.ip; rafraichir(); }
+  } catch (e) { toast(e.message); }
+  b.disabled = false; b.textContent = 'Rechercher sur le réseau';
+});
+
+$('btnSauver').addEventListener('click', () => {
+  const relais = $('inRelais').value.trim();
+  const changeRelais = relais !== stock.get('relais', '');
+  stock.set('relais', relais);
+  stock.set('favs', $('inFavs').value.trim() || FAVS_DEFAUT);
+  rendreFavs(); fermerReglages();
+  if (changeRelais) demarrerSuivi();
+  toast('Réglages enregistrés');
+});
+
+/* ---------- Clavier (ordinateur) ---------- */
+const CLAVIER = {
+  ArrowUp: 'UP', ArrowDown: 'DOWN', ArrowLeft: 'LEFT', ArrowRight: 'RIGHT', Enter: 'OK',
+  Backspace: 'BACK', Escape: 'BACK', '+': 'VOL_UP', '-': 'VOL_DOWN', m: 'MUTE',
+  PageUp: 'CH_UP', PageDown: 'CH_DOWN', ' ': 'PLAY_PAUSE',
+};
+document.addEventListener('keydown', e => {
+  if ($('feuille').classList.contains('ouvert') || e.target.closest('button')) return;
+  if (/^[0-9]$/.test(e.key)) { touche(CHIFFRE(e.key)); saisir(e.key); return; }
+  const k = CLAVIER[e.key];
+  if (k) { e.preventDefault(); touche(TOUCHES[k]); }
+});
+
+rendreFavs();
+demarrerSuivi();
+</script>
+</body>
+</html>
