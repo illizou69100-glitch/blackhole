@@ -270,9 +270,11 @@
     <div class="trouves" id="trouves"></div>
     <p class="aide">L'IP du décodeur est visible dans l'interface de la Livebox (192.168.1.1 › Mes équipements) ou dans Paramètres › Informations du décodeur.</p>
 
+    <div id="zoneRelais">
     <h3>Relais</h3>
     <input id="inRelais" placeholder="Vide = ce serveur (recommandé)" autocomplete="off" spellcheck="false">
     <p class="aide">Adresse du relais <code>serveur.py</code>, par ex. <code>http://192.168.1.50:8765</code>. Laissez vide si cette page est servie par le relais.</p>
+    </div>
 
     <h3>Chaînes favorites</h3>
     <textarea id="inFavs" spellcheck="false"></textarea>
@@ -308,9 +310,18 @@ const FAVS_DEFAUT = `1 TF1
 7 Arte`;
 
 const $ = id => document.getElementById(id);
+/* window.__pont existe quand l'app tourne dans Scriptable (iPhone, sans relais) :
+   les appels passent alors par le script hôte au lieu de fetch(). */
+const pont = window.__pont;
 const stock = {
-  get(k, d) { try { const v = localStorage.getItem('orange.' + k); return v === null ? d : v; } catch { return d; } },
-  set(k, v) { try { localStorage.setItem('orange.' + k, v); } catch {} },
+  get(k, d) {
+    if (pont) return k in pont.stock ? pont.stock[k] : d;
+    try { const v = localStorage.getItem('orange.' + k); return v === null ? d : v; } catch { return d; }
+  },
+  set(k, v) {
+    if (pont) { pont.stock[k] = v; api('memoriser', { k, v }).catch(() => {}); return; }
+    try { localStorage.setItem('orange.' + k, v); } catch {}
+  },
 };
 
 /* ---------- Relais ---------- */
@@ -319,6 +330,7 @@ function base() {
 }
 
 async function api(route, params = {}) {
+  if (pont) return pont.appel(route, params);
   const qs = new URLSearchParams(params).toString();
   const r = await fetch(`${base()}/api/${route}${qs ? '?' + qs : ''}`, { cache: 'no-store' });
   let corps = {};
@@ -515,6 +527,7 @@ document.addEventListener('keydown', e => {
   if (k) { e.preventDefault(); touche(TOUCHES[k]); }
 });
 
+if (pont) $('zoneRelais').classList.add('cache');
 rendreFavs();
 demarrerSuivi();
 </script>

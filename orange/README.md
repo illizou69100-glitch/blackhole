@@ -2,7 +2,14 @@
 
 Télécommande sur téléphone pour le décodeur TV d'Orange (UHD / TV 4 / TV 5), via le Wi-Fi de la maison.
 
-## Pourquoi un petit serveur ?
+## Sur iPhone, sans ordinateur (Scriptable)
+
+Installez l'app gratuite **Scriptable**, créez un script et collez-y le contenu de
+`scriptable/Telecommande Orange.js`, puis lancez-le et autorisez l'accès au réseau local.
+Scriptable affiche la même télécommande et appelle le décodeur directement.
+Ce fichier est généré : après une modification de `index.html`, lancez `python3 construire_scriptable.py`.
+
+## Sur ordinateur : pourquoi un petit serveur ?
 
 Le décodeur reçoit ses commandes en HTTP simple sur `http://<ip-du-décodeur>:8080`.
 Un navigateur refuse d'appeler cette adresse depuis une page web (CORS, et contenu mixte
